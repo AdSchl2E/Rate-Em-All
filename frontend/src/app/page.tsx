@@ -1,101 +1,133 @@
-import Image from "next/image";
+import React from 'react';
+import Button from './components/buttons/Button';
 
-export default function Home() {
+const Page = () => {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen flex flex-col">
+      {/* Hero Section */}
+      <section className="bg-gray-900 text-white text-center py-20">
+        <h1 className="text-4xl font-bold">Rate and Discover the Community's Favorite Pokémon!</h1>
+        <p className="text-xl mt-4">Create an account and join the adventure!</p>
+        <div className="mt-8">
+          {/* Dynamic Illustration */}
+          <div className="carousel">
+            {/* Add your carousel component or images here */}
+            {/* A voir avec du random via l'api */}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+        <div className="mt-8 flex justify-center space-x-4">
+          <Button label="Sign Up" />
+          <Button label="Login" />
+        </div>
+      </section>
+
+      {/* Trending Pokémon Section */}
+      <section className="bg-gray-800 py-20">
+        <h2 className="text-3xl font-bold text-center">Trending Pokémon</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-8 px-4">
+          {/* Example Pokémon Card */}
+          <div className="bg-gray-900 p-4 rounded shadow">
+            <img alt="Pokémon" className="w-full h-32 object-contain" />
+            <div className="mt-4">
+              <p className="text-lg font-bold">Pokémon Name</p>
+              <p className="text-sm">Average Rating: 4.5</p>
+              <div className="flex justify-right mt-4 space-x-1">
+                <Button label="Rate" />
+                <Button label="Details" />
+              </div>
+            </div>
+          </div>
+          {/* Repeat Pokémon cards as needed */}
+          <div className="bg-gray-900 p-4 rounded shadow">
+            <img alt="Pokémon" className="w-full h-32 object-contain" />
+            <div className="mt-4">
+              <p className="text-lg font-bold">Pokémon Name</p>
+              <p className="text-sm">Average Rating: 4.5</p>
+              <div className="flex justify-right mt-4 space-x-1">
+                <Button label="Rate" />
+                <Button label="Details" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-gray-900 p-4 rounded shadow">
+            <img alt="Pokémon" className="w-full h-32 object-contain" />
+            <div className="mt-4">
+              <p className="text-lg font-bold">Pokémon Name</p>
+              <p className="text-sm">Average Rating: 4.5</p>
+              <div className="flex justify-right mt-4 space-x-1">
+                <Button label="Rate" />
+                <Button label="Details" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-gray-900 p-4 rounded shadow">
+            <img alt="Pokémon" className="w-full h-32 object-contain" />
+            <div className="mt-4">
+              <p className="text-lg font-bold">Pokémon Name</p>
+              <p className="text-sm">Average Rating: 4.5</p>
+              <div className="flex justify-right mt-4 space-x-1">
+                <Button label="Rate" />
+                <Button label="Details" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Your Top Favorites Section */}
+      <section className="bg-gray-900 py-20">
+        <h2 className="text-3xl font-bold text-center">Your Top Favorites</h2>
+        <div className="flex justify-center mt-8">
+          {/* If no favorites */}
+          <p className="text-lg">You have no favorites yet. Add some!</p>
+          {/* If favorites exist, display them in a row */}
+          {/* Example Favorite Pokémon */}
+          <div className="flex space-x-4">
+            <div className="bg-gray-100 p-4 rounded shadow">
+              <img src="favorite-pokemon-sprite-url" alt="Favorite Pokémon" className="w-24 h-24 object-contain" />
+              <p className="text-center mt-2">Pokémon Name</p>
+            </div>
+            {/* Repeat favorite Pokémon as needed */}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Join the Community Section */}
+      <section className="bg-gray-800 py-20">
+        <h2 className="text-3xl font-bold text-center">Why Join the Community?</h2>
+        <div className="flex flex-wrap justify-center mt-8 space-y-4 md:space-y-0 md:space-x-8">
+          <div className="flex items-center space-x-2">
+            <p>Rate and review every Pokémon</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <p>See what’s trending</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <p>Compare your favorites with other players</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <p>Check out the top-ranked Pokémon</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-950 text-white py-8 text-center">
+        <div className="space-y-4">
+          <div className="flex justify-center space-x-4">
+            {/* Social media links */}
+            <a href="#" className="hover:underline">Facebook</a>
+            <a href="#" className="hover:underline">Twitter</a>
+            <a href="#" className="hover:underline">Instagram</a>
+          </div>
+          <div className="space-y-2">
+            <a href="#" className="hover:underline">Legal Notices</a>
+            <a href="#" className="hover:underline">Contact Information</a>
+          </div>
+        </div>
       </footer>
     </div>
   );
-}
+};
+
+export default Page;
