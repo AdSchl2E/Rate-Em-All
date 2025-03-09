@@ -31,4 +31,29 @@ export class UserController {
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
   }
+
+  @Get('email/:email')
+  findByEmail(@Param('email') email: string) {
+    return this.userService.findByEmail(email);
+  }
+
+  @Get('pseudo/:pseudo')
+  findByPseudo(@Param('pseudo') pseudo: string) {
+    return this.userService.findByPseudo(pseudo);
+  }
+
+  @Post(':userId/favorite-pokemon/:pokemonId')
+  addFavoritePokemon(@Param('userId') userId: string, @Param('pokemonId') pokemonId: string) {
+    return this.userService.addFavoritePokemon(+userId, +pokemonId);
+  }
+
+  @Delete(':userId/favorite-pokemon/:pokemonId')
+  removeFavoritePokemon(@Param('userId') userId: string, @Param('pokemonId') pokemonId: string) {
+    return this.userService.removeFavoritePokemon(+userId, +pokemonId);
+  }
+
+  @Get(':userId/favorite-pokemons')
+  findFavoritePokemons(@Param('userId') userId: string) {
+    return this.userService.findFavoritePokemons(+userId);
+  }
 }
