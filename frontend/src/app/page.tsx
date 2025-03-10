@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from './components/buttons/Button';
+import Button from '../components/buttons/Button';
 
 const Page = () => {
   return (

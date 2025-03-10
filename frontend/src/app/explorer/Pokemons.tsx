@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import StarRating from '../components/stars/StarRating';
+import Button from '../../components/buttons/Button';
 
 interface Pokemon {
     id: number;
@@ -24,6 +24,7 @@ interface Pokemon {
 
 const Pokemons = () => {
     const [pokemons, setPokemons] = useState<Pokemon[]>([]);
+    const [ratings, setRatings] = useState<{ [key: number]: number }>({});
 
     useEffect(() => {
         const fetchPokemons = async () => {
@@ -37,16 +38,44 @@ const Pokemons = () => {
             );
             setPokemons(pokemonDetails);
         };
-
         fetchPokemons();
     }, []);
 
+    const handleRate = async (pokemonId: number) => {
+        const rating = ratings[pokemonId] || 0;
+        try {
+            const response = await fetch(`../api/pokemon/rate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pokemonId, rating })
+            });
+            if (!response.ok) throw new Error('Failed to rate Pokémon');
+            alert(`Pokémon ${pokemonId} rated ${rating}/5!`);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleFavorite = async (pokemonId: number) => {
+        try {
+            const response = await fetch(`../api/pokemon/favorite`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pokemonId })
+            });
+            if (!response.ok) throw new Error('Failed to favorite Pokémon');
+            alert(`Pokémon ${pokemonId} added to favorites!`);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-4">Pokemons</h1>
+            <h1 className="text-3xl font-bold mb-4">Pokémons</h1>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {pokemons.map((pokemon) => (
-                    <div key={pokemon.name} className="bg-gray-800 shadow-md rounded-lg p-4">
+                    <div key={pokemon.id} className="bg-gray-800 shadow-md rounded-lg p-4">
                         <div className="flex justify-between items-center mb-2">
                             <div className="text-xl">{pokemon.id}</div>
                             <div className="text-xl font-bold capitalize">{pokemon.name}</div>
@@ -56,12 +85,17 @@ const Pokemons = () => {
                             alt={pokemon.name}
                             className="mx-auto"
                         />
-                        <div className="text-center mt-2 mb-2 space-x-1">
-                            {pokemon.types.map((type) => (
-                                <img key={type.type.name} src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${type.type.url.split('/').slice(-2)[0]}.png`} alt={type.type.name} className="h-5 inline-block" />
-                            ))}
-                        </div>
-                        <StarRating value={Math.floor(Math.random() * 10) + 1} fixed />
+                        <input
+                            type="range"
+                            min="0"
+                            max="5"
+                            step="0.5"
+                            value={ratings[pokemon.id] || 0}
+                            onChange={(e) => setRatings({ ...ratings, [pokemon.id]: parseFloat(e.target.value) })}
+                            className="w-full mt-2"
+                        />
+                        <Button label='Rate' onClick={() => handleRate(pokemon.id)} />
+                        <Button label='Favorite' onClick={() => handleFavorite(pokemon.id)} />
                     </div>
                 ))}
             </div>

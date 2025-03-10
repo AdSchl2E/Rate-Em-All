@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
-import { ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { PokemonModule } from './pokemon/pokemon.module';
+import { AuthModule } from './auth/auth.module';  
+import { JwtModule } from '@nestjs/jwt'; 
 
 @Module({
   imports: [
@@ -22,11 +23,16 @@ import { PokemonModule } from './pokemon/pokemon.module';
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
         entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-        synchronize: true, // Don't use this in production
+        synchronize: true, // Ne pas utiliser en production !
       }),
+    }),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'secretKey', // Change avec une vraie clé en prod !
+      signOptions: { expiresIn: '1d' },
     }),
     UserModule,
     PokemonModule,
+    AuthModule, // Ajout du module Auth
   ],
   controllers: [AppController],
   providers: [AppService],

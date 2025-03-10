@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -55,5 +56,11 @@ export class UserController {
   @Get(':userId/favorite-pokemons')
   findFavoritePokemons(@Param('userId') userId: string) {
     return this.userService.findFavoritePokemons(+userId);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard) // Protège la route avec le guard JWT
+  getProfile(@Req() req) {
+    return req.user; // `user` est accessible grâce au JwtStrategy
   }
 }

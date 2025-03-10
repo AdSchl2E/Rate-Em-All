@@ -3,9 +3,7 @@ import Pokemons from './Pokemons';
 
 const ExplorerPage = () => {
     return (
-        <div>
-            <Pokemons />
-        </div>
+        <Pokemons />
     );
 };
 
