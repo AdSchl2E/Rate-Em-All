@@ -7,7 +7,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<Request & { user?: any }>(); // 🔥 Correction ici
     const authHeader = request.headers.authorization;
 
     if (!authHeader) return false;
@@ -15,7 +15,7 @@ export class JwtAuthGuard implements CanActivate {
     try {
       const token = authHeader.split(' ')[1];
       const decoded = this.jwtService.verify(token);
-      request.user = decoded; // TypeScript n'affichera plus d'erreur ici ✅
+      request.user = decoded; // TypeScript reconnaîtra maintenant user
       return true;
     } catch {
       return false;

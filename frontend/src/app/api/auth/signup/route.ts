@@ -6,10 +6,11 @@ export async function POST(req: Request) {
     const body = await req.json();
     console.log("Request body:", body);
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+    // Modifier l'URL pour pointer vers le bon endpoint d'inscription
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify(body),  // Envoyer les données d'inscription
     });
 
     if (!response.ok) {

@@ -16,7 +16,7 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
+
     const res = await signIn("credentials", {
       redirect: false,
       email: form.email,

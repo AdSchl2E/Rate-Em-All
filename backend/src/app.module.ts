@@ -27,7 +27,7 @@ import { JwtModule } from '@nestjs/jwt';
       }),
     }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'secretKey', // Change avec une vraie clé en prod !
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1d' },
     }),
     UserModule,
