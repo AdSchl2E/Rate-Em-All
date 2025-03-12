@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Button from '../../components/buttons/Button';
 
 interface Pokemon {
@@ -22,60 +22,72 @@ interface Pokemon {
     }[];
 }
 
+const PAGE_SIZE = 20; // Nombre de Pokémon chargés à chaque requête
+
 const Pokemons = () => {
     const [pokemons, setPokemons] = useState<Pokemon[]>([]);
     const [ratings, setRatings] = useState<{ [key: number]: number }>({});
+    const [offset, setOffset] = useState(0); // Pour garder la position dans l'API
+    const [loading, setLoading] = useState(false);
+    const observer = useRef<IntersectionObserver | null>(null);
 
-    useEffect(() => {
-        const fetchPokemons = async () => {
-            const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1700');
+    // Fonction pour récupérer les Pokémon par lot
+    const fetchPokemons = useCallback(async () => {
+        if (loading) return; // Évite les requêtes multiples
+
+        setLoading(true);
+        try {
+            const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${PAGE_SIZE}&offset=${offset}`);
             const data = await response.json();
+
             const pokemonDetails = await Promise.all(
                 data.results.map(async (pokemon: { url: string }) => {
                     const res = await fetch(pokemon.url);
                     return res.json();
                 })
             );
-            setPokemons(pokemonDetails);
-        };
+
+            setPokemons((prev) => [...prev, ...pokemonDetails]);
+            setOffset((prev) => prev + PAGE_SIZE);
+        } catch (error) {
+            console.error("Failed to fetch Pokémon:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [offset, loading]);
+
+    // Détecter quand on est en bas de la page
+    const lastPokemonRef = useCallback(
+        (node: HTMLDivElement | null) => {
+            if (loading) return;
+            if (observer.current) observer.current.disconnect();
+
+            observer.current = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) {
+                    fetchPokemons();
+                }
+            });
+
+            if (node) observer.current.observe(node);
+        },
+        [loading, fetchPokemons]
+    );
+
+    // Charger les premiers Pokémon au montage
+    useEffect(() => {
         fetchPokemons();
     }, []);
-
-    const handleRate = async (pokemonId: number) => {
-        const rating = ratings[pokemonId] || 0;
-        try {
-            const response = await fetch(`../api/pokemon/rate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pokemonId, rating })
-            });
-            if (!response.ok) throw new Error('Failed to rate Pokémon');
-            alert(`Pokémon ${pokemonId} rated ${rating}/5!`);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const handleFavorite = async (pokemonId: number) => {
-        try {
-            const response = await fetch(`../api/pokemon/favorite`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pokemonId })
-            });
-            if (!response.ok) throw new Error('Failed to favorite Pokémon');
-            alert(`Pokémon ${pokemonId} added to favorites!`);
-        } catch (error) {
-            console.error(error);
-        }
-    };
 
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-3xl font-bold mb-4">Pokémons</h1>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {pokemons.map((pokemon) => (
-                    <div key={pokemon.id} className="bg-gray-800 shadow-md rounded-lg p-4">
+                {pokemons.map((pokemon, index) => (
+                    <div
+                        key={`${pokemon.id}-${index}`}  // Ajout d’un index pour éviter les doublons
+                        className="bg-gray-800 shadow-md rounded-lg p-4"
+                        ref={index === pokemons.length - 1 ? lastPokemonRef : null}
+                    >
                         <div className="flex justify-between items-center mb-2">
                             <div className="text-xl">{pokemon.id}</div>
                             <div className="text-xl font-bold capitalize">{pokemon.name}</div>
@@ -94,11 +106,14 @@ const Pokemons = () => {
                             onChange={(e) => setRatings({ ...ratings, [pokemon.id]: parseFloat(e.target.value) })}
                             className="w-full mt-2"
                         />
-                        <Button label='Rate' onClick={() => handleRate(pokemon.id)} />
-                        <Button label='Favorite' onClick={() => handleFavorite(pokemon.id)} />
+                        <Button label='Rate' onClick={() => console.log(`Rated ${pokemon.id}`)} />
+                        <Button label='Favorite' onClick={() => console.log(`Favorited ${pokemon.id}`)} />
                     </div>
                 ))}
+
             </div>
+
+            {loading && <p className="text-center my-4">Loading more Pokémon...</p>}
         </div>
     );
 };

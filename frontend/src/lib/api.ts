@@ -13,4 +13,15 @@ export async function login(credentials: { email: string; password: string }) {
     body: JSON.stringify(credentials),
   });
 }
+
+export async function ratePokemon(pokemonId: number, rating: number, accessToken: string) {
+  return fetch(`/api/pokemons/${pokemonId}/rate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ rating }),
+  });
+}
   
