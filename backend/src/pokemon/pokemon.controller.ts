@@ -3,7 +3,7 @@ import { PokemonService } from './pokemon.service';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 
-@Controller('pokemon')
+@Controller('pokemons')
 export class PokemonController {
   constructor(private readonly pokemonService: PokemonService) {}
 
@@ -18,8 +18,9 @@ export class PokemonController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.pokemonService.findOne(+id);
+  async getPokemon(@Param('id') id: string) {
+    const pokemonId = parseInt(id, 10);
+    return await this.pokemonService.findOne(pokemonId);
   }
 
   @Patch(':id')
@@ -32,28 +33,14 @@ export class PokemonController {
     return this.pokemonService.remove(+id);
   }
 
-  @Get('name/:name')
-  findByName(@Param('name') name: string) {
-    return this.pokemonService.findByName(name);
-  }
-
   @Get('pokedexId/:pokedexId')
   findByPokedexId(@Param('pokedexId') pokedexId: string) {
     return this.pokemonService.findByPokedexId(+pokedexId);
   }
 
-  @Post(':pokemonId/rate/:rating')
-  ratePokemon(@Param('pokemonId') pokemonId: string, @Param('rating') rating: string) {
-    return this.pokemonService.ratePokemon(+pokemonId, +rating);
-  }
-
-  @Get(':pokemonId/rating')
-  getRating(@Param('pokemonId') pokemonId: string) {
-    return this.pokemonService.getRating(+pokemonId);
-  }
-
-  @Get(':pokemonId/numberOfVotes')
-  getNumberOfVotes(@Param('pokemonId') pokemonId: string) {
-    return this.pokemonService.getNumberOfVotes(+pokemonId);
+  @Post(':id/rate')
+  async ratePokemon(@Param('id') id: string, @Body() body: { rating: number }) {
+    const pokemonId = parseInt(id, 10);
+    return await this.pokemonService.ratePokemon(pokemonId, body.rating);
   }
 }

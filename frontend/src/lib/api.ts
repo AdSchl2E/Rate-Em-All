@@ -13,15 +13,28 @@ export async function login(credentials: { email: string; password: string }) {
     body: JSON.stringify(credentials),
   });
 }
-
-export async function ratePokemon(pokemonId: number, rating: number, accessToken: string) {
-  return fetch(`/api/pokemons/${pokemonId}/rate`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
+  
+export async function ratePokemon(pokemonId: number, rating: number) {
+  const response = await fetch(`/api/pokemons/${pokemonId}/rate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ rating }),
   });
+
+  if (!response.ok) {
+    throw new Error('Erreur lors de la notation');
+  }
+  return response.json();
 }
-  
+
+export async function getPokemonRating(pokemonId: number) {
+  const response = await fetch(`/api/pokemons/${pokemonId}`);
+  if (response.status === 404) {
+    // Aucun enregistrement dans la base, on retourne une note par défaut
+    return { rating: 0, numberOfVotes: 0 };
+  }
+  if (!response.ok) {
+    throw new Error('Erreur lors de la récupération de la note');
+  }
+  return response.json(); // On suppose que l'objet retourné contient { rating: number, numberOfVotes: number }
+}

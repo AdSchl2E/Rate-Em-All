@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request, { params }: { params: { pokemonId: string } }) {
+export async function POST(request: Request, context: { params: { pokemonId: string | Promise<string> } }) {
   try {
+    // Attendre la résolution de context.params
+    const params = await context.params;
+    const pokemonId = await params.pokemonId;
     const body = await request.json();
     const { rating } = body;
-    const { pokemonId } = params;
 
-    const response = await fetch(`http://localhost:3001/pokemon/${pokemonId}/rate/${rating}`, {
+    const response = await fetch(`http://localhost:3001/pokemons/${pokemonId}/rate`, {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rating }),
     });
 
     if (!response.ok) {

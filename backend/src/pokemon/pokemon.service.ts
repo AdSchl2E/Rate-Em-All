@@ -44,44 +44,43 @@ export class PokemonService {
     return { id };
   }
 
-  async findByName(name: string) {
-    return await this.pokemonRepository.findOne({ where: { name } });
-  }
-
   async findByPokedexId(pokedexId: number) {
-    return await this.pokemonRepository.findOne({ where: { pokedexId } });
+    let pokemon = await this.pokemonRepository.findOne({ where: { pokedexId } });
+    
+    if (!pokemon) {
+      return { rating: 0, numberOfVotes: 0 }; // Retourne des valeurs par défaut si le Pokémon n'existe pas
+    }
+
+    return pokemon;
+    
   }
 
   async ratePokemon(pokemonId: number, rating: number) {
-    const pokemon = await this.pokemonRepository.findOne({ where: { id: pokemonId } });
+    // Rate a Pokemon
+    // If the Pokemon does not exist, create it
+    // If the Pokemon exists, update its rating 
+    // and the number of votes
+
+    let pokemon = await this.pokemonRepository.findOne({ where: { pokedexId: pokemonId } });
+
+    console.log(pokemon);
 
     if (!pokemon) {
-      throw new Error('Pokemon not found');
+      pokemon = this.pokemonRepository.create({
+        pokedexId: pokemonId,
+        rating,
+        numberOfVotes: 1,
+      });
+
+      return await this.pokemonRepository.save(pokemon);
+
+    } else {
+      
+      const newRating = (pokemon.rating * pokemon.numberOfVotes + rating) / (pokemon.numberOfVotes + 1);
+      pokemon.rating = newRating;
+      pokemon.numberOfVotes++;
+
+      return await this.pokemonRepository.save(pokemon);
     }
-
-    pokemon.rating = (pokemon.rating * pokemon.numberOfVotes + rating) / (pokemon.numberOfVotes + 1);
-    pokemon.numberOfVotes++;
-
-    return await this.pokemonRepository.save(pokemon);
-  }
-
-  async getRating(pokemonId: number) {
-    const pokemon = await this.pokemonRepository.findOne({ where: { id: pokemonId } });
-
-    if (!pokemon) {
-      throw new Error('Pokemon not found');
-    }
-
-    return pokemon.rating;
-  }
-
-  async getNumberOfVotes(pokemonId: number) {
-    const pokemon = await this.pokemonRepository.findOne({ where: { id: pokemonId } });
-
-    if (!pokemon) {
-      throw new Error('Pokemon not found');
-    }
-
-    return pokemon.numberOfVotes;
   }
 }

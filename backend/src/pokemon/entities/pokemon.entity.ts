@@ -8,11 +8,8 @@ export class Pokemon {
     @Column()
     pokedexId: number;
 
-    @Column()
-    name: string;
-
-    @Column({ default: 0 })
-    rating: number;
+    @Column({ type: 'float', default: 0 })
+    rating: number
 
     @Column({ default: 0 })
     numberOfVotes: number;
