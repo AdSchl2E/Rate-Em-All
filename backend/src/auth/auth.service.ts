@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/c
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
+import { race } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +22,7 @@ export class AuthService {
       pseudo,
       email,
       password: hashedPassword,  // Utilisation du mot de passe haché
+      ratedPokemons: [],
       favoritePokemons: [],
     });
   }
@@ -42,6 +44,9 @@ export class AuthService {
       name: user.name,
       email: user.email,
       pseudo: user.pseudo,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      ratedPokemons: user.ratedPokemons,
       favoritePokemons: user.favoritePokemons,
     };
   }

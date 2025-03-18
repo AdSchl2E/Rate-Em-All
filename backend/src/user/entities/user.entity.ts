@@ -27,6 +27,9 @@ export class User {
     deletedAt: Date;
 
     @Column({ type: 'int', array: true, default: [] })
+    ratedPokemons: number[];
+
+    @Column({ type: 'int', array: true, default: [] })
     favoritePokemons: number[];
 }
 

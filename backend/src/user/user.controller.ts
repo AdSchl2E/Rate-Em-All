@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, UnauthorizedException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -41,6 +41,27 @@ export class UserController {
   @Get('pseudo/:pseudo')
   findByPseudo(@Param('pseudo') pseudo: string) {
     return this.userService.findByPseudo(pseudo);
+  }
+
+  @Get(':userId/rated-pokemons')
+  findRatedPokemons(@Param('userId') userId: string) {
+    return this.userService.findRatedPokemons(+userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':userId/rate-pokemon/:pokemonId')
+  async ratePokemon(
+    @Req() req,
+    @Param('userId') userId: string,
+    @Param('pokemonId') pokemonId: string,
+    @Body() body: { rating: number }
+  ) {
+    // Vérifie que l'utilisateur authentifié ne peut noter que pour lui-même.
+    console.log(req.user.id, userId, "il est là");
+    if (+userId !== req.user.id) {
+      throw new UnauthorizedException("Vous ne pouvez pas noter pour un autre utilisateur");
+    }
+    return this.userService.ratePokemon(+userId, +pokemonId, body.rating);
   }
 
   @Post(':userId/favorite-pokemon/:pokemonId')

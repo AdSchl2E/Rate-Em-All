@@ -1,3 +1,4 @@
+// frontend/src/components/pokemon/PokemonCard.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -17,10 +18,11 @@ interface Pokemon {
 
 interface PokemonCardProps {
   pokemon: Pokemon;
-  onRate: (pokemonId: number, rating: number) => void;
+  userId: number;
+  onRate: (userId: number, pokemonId: number, rating: number) => void;
 }
 
-const PokemonCard = ({ pokemon, onRate }: PokemonCardProps) => {
+const PokemonCard = ({ pokemon, userId, onRate }: PokemonCardProps) => {
   const [rating, setRating] = useState<number>(0);
 
   useEffect(() => {
@@ -33,7 +35,6 @@ const PokemonCard = ({ pokemon, onRate }: PokemonCardProps) => {
           setRating(0);
         }
       } catch (error) {
-        // En cas d'erreur, on peut afficher 0 ou ne rien faire
         console.error('Erreur lors du chargement de la note du Pokémon', error);
         setRating(0);
       }
@@ -42,7 +43,7 @@ const PokemonCard = ({ pokemon, onRate }: PokemonCardProps) => {
   }, [pokemon.id]);
 
   const handleRate = () => {
-    onRate(pokemon.id, rating);
+    onRate(userId, pokemon.id, rating);
   };
 
   return (

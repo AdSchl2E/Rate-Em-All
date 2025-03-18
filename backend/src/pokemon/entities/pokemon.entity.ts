@@ -5,7 +5,7 @@ export class Pokemon {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ unique: true })
     pokedexId: number;
 
     @Column({ type: 'float', default: 0 })

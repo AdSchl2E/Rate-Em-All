@@ -3,6 +3,12 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   try {
     console.log("Received request at /api/auth/signup");
+
+    if (!process.env.NEXT_PUBLIC_API_URL) {
+      console.error("NEXT_PUBLIC_API_URL is not defined!");
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+    }
+
     const body = await req.json();
     console.log("Request body:", body);
 
@@ -20,6 +26,8 @@ export async function POST(req: Request) {
     }
 
     const user = await response.json();
+    console.log("User signed up successfully:", user);
+
     return NextResponse.json(user, { status: 201 });
 
   } catch (error) {
