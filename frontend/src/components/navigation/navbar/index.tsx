@@ -53,7 +53,7 @@ const Navbar = () => {
                                 </Link>
                                 <button
                                     onClick={() => signOut()}
-                                    className="text-white underline text-sm"
+                                    className="text-white cursor-pointer"
                                 >
                                     Déconnexion
                                 </button>

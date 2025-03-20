@@ -49,32 +49,28 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post(':userId/rate-pokemon/:pokemonId')
+  @Post(':userId/rate-pokemon/:pokedexId')
   async ratePokemon(
     @Req() req,
     @Param('userId') userId: string,
-    @Param('pokemonId') pokemonId: string,
+    @Param('pokedexId') pokedexId: string,
     @Body() body: { rating: number }
   ) {
     // Vérifie que l'utilisateur authentifié ne peut noter que pour lui-même.
-    console.log(req.user.id, userId, "il est là");
     if (+userId !== req.user.id) {
       throw new UnauthorizedException("Vous ne pouvez pas noter pour un autre utilisateur");
     }
-    return this.userService.ratePokemon(+userId, +pokemonId, body.rating);
+    return this.userService.ratePokemon(+userId, +pokedexId, body.rating);
   }
 
-  @Post(':userId/favorite-pokemon/:pokemonId')
-  addFavoritePokemon(@Param('userId') userId: string, @Param('pokemonId') pokemonId: string) {
-    return this.userService.addFavoritePokemon(+userId, +pokemonId);
+  @UseGuards(JwtAuthGuard)
+  @Post(':userId/favorite-pokemon/:pokedexId')
+  setFavoritePokemon(@Param('userId') userId: string, @Param('pokedexId') pokedexId: string) {
+    return this.userService.setFavoritePokemon(+userId, +pokedexId);
   }
 
-  @Delete(':userId/favorite-pokemon/:pokemonId')
-  removeFavoritePokemon(@Param('userId') userId: string, @Param('pokemonId') pokemonId: string) {
-    return this.userService.removeFavoritePokemon(+userId, +pokemonId);
-  }
-
-  @Get(':userId/favorite-pokemons')
+  @UseGuards(JwtAuthGuard)
+  @Get(':userId/favorite-pokemon')
   findFavoritePokemons(@Param('userId') userId: string) {
     return this.userService.findFavoritePokemons(+userId);
   }

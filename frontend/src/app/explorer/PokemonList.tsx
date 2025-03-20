@@ -4,7 +4,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import PokemonCard from '../../components/pokemon/PokemonCard';
-import { ratePokemonForUser } from '../../lib/api';
+import { ratePokemonForUser, setFavoritePokemonForUser, getUserFavoritePokemons } from '../../lib/api';
 
 interface Pokemon {
   id: number;
@@ -70,18 +70,32 @@ const PokemonList = () => {
     [loading, fetchPokemons]
   );
 
-  const handleRate = async (pokemonId: number, rating: number) => {
+  const handleRate = async (userId: number, pokedexId: number, rating: number) => {
+    
     if (!accessToken) {
       console.error('No access token available');
       return;
     }
   
     try {
-      console.log('Rating:', userId, pokemonId, rating);
-      const data = await ratePokemonForUser(userId || 0, pokemonId, rating, accessToken); // Pass token here
+      const data = await ratePokemonForUser(userId, pokedexId, rating, accessToken); // Pass token here
       console.log('Rating updated:', data);
     } catch (error) {
       console.error('Error rating pokemon:', error);
+    }
+  };
+
+  const handleFavorite = async (userId: number, pokedexId: number) => {
+    if (!accessToken) {
+      console.error('No access token available');
+      return;
+    }
+  
+    try {
+      const data = await setFavoritePokemonForUser(userId, pokedexId, accessToken);
+      console.log('Favorite status updated:', data);
+    } catch (error) {
+      console.error("Erreur lors du changement d'état favori", error);
     }
   };
 
@@ -95,7 +109,12 @@ const PokemonList = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {pokemons.map((pokemon, index) => (
           <div key={`${pokemon.id}-${index}`} ref={index === pokemons.length - 1 ? lastPokemonRef : null}>
-            <PokemonCard pokemon={pokemon} userId={userId || 0} onRate={handleRate} />
+            <PokemonCard 
+              pokemon={pokemon} 
+              userId={userId || 0} 
+              onRate={handleRate} 
+              onFavorite={handleFavorite} 
+            />
           </div>
         ))}
       </div>

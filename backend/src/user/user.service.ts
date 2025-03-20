@@ -76,21 +76,24 @@ export class UserService {
     }
 
     // Récupère le Pokémon par son Pokedex ID
-    let pokemon = await this.pokemonRepository.findOne({ where: { pokedexId } });
-
+    let pokemon = await this.pokemonRepository.findOne({ where: { pokedexId: pokedexId } })
+    
     if (!pokemon) {
       // Si le Pokémon n'existe pas, on le crée avec sa première note
       pokemon = this.pokemonRepository.create({
         pokedexId,
         rating,
-        numberOfVotes: 1,
+        numberOfVotes: 0,
       });
       await this.pokemonRepository.save(pokemon);
     }
 
     // Vérifie si l'utilisateur a déjà noté ce Pokémon
     let existingRating = await this.userPokemonRatingRepository.findOne({
-      where: { user, pokemon }
+      where: { 
+        user: { id: user.id }, 
+        pokemon: { id: pokemon.id } 
+      }
     });
 
     if (existingRating) {
@@ -107,6 +110,7 @@ export class UserService {
     } else {
       // L'utilisateur n'a pas encore voté : ajout du vote et mise à jour du nombre de votes
       const totalBefore = pokemon.rating * pokemon.numberOfVotes;
+      
       pokemon.numberOfVotes++;
       pokemon.rating = (totalBefore + rating) / pokemon.numberOfVotes;
 
@@ -124,35 +128,30 @@ export class UserService {
   }
 
 
-  async addFavoritePokemon(userId: number, pokemonId: number) {
+  async setFavoritePokemon(userId: number, pokedexId: number) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
-      throw new Error('User not found');
+        throw new Error('User not found');
     }
 
-    user.favoritePokemons.push(pokemonId);
+    // Vérifie si le Pokémon est déjà dans la liste
+    const index = user.favoritePokemons.indexOf(pokedexId);
+
+    if (index !== -1) {
+        // Si présent, on l'enlève
+        user.favoritePokemons.splice(index, 1);
+    } else {
+        // Sinon, on l'ajoute
+        user.favoritePokemons.push(pokedexId);
+    }
 
     await this.userRepository.save(user);
 
-    return user;
-  }
+    // Retourne le nouvel état du favori (true = ajouté, false = retiré)
+    return index === -1;
+}
 
-  async removeFavoritePokemon(userId: number, pokemonId: number) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    user.favoritePokemons = user.favoritePokemons.filter(
-      (id) => id !== pokemonId,
-    );
-
-    await this.userRepository.save(user);
-
-    return user;
-  }
 
   async findFavoritePokemons(userId: number) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -160,7 +159,6 @@ export class UserService {
     if (!user) {
       throw new Error('User not found');
     }
-
     return user.favoritePokemons;
   }
 
