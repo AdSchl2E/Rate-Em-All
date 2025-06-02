@@ -65,19 +65,54 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':userId/favorite-pokemon/:pokedexId')
-  setFavoritePokemon(@Param('userId') userId: string, @Param('pokedexId') pokedexId: string) {
-    return this.userService.setFavoritePokemon(+userId, +pokedexId);
+  async setFavoritePokemon(@Param('userId') userId: string, @Param('pokedexId') pokedexId: string) {
+    const pokemonData = await this.userService.setFavoritePokemon(+userId, +pokedexId);
+    return { 
+      isFavorite: pokemonData.isFavorite,
+      pokemonName: pokemonData.pokemonName // Ajout du nom pour les notifications
+    };
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':userId/favorite-pokemon')
-  findFavoritePokemons(@Param('userId') userId: string) {
-    return this.userService.findFavoritePokemons(+userId);
+  async getUserFavoritePokemons(@Req() req, @Param('userId') userId: string) {
+    // Vérifier que l'utilisateur ne peut accéder qu'à ses propres données
+    if (+userId !== req.user.id) {
+      throw new UnauthorizedException("Vous ne pouvez pas accéder aux favoris d'un autre utilisateur");
+    }
+    
+    const favorites = await this.userService.getUserFavoritePokemons(+userId);
+    return { favorites: Array.isArray(favorites) ? favorites : [] };
   }
 
   @Get('me')
   @UseGuards(JwtAuthGuard) // Protège la route avec le guard JWT
   getProfile(@Req() req) {
     return req.user; // `user` est accessible grâce au JwtStrategy
+  }
+
+  // Ajouter cet endpoint au UserController
+  @UseGuards(JwtAuthGuard)
+  @Get(':userId/ratings')
+  async getUserRatings(@Req() req, @Param('userId') userId: string) {
+    // Vérifier que l'utilisateur ne peut accéder qu'à ses propres données
+    if (+userId !== req.user.id) {
+      throw new UnauthorizedException("Vous ne pouvez pas accéder aux notes d'un autre utilisateur");
+    }
+    const ratings = await this.userService.getUserRatings(+userId);
+    return { ratings };
+  }
+
+  // Ajouter cet endpoint au UserController
+  @UseGuards(JwtAuthGuard)
+  @Get(':userId/favorite-pokemon/:pokedexId')
+  async checkIsFavorite(@Req() req, @Param('userId') userId: string, @Param('pokedexId') pokedexId: string) {
+    // Vérifier que l'utilisateur ne peut accéder qu'à ses propres données
+    if (+userId !== req.user.id) {
+      throw new UnauthorizedException("Vous ne pouvez pas accéder aux favoris d'un autre utilisateur");
+    }
+    
+    const isFavorite = await this.userService.checkIsFavorite(+userId, +pokedexId);
+    return { isFavorite };
   }
 }

@@ -135,8 +135,14 @@ export class UserService {
         throw new Error('User not found');
     }
 
+    // Obtenir le nom du Pokémon via l'API Pokémon
+    const pokemonResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokedexId}`);
+    const pokemonData = await pokemonResponse.json();
+    const pokemonName = pokemonData.name;
+
     // Vérifie si le Pokémon est déjà dans la liste
     const index = user.favoritePokemons.indexOf(pokedexId);
+    const isFavorite = index === -1;
 
     if (index !== -1) {
         // Si présent, on l'enlève
@@ -148,8 +154,11 @@ export class UserService {
 
     await this.userRepository.save(user);
 
-    // Retourne le nouvel état du favori (true = ajouté, false = retiré)
-    return index === -1;
+    // Retourne l'état du favori et le nom du Pokémon
+    return { 
+        isFavorite: isFavorite, 
+        pokemonName 
+    };
 }
 
 
@@ -164,5 +173,79 @@ export class UserService {
 
   async login(email: string, password: string) {
     return await this.userRepository.findOne({ where: { email, password } });
+  }
+
+  // Ajouter cette méthode à UserService
+  async getUserRatings(userId: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
+    }
+
+    // Récupérer toutes les notes de cet utilisateur
+    const ratings = await this.userPokemonRatingRepository.find({
+      where: { user: { id: userId } },
+      relations: ['pokemon'],
+    });
+
+    // Formater les résultats
+    return ratings.map(rating => ({
+      pokemonId: rating.pokemon.pokedexId,
+      rating: rating.rating,
+    }));
+  }
+
+  // Ajouter cette méthode à UserService
+  async checkIsFavorite(userId: number, pokedexId: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    
+    if (!user) {
+      throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
+    }
+    
+    return user.favoritePokemons.includes(pokedexId);
+  }
+
+  async toggleFavoritePokemon(userId: number, pokedexId: number): Promise<{isFavorite: boolean}> {
+    const user = await this.userRepository.findOne({where: {id: userId}});
+    
+    if (!user) {
+      throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
+    }
+
+    // Assurez-vous que les favoritePokemons est initialisé
+    if (!user.favoritePokemons) {
+      user.favoritePokemons = [];
+    }
+
+    const index = user.favoritePokemons.indexOf(pokedexId);
+    let isFavorite = false;
+    
+    if (index > -1) {
+      // Le Pokémon est déjà un favori, on le retire
+      user.favoritePokemons.splice(index, 1);
+      isFavorite = false;
+    } else {
+      // Le Pokémon n'est pas un favori, on l'ajoute
+      user.favoritePokemons.push(pokedexId);
+      isFavorite = true;
+    }
+
+    await this.userRepository.save(user);
+    console.log(`User ${userId} favorites updated: ${user.favoritePokemons}`);
+    
+    return { isFavorite };
+  }
+
+  async getUserFavoritePokemons(userId: number): Promise<number[]> {
+    const user = await this.userRepository.findOne({where: {id: userId}});
+    
+    if (!user) {
+      throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
+    }
+
+    // Assurez-vous que favoritePokemons est défini
+    return user.favoritePokemons || [];
   }
 }

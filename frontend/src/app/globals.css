@@ -5,7 +5,7 @@
   --foreground: #171717;
 }
 
-@theme inline {
+:root {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -23,4 +23,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Ajoutez ces styles pour la surbrillance des étoiles */
+.drop-shadow-\[0_0_2px_rgba\(96\,165\,250\,0\.6\)\] {
+  filter: drop-shadow(0 0 2px rgba(96, 165, 250, 0.6));
 }

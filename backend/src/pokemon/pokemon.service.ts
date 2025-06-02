@@ -1,12 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm'; // Ajout de l'import MoreThan
 import { Pokemon } from './entities/pokemon.entity';
 
 @Injectable()
 export class PokemonService {
+  private readonly logger = new Logger(PokemonService.name);
+  
   constructor(
     @InjectRepository(Pokemon)
     private readonly pokemonRepository: Repository<Pokemon>,
@@ -81,6 +83,40 @@ export class PokemonService {
       pokemon.numberOfVotes++;
 
       return await this.pokemonRepository.save(pokemon);
+    }
+  }
+
+  async getTopRated(limit: number = 10) {
+    try {
+      // Utilisation correcte des opérateurs TypeORM
+      const pokemons = await this.pokemonRepository.find({
+        where: { numberOfVotes: MoreThan(0) }, // Au moins 1 vote
+        order: { rating: 'DESC' },
+        take: limit,
+      });
+      
+      this.logger.log(`Récupération de ${pokemons.length} Pokémon les mieux notés`);
+      return pokemons;
+    } catch (error) {
+      this.logger.error(`Erreur lors de la récupération des top rated: ${error.message}`);
+      return []; // Retourne un tableau vide en cas d'erreur
+    }
+  }
+
+  async getTrending(limit: number = 4) {
+    try {
+      // Utilisation correcte des opérateurs TypeORM
+      const pokemons = await this.pokemonRepository.find({
+        where: { numberOfVotes: MoreThan(0) }, // Au moins 1 vote
+        order: { numberOfVotes: 'DESC', rating: 'DESC' }, // Combinaison nombre de votes et rating
+        take: limit,
+      });
+      
+      this.logger.log(`Récupération de ${pokemons.length} Pokémon tendances`);
+      return pokemons;
+    } catch (error) {
+      this.logger.error(`Erreur lors de la récupération des trending: ${error.message}`);
+      return []; // Retourne un tableau vide en cas d'erreur
     }
   }
 }

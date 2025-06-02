@@ -4,7 +4,8 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import PokemonCard from '../../components/pokemon/PokemonCard';
-import { ratePokemonForUser, setFavoritePokemonForUser, getUserFavoritePokemons } from '../../lib/api';
+import { useFavorites } from '../../contexts/FavoritesContext';
+import { useRatings } from '../../contexts/RatingsContext';
 
 interface Pokemon {
   id: number;
@@ -21,8 +22,10 @@ const PAGE_SIZE = 20;
 
 const PokemonList = () => {
   const { data: session } = useSession();
-  const userId = session?.user?.id as number | undefined; // Assurez-vous que l'ID est un nombre
-  const accessToken = session?.accessToken; // Récupérer le token directement ici
+  const userId = session?.user?.id as number | undefined;
+  const { loading: favoritesLoading } = useFavorites();
+  const { loading: ratingsLoading } = useRatings();
+  
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -70,55 +73,36 @@ const PokemonList = () => {
     [loading, fetchPokemons]
   );
 
-  const handleRate = async (userId: number, pokedexId: number, rating: number) => {
-    
-    if (!accessToken) {
-      console.error('No access token available');
-      return;
-    }
-  
-    try {
-      const data = await ratePokemonForUser(userId, pokedexId, rating, accessToken); // Pass token here
-      console.log('Rating updated:', data);
-    } catch (error) {
-      console.error('Error rating pokemon:', error);
-    }
-  };
-
-  const handleFavorite = async (userId: number, pokedexId: number) => {
-    if (!accessToken) {
-      console.error('No access token available');
-      return;
-    }
-  
-    try {
-      const data = await setFavoritePokemonForUser(userId, pokedexId, accessToken);
-      console.log('Favorite status updated:', data);
-    } catch (error) {
-      console.error("Erreur lors du changement d'état favori", error);
-    }
-  };
+  const isDataLoading = loading || ratingsLoading || favoritesLoading;
 
   return (
     <div className="container mx-auto p-4">
       {!userId && (
         <p className="text-center my-4">
-          Veuillez vous connecter pour noter les Pokémon.
+          Veuillez vous connecter pour noter les Pokémon et les ajouter aux favoris.
         </p>
       )}
+      
+      {isDataLoading && userId && (
+        <div className="text-center my-4">
+          <p>Chargement des données...</p>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {pokemons.map((pokemon, index) => (
           <div key={`${pokemon.id}-${index}`} ref={index === pokemons.length - 1 ? lastPokemonRef : null}>
             <PokemonCard 
+              key={`card-${pokemon.id}`}
               pokemon={pokemon} 
               userId={userId || 0} 
-              onRate={handleRate} 
-              onFavorite={handleFavorite} 
+              showActions={true}
+              showRating={true}
             />
           </div>
         ))}
       </div>
-      {loading && <p className="text-center my-4">Loading more Pokémon...</p>}
+      {loading && <p className="text-center my-4">Chargement des Pokémon...</p>}
     </div>
   );
 };
