@@ -1,27 +1,38 @@
-"use client";
+import { Metadata, Viewport } from 'next';
+import ClientProviders from "../providers/ClientProviders";
+import "../styles/globals.css";
+import { ServerNavbar } from '../components/server/layout/ServerNavbar';
 
-import "./globals.css";
-import Navbar from "../components/navigation/navbar";
-import { SessionProvider } from "next-auth/react";
-import { Toaster } from "react-hot-toast";
-import { FavoritesProvider } from '../contexts/FavoritesContext';
-import { RatingsProvider } from '../contexts/RatingsContext';
+// Métadonnées générées côté serveur
+export const metadata: Metadata = {
+  title: 'Rate-Em-All',
+  description: 'Explore and rate your favorite Pokémon',
+};
+
+// Déplacement de themeColor des métadonnées vers le viewport
+export const viewport: Viewport = {
+  themeColor: '#0F172A',
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        <SessionProvider>
-          <FavoritesProvider>
-            <RatingsProvider>
-              <Navbar />
-              <main className="container mx-auto px-4 py-6">
-                {children}
-              </main>
-              <Toaster position="bottom-right" />
-            </RatingsProvider>
-          </FavoritesProvider>
-        </SessionProvider>
+    <html lang="en" className="h-full">
+      <body className="min-h-full flex flex-col">
+        <ClientProviders>
+          {/* Assurez-vous que ServerNavbar n'est importé qu'ici et nulle part ailleurs */}
+          <ServerNavbar />
+          
+          <main className="flex-grow container mx-auto px-4 py-6 animate-fade-in">
+            {children}
+          </main>
+          
+          <footer className="mt-auto py-6 bg-gray-900 border-t border-gray-800">
+            <div className="container mx-auto px-4 text-center text-sm text-gray-500">
+              <p>© {new Date().getFullYear()} Rate-Em-All</p>
+              <p className="mt-1">All Pokémon rights belong to Nintendo</p>
+            </div>
+          </footer>
+        </ClientProviders>
       </body>
     </html>
   );

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { API_CONFIG } from "../../../../lib/api-config";
 
 export async function GET(request: Request) {
   const token = request.headers.get("Authorization")?.replace("Bearer ", "");
@@ -8,7 +9,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+    const res = await fetch(`${API_CONFIG.baseUrl}/user/me`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -16,12 +17,13 @@ export async function GET(request: Request) {
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Failed to fetch user" }, { status: 400 });
+      return NextResponse.json({ error: "Failed to fetch user" }, { status: res.status });
     }
 
     const data = await res.json();
     return NextResponse.json(data);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch user data" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: "Failed to fetch user data", details: errorMessage }, { status: 500 });
   }
 }

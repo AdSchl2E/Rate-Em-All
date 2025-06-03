@@ -98,4 +98,51 @@ export class PokemonController {
     const pokemonId = parseInt(id, 10);
     return await this.pokemonService.ratePokemon(pokemonId, body.rating);
   }
+
+  // Ajouter cette méthode dans PokemonController
+  @Get('ratings/batch')
+  async getBatchRatings(@Query('ids') idsParam: string) {
+    if (!idsParam) {
+      return {};
+    }
+    
+    try {
+      const ids = idsParam.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+      
+      if (ids.length === 0) {
+        return {};
+      }
+      
+      // Récupérer les Pokémon par leur pokedexId
+      const pokemons = await Promise.all(
+        ids.map(async (id) => {
+          try {
+            const pokemon = await this.pokemonService.findByPokedexId(id);
+            return { id, pokemon };
+          } catch (error) {
+            console.error(`Error fetching pokemon ${id}:`, error);
+            return { id, pokemon: null };
+          }
+        })
+      );
+      
+      // Convertir en objet avec les IDs comme clés
+      const result = {};
+      pokemons.forEach(({ id, pokemon }) => {
+        if (pokemon) {
+          result[id] = {
+            rating: pokemon.rating || 0,
+            numberOfVotes: pokemon.numberOfVotes || 0
+          };
+        } else {
+          result[id] = { rating: 0, numberOfVotes: 0 };
+        }
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('Error in batch ratings:', error);
+      return {};
+    }
+  }
 }

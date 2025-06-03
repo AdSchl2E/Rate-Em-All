@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { API_CONFIG } from "../../../../../../lib/api-config";
 
 export async function POST(request: Request, context: { params: { userId: string, pokedexId: string } }) {
   try {
@@ -15,7 +16,7 @@ export async function POST(request: Request, context: { params: { userId: string
     
     const token = authHeader.split(" ")[1];
 
-    const response = await fetch(`http://localhost:3001/user/${userId}/favorite-pokemon/${pokedexId}`, {
+    const response = await fetch(`${API_CONFIG.baseUrl}/user/${userId}/favorite-pokemon/${pokedexId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -27,7 +28,7 @@ export async function POST(request: Request, context: { params: { userId: string
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Backend error: ${response.status} - ${errorText}`);
-      return NextResponse.json({ message: "Failed to update favorite status", error: errorText }, { status: 400 });
+      return NextResponse.json({ message: "Failed to update favorite status", error: errorText }, { status: response.status });
     }
 
     const data = await response.json();

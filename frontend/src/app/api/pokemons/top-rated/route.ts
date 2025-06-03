@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
+import { API_CONFIG } from "../../../../lib/api-config";
 
 export async function GET(request: Request) {
   try {
     console.log("Fetching top-rated Pokémon from backend...");
-    const response = await fetch(`http://localhost:3001/pokemons/top-rated`, {
+    const response = await fetch(`${API_CONFIG.baseUrl}/pokemons/top-rated`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      cache: "no-store", // Désactiver le cache
+      next: API_CONFIG.cacheConfig.short,
     });
 
     if (!response.ok) {

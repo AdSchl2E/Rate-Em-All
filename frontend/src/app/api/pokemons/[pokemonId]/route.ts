@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { API_CONFIG } from '../../../../lib/api-config';
 
 export async function GET(
   request: Request,
@@ -13,7 +14,9 @@ export async function GET(
     console.log(`Getting rating for Pokémon ${pokemonId}, userId=${userId}`);
     
     // Récupérer les données de notation standard
-    const response = await fetch(`http://localhost:3001/pokemons/pokedexId/${pokemonId}`);
+    const response = await fetch(`${API_CONFIG.baseUrl}/pokemons/pokedexId/${pokemonId}`, {
+      next: API_CONFIG.cacheConfig.short
+    });
     
     if (!response.ok) {
       if (response.status === 404) {
@@ -43,7 +46,7 @@ export async function GET(
       try {
         // Récupérer les notes de l'utilisateur
         const userRatingsResponse = await fetch(
-          `http://localhost:3001/user/${userId}/ratings`,
+          `${API_CONFIG.baseUrl}/user/${userId}/ratings`,
           {
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -71,7 +74,7 @@ export async function GET(
         
         // Vérifier si le Pokémon est dans les favoris
         const favoritesResponse = await fetch(
-          `http://localhost:3001/user/${userId}/favorite-pokemon`,
+          `${API_CONFIG.baseUrl}/user/${userId}/favorite-pokemon`,
           {
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -81,7 +84,9 @@ export async function GET(
         );
         
         if (favoritesResponse.ok) {
-          const favorites = await favoritesResponse.json();
+          const favoritesData = await favoritesResponse.json();
+          const favorites = favoritesData.favorites || [];
+          
           if (Array.isArray(favorites)) {
             data.isFavorite = favorites.includes(parseInt(pokemonId));
           }

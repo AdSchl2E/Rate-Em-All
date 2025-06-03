@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { API_CONFIG } from '../../../../lib/api-config';
 
 const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
@@ -14,7 +15,7 @@ const handler = NextAuth({
         try {
           console.log("Trying to login with:", credentials);
 
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+          const res = await fetch(`${API_CONFIG.baseUrl}/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(credentials),
@@ -54,9 +55,6 @@ const handler = NextAuth({
   },
   session: {
     strategy: "jwt",
-  },
-  jwt: {
-    secret: process.env.NEXTAUTH_SECRET,
   },
   callbacks: {
     async jwt({ token, user }) {

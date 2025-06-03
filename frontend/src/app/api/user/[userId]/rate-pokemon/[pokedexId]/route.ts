@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { API_CONFIG } from "../../../../../../lib/api-config";
 
 export async function POST(request: Request, context: { params: { userId: string, pokedexId: string } }) {
   try {
@@ -14,23 +15,24 @@ export async function POST(request: Request, context: { params: { userId: string
       return NextResponse.json({ message: "Authorization header missing or invalid" }, { status: 401 });
     }
     
-    const token = authHeader.split(" ")[1]; // Extraire le token après "Bearer "
+    const token = authHeader.split(" ")[1];
 
-    const response = await fetch(`http://localhost:3001/user/${userId}/rate-pokemon/${pokedexId}`, {
+    const response = await fetch(`${API_CONFIG.baseUrl}/user/${userId}/rate-pokemon/${pokedexId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, // Envoie le token au backend NestJS
+        "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({ rating }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      return NextResponse.json({ message: "Failed to rate Pokémon", error: errorText }, { status: 400 });
+      return NextResponse.json({ message: "Failed to rate Pokémon", error: errorText }, { status: response.status });
     }
 
-    return NextResponse.json({ message: "Rating saved successfully" }, { status: 200 });
+    const data = await response.json();
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ message: "Server error", error: errorMessage }, { status: 500 });

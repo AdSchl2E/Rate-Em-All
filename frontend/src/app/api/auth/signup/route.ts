@@ -1,41 +1,32 @@
 import { NextResponse } from "next/server";
+import { API_CONFIG } from "../../../../lib/api-config";
 
 export async function POST(req: Request) {
   try {
     console.log("Received request at /api/auth/signup");
-
-    if (!process.env.NEXT_PUBLIC_API_URL) {
-      console.error("NEXT_PUBLIC_API_URL is not defined!");
-      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
-    }
-
     const body = await req.json();
     console.log("Request body:", body);
 
-    // Modifier l'URL pour pointer vers le bon endpoint d'inscription
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
+    // Utiliser API_CONFIG pour l'URL de base
+    const response = await fetch(`${API_CONFIG.baseUrl}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),  // Envoyer les données d'inscription
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Backend Error:", errorText);
-      return NextResponse.json({ error: "Signup failed", details: errorText }, { status: 400 });
+      return NextResponse.json({ error: "Signup failed", details: errorText }, { status: response.status });
     }
 
     const user = await response.json();
     console.log("User signed up successfully:", user);
 
     return NextResponse.json(user, { status: 201 });
-
   } catch (error) {
     console.error("Internal Server Error:", error);
-    if (error instanceof Error) {
-      return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });
-    } else {
-      return NextResponse.json({ error: "Internal Server Error", details: String(error) }, { status: 500 });
-    }
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: "Internal Server Error", details: errorMessage }, { status: 500 });
   }
 }

@@ -214,8 +214,8 @@ export class UserService {
       throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
     }
 
-    // Assurez-vous que les favoritePokemons est initialisé
-    if (!user.favoritePokemons) {
+    // Assurez-vous que les favoritePokemons est initialisé comme un tableau
+    if (!Array.isArray(user.favoritePokemons)) {
       user.favoritePokemons = [];
     }
 

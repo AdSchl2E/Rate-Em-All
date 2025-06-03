@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, UnauthorizedException, NotFoundException, InternalServerErrorException, ParseIntPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -114,5 +114,32 @@ export class UserController {
     
     const isFavorite = await this.userService.checkIsFavorite(+userId, +pokedexId);
     return { isFavorite };
+  }
+
+  // Ajouter ces endpoints si manquants
+
+  @Get(':id/favorite-pokemon')
+  async getUserFavoritePokemons(@Param('id', ParseIntPipe) userId: number) {
+    try {
+      const favorites = await this.userService.getUserFavoritePokemons(userId);
+      return { favorites };
+    } catch (error) {
+      throw new NotFoundException('User favorites not found');
+    }
+  }
+
+  @Post(':id/favorite-pokemon/:pokedexId')
+  async toggleFavoritePokemon(
+    @Param('id', ParseIntPipe) userId: number,
+    @Param('pokedexId', ParseIntPipe) pokedexId: number
+  ) {
+    try {
+      return await this.userService.toggleFavoritePokemon(userId, pokedexId);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error updating favorite');
+    }
   }
 }
