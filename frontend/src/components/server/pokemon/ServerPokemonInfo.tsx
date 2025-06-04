@@ -1,9 +1,9 @@
 import Image from 'next/image';
 import { typeColors } from '../../../lib/utils/pokemonTypes';
 import { ServerStatBar } from '../display/ServerStatBar';
-import { pokemonType } from '../../../types/pokemon';
+import { Pokemon } from '../../../types/pokemon';
 
-export function ServerPokemonInfo({ pokemon }: { pokemon: pokemonType }) {
+export function ServerPokemonInfo({ pokemon }: { pokemon: Pokemon }) {
   const mainType = pokemon.types[0].type.name;
   const typeColor = typeColors[mainType] || '#AAAAAA';
 

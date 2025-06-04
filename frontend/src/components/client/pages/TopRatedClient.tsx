@@ -2,10 +2,10 @@
 
 import { useState, useMemo } from 'react';
 import { ClientPokemonCard } from '../pokemon/ClientPokemonCard';
-import { PokemonDetails } from '../../../types/pokemon';
+import { Pokemon } from '../../../types/pokemon';
 
 interface TopRatedClientProps {
-  initialPokemons: PokemonDetails[];
+  initialPokemons: Pokemon[];
 }
 
 export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {

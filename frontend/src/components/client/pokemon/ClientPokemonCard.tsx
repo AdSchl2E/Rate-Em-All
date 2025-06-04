@@ -8,13 +8,13 @@ import { useFavorites } from '../../../providers/FavoritesProvider';
 import { useRatings } from '../../../providers/RatingsProvider';
 import { useSession } from 'next-auth/react';
 import { ClientStarRating } from '../ui/ClientStarRating';
-import { PokemonDetails } from '../../../types/pokemon';
+import { Pokemon } from '../../../types/pokemon';
 import { typeColors } from '../../../lib/utils/pokemonTypes';
 import { HeartIcon, StarIcon } from '@heroicons/react/24/solid';
 import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
 
 interface ClientPokemonCardProps {
-  pokemon: PokemonDetails;
+  pokemon: Pokemon;
   showRating?: boolean;
   showActions?: boolean;
   highlighted?: boolean;

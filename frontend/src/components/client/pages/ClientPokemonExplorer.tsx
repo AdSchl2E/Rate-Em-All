@@ -6,7 +6,7 @@ import { ClientPokemonCard } from '../pokemon/ClientPokemonCard';
 import { useFavorites } from '../../../providers/FavoritesProvider';
 import { useRatings } from '../../../providers/RatingsProvider';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
-import { PokemonDetails } from '../../../types/pokemon';
+import { Pokemon } from '../../../types/pokemon';
 
 const PAGE_SIZE = 20;
 
@@ -16,7 +16,7 @@ export function ClientPokemonExplorer() {
   const { loading: favoritesLoading } = useFavorites();
   const { loading: ratingsLoading } = useRatings();
   
-  const [pokemons, setPokemons] = useState<PokemonDetails[]>([]);
+  const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
@@ -36,11 +36,11 @@ export function ClientPokemonExplorer() {
 
       // Filtrer les Pokémon déjà chargés
       const newPokemons = data.pokemons.filter(
-        (pokemon: PokemonDetails) => !loadedIds.current.has(pokemon.id)
+        (pokemon: Pokemon) => !loadedIds.current.has(pokemon.id)
       );
       
       // Ajouter les nouveaux IDs au Set
-      newPokemons.forEach((pokemon: PokemonDetails) => loadedIds.current.add(pokemon.id));
+      newPokemons.forEach((pokemon: Pokemon) => loadedIds.current.add(pokemon.id));
       
       setPokemons(prev => [...prev, ...newPokemons]);
       setOffset(prev => prev + PAGE_SIZE);

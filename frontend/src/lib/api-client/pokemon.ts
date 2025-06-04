@@ -1,4 +1,4 @@
-import { PokemonDetails } from '../../types/pokemon';
+import { Pokemon } from '../../types/pokemon';
 import { API_CONFIG } from '../api-config';
 
 // Garder les urls relatives comme actuellement
@@ -78,7 +78,7 @@ export async function setFavoritePokemonForUser(userId: number, pokedexId: numbe
 }
 
 // Récupérer plusieurs Pokémon par leurs IDs
-export async function fetchPokemonsByIds(pokemonIds: number[]): Promise<PokemonDetails[]> {
+export async function fetchPokemonsByIds(pokemonIds: number[]): Promise<Pokemon[]> {
   if (!pokemonIds || pokemonIds.length === 0) {
     return [];
   }
@@ -134,7 +134,7 @@ export async function fetchPokemonsByIds(pokemonIds: number[]): Promise<PokemonD
 }
 
 // Rechercher des Pokémon
-export async function searchPokemons(query: string): Promise<PokemonDetails[]> {
+export async function searchPokemons(query: string): Promise<Pokemon[]> {
   try {
     const response = await fetch(`/api/pokemons/search?q=${encodeURIComponent(query)}`);
     
