@@ -135,3 +135,48 @@ export async function fetchPokemonDetails(id: number): Promise<Pokemon> {
     throw error;
   }
 }
+
+// Récupérer tous les Pokémon (ou un nombre limité)
+export async function fetchAllPokemon(limit: number = 100): Promise<Pokemon[]> {
+  const res = await fetch(`${API_CONFIG.baseUrl}/pokemons?limit=${limit}`, {
+    next: API_CONFIG.cacheConfig.medium
+  });
+  
+  if (!res.ok) {
+    throw new Error(`Failed to fetch all pokemons: ${res.status}`);
+  }
+  
+  const data = await res.json();
+  
+  // Enrichir avec les détails de l'API Pokémon
+  return await Promise.all(
+    data.map(async (pokemon: any) => {
+      // Vérifier si on a déjà les détails nécessaires
+      if (pokemon.sprites && pokemon.types) {
+        return pokemon;
+      }
+      
+      // Sinon, récupérer les détails complets
+      try {
+        const pokeApiRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.id}`);
+        if (!pokeApiRes.ok) {
+          console.error(`Failed to fetch details for pokemon ${pokemon.id}`);
+          return pokemon;
+        }
+        
+        const pokeApiData = await pokeApiRes.json();
+        
+        return {
+          ...pokemon,
+          ...pokeApiData,
+          // Conserver les propriétés spécifiques à notre API
+          rating: pokemon.rating,
+          numberOfVotes: pokemon.numberOfVotes
+        };
+      } catch (error) {
+        console.error(`Error fetching details for pokemon ${pokemon.id}:`, error);
+        return pokemon;
+      }
+    })
+  );
+}

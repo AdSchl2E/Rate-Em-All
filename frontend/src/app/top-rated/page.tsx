@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { fetchTopRated } from '../../lib/api-server/pokemon';
 import { TopRatedClient } from '../../components/client/pages/TopRatedClient';
-import { ServerPodium } from '../../components/server/pokemon/ServerPodium';
 
 export const metadata: Metadata = {
   title: 'Top Pokémon | Rate-Em-All',
@@ -9,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TopRatedPage() {
-  // Chargement des données côté serveur pour le rendu initial
+
   const topPokemon = await fetchTopRated(50);
   
   return (
@@ -20,9 +19,6 @@ export default async function TopRatedPage() {
         </h1>
         <p className="text-gray-400">Les Pokémon les mieux notés par la communauté</p>
       </div>
-      
-      {/* Podium rendu côté serveur */}
-      <ServerPodium pokemons={topPokemon.slice(0, 3)} />
       
       {/* Partie client pour le filtrage et l'interaction */}
       <TopRatedClient initialPokemons={topPokemon} />

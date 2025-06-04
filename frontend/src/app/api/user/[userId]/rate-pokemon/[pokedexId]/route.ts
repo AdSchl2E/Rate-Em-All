@@ -9,7 +9,6 @@ export async function POST(request: Request, context: { params: { userId: string
     const body = await request.json();
     const { rating } = body;
 
-    // Extraire le token du header Authorization
     const authHeader = request.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json({ message: "Authorization header missing or invalid" }, { status: 401 });
@@ -31,7 +30,10 @@ export async function POST(request: Request, context: { params: { userId: string
       return NextResponse.json({ message: "Failed to rate Pokémon", error: errorText }, { status: response.status });
     }
 
+    // Récupérer toutes les données du backend
     const data = await response.json();
+    console.log('Backend response for rating:', data);
+    
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

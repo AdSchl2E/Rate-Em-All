@@ -4,14 +4,15 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
-import { useFavorites } from '../../../providers/FavoritesProvider';
-import { useRatings } from '../../../providers/RatingsProvider';
 import { useSession } from 'next-auth/react';
 import { ClientStarRating } from '../ui/ClientStarRating';
+import { CommunityRating } from '../ui/CommunityRating';
 import { Pokemon } from '../../../types/pokemon';
 import { typeColors } from '../../../lib/utils/pokemonTypes';
 import { HeartIcon, StarIcon } from '@heroicons/react/24/solid';
 import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
+import { useGlobal } from '../../../providers/GlobalProvider';
+import { getRatingColor } from '../../../lib/utils/ratingColors';
 
 interface ClientPokemonCardProps {
   pokemon: Pokemon;
@@ -22,7 +23,7 @@ interface ClientPokemonCardProps {
 }
 
 export function ClientPokemonCard({ 
-  pokemon, 
+  pokemon: initialPokemon, 
   showRating = true,
   showActions = true,
   highlighted = false,
@@ -31,21 +32,34 @@ export function ClientPokemonCard({
   const router = useRouter();
   const { data: session } = useSession();
   const userId = session?.user?.id as number | undefined;
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const { getRating, hasRated, setRating } = useRatings();
+  const { 
+    isFavorite, 
+    toggleFavorite, 
+    getRating, 
+    hasRated, 
+    setRating, 
+    pokemonCache 
+  } = useGlobal();
   
+  // État local pour les mises à jour UI
+  const [pokemon, setPokemon] = useState<Pokemon>({
+    ...initialPokemon,
+    // Utiliser les infos du cache si disponibles
+    rating: pokemonCache[initialPokemon.id]?.rating ?? initialPokemon.rating,
+    numberOfVotes: pokemonCache[initialPokemon.id]?.numberOfVotes ?? initialPokemon.numberOfVotes
+  });
   const [isRating, setIsRating] = useState<boolean>(false);
   const [isHovering, setIsHovering] = useState<boolean>(false);
 
-  // Context values
+  // Valeurs contextuelles
   const pokemonUserRating = getRating(pokemon.id);
   const isPokemonRated = hasRated(pokemon.id);
   const isPokemonFavorite = isFavorite(pokemon.id);
 
-  // Main type for gradient color
+  // Type principal pour la couleur du gradient
   const mainType = pokemon.types?.[0]?.type.name || 'normal';
   const gradientColor = typeColors[mainType] || '#AAAAAA';
-
+  
   const handleRate = async (rating: number) => {
     if (!userId) {
       toast.custom((t) => (
@@ -61,7 +75,16 @@ export function ClientPokemonCard({
     
     setIsRating(true);
     try {
-      await setRating(pokemon.id, rating);
+      // Récupérer directement les données retournées par setRating
+      const result = await setRating(pokemon.id, rating);
+      
+      // Mise à jour directe avec les données retournées plutôt qu'avec le cache
+      setPokemon(prev => ({
+        ...prev,
+        rating: result.updatedRating,
+        numberOfVotes: result.numberOfVotes
+      }));
+      
       toast.custom((t) => (
         <div className="bg-gray-800 border border-gray-700 text-gray-50 rounded-lg shadow-lg px-4 py-3 flex items-center">
           <div className="mr-3 bg-blue-500/20 p-2 rounded-full">
@@ -208,45 +231,40 @@ export function ClientPokemonCard({
           </span>
         </div>
         
-        {/* IMPROVED COMMUNITY RATING - Numerical with star icon and vote count */}
+        {/* COMMUNITY RATING - Using new component with prominent style */}
         {showRating && (
-          <div className="flex items-center justify-center px-4 py-2 bg-gray-700/50 rounded-full" data-pokemon-id={pokemon.id}>
-            <StarIcon className="h-6 w-6 text-amber-400 mr-1.5" />
-            <span 
-              className="font-medium text-amber-100"
-              data-community-rating
-              data-rating={pokemon.rating || 0}
-              data-votes={pokemon.numberOfVotes || 0}
-            >
-              {(pokemon.rating || 0).toFixed(1)}
-            </span>
-            <span className="text-xs text-gray-400 ml-1" data-vote-count>
-              ({pokemon.numberOfVotes || 0})
-            </span>
+          <div className="flex items-center justify-center py-2 mx-auto" data-pokemon-id={pokemon.id}>
+            <CommunityRating
+              rating={pokemon.rating || 0}
+              votes={pokemon.numberOfVotes || 0}
+              size="md"
+              showStars={false}
+              prominent={true}
+              className="w-full"
+            />
           </div>
         )}
         
-        {/* IMPROVED USER RATING - More prominent and clearer indication */}
+        {/* IMPROVED USER RATING */}
         {showActions && (
           <div 
             className={`mt-3 w-full rounded-lg px-3 py-2
               ${isPokemonRated 
                 ? 'bg-blue-700/40 border-2 border-blue-400 hover:border-blue-300/50' 
                 : 'bg-gray-700/30 border border-gray-700/50 hover:border-gray-500/50'}
-              transition-all duration-300`}
+            transition-all duration-300`}
             onClick={(e) => e.stopPropagation()}
           >
-            
             <div className="flex justify-center">
               <ClientStarRating 
                 value={pokemonUserRating} 
                 onChange={handleRate} 
                 disabled={isRating || !userId}
                 highlight={isPokemonRated}
-                size="lg"
+                size="md"
+                useColors={true}
               />
             </div>
-          
           </div>
         )}
       </div>

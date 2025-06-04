@@ -3,18 +3,16 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { ClientPokemonCard } from '../pokemon/ClientPokemonCard';
-import { useFavorites } from '../../../providers/FavoritesProvider';
-import { useRatings } from '../../../providers/RatingsProvider';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { Pokemon } from '../../../types/pokemon';
+import { useGlobal } from '../../../providers/GlobalProvider';
 
 const PAGE_SIZE = 20;
 
 export function ClientPokemonExplorer() {
   const { data: session } = useSession();
   const userId = session?.user?.id as number | undefined;
-  const { loading: favoritesLoading } = useFavorites();
-  const { loading: ratingsLoading } = useRatings();
+  const { loading: globalLoading } = useGlobal();
   
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [offset, setOffset] = useState(0);
@@ -77,7 +75,7 @@ export function ClientPokemonExplorer() {
     [loading, fetchPokemons, initialLoadDone]
   );
 
-  const isDataLoading = loading || ratingsLoading || favoritesLoading;
+  const isDataLoading = loading || globalLoading;
 
   return (
     <div>

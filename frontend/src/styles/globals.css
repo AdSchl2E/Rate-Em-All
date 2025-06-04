@@ -43,3 +43,61 @@ body {
 .badge {
   @apply inline-flex px-2 py-0.5 rounded-full text-xs font-medium;
 }
+
+/* Nouveaux styles pour la page Top Rated */
+.drop-shadow-glow {
+  filter: drop-shadow(0 0 8px rgba(252, 211, 77, 0.6));
+}
+
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-gold-gradient {
+  background: linear-gradient(45deg, #f59e0b, #fbbf24);
+}
+
+.bg-silver-gradient {
+  background: linear-gradient(45deg, #d1d5db, #9ca3af);
+}
+
+.bg-bronze-gradient {
+  background: linear-gradient(45deg, #d97706, #92400e);
+}
+
+.text-gradient-gold {
+  background: linear-gradient(to right, #f59e0b, #fbbf24);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gradient-text {
+  background: linear-gradient(to right, #60a5fa, #c084fc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.bg-gradient-conic {
+  background: conic-gradient(
+    rgba(252, 211, 77, 0.6) 0deg,
+    rgba(252, 211, 77, 0.3) 120deg,
+    rgba(252, 211, 77, 0.1) 180deg,
+    rgba(252, 211, 77, 0) 240deg,
+    rgba(252, 211, 77, 0.6) 360deg
+  );
+}
+
+/* Animation d'apparition */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}

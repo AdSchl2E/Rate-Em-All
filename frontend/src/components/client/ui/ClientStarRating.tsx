@@ -3,14 +3,16 @@
 import { useState } from 'react';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
+import { getRatingColor } from '../../../lib/utils/ratingColors';
 
 interface ClientStarRatingProps {
   value: number;
   onChange?: (rating: number) => void;
   disabled?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   highlight?: boolean;
   fixed?: boolean;
+  useColors?: boolean;
 }
 
 export function ClientStarRating({
@@ -19,27 +21,38 @@ export function ClientStarRating({
   disabled = false,
   size = 'md',
   highlight = false,
-  fixed = false
+  fixed = false,
+  useColors = true
 }: ClientStarRatingProps) {
   const [hoverRating, setHoverRating] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
 
   const sizeClasses = {
+    xs: 'h-3 w-3',
     sm: 'h-4 w-4',
     md: 'h-5 w-5',
     lg: 'h-6 w-6'
   };
 
-  const colorClass = highlight 
-    ? 'text-amber-400' 
-    : 'text-yellow-500';
-
   const getStarProps = (index: number) => {
     const rating = isHovering ? hoverRating : value;
     const isFilled = index <= rating;
     
+    // Déterminer la couleur en fonction de la valeur
+    let colorClass = 'text-slate-600'; // couleur par défaut pour les étoiles vides
+    
+    if (isFilled) {
+      if (useColors && !isHovering) {
+        // Utiliser la couleur basée sur la note
+        colorClass = getRatingColor(value);
+      } else {
+        // Couleur standard pour le hover ou si useColors est false
+        colorClass = highlight ? 'text-amber-400' : 'text-yellow-500';
+      }
+    }
+    
     const sharedProps = {
-      className: `${sizeClasses[size]} ${isFilled ? colorClass : 'text-slate-600'} transition-all duration-200`,
+      className: `${sizeClasses[size]} ${colorClass} transition-all duration-200`,
       'aria-hidden': true
     };
     

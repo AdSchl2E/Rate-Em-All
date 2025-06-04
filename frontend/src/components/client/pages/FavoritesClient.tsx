@@ -2,19 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useFavorites } from '../../../providers/FavoritesProvider';
-import { useRatings } from '../../../providers/RatingsProvider';
 import { ClientPokemonCard } from '../pokemon/ClientPokemonCard';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { Pokemon } from '../../../types/pokemon';
 import { fetchPokemonsByIds } from '../../../lib/api-client/pokemon';
 import Link from 'next/link';
+import { useGlobal } from '../../../providers/GlobalProvider';
 
 export function FavoritesClient() {
   const { data: session, status } = useSession();
   const userId = session?.user?.id as number | undefined;
-  const { favorites, loading: favoritesLoading } = useFavorites();
-  const { loading: ratingsLoading } = useRatings();
+  const { favorites, loading: globalLoading } = useGlobal();
   
   const [favoritePokemons, setFavoritePokemons] = useState<Pokemon[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -22,8 +20,8 @@ export function FavoritesClient() {
 
   useEffect(() => {
     const fetchPokemonsDetails = async () => {
-      if (favoritesLoading) {
-        return; // Attendre que les favoris soient chargés
+      if (globalLoading) {
+        return; // Attendre que les données globales soient chargées
       }
       
       if (!favorites.length) {
@@ -46,7 +44,7 @@ export function FavoritesClient() {
     };
 
     fetchPokemonsDetails();
-  }, [favorites, favoritesLoading]);
+  }, [favorites, globalLoading]);
 
   // Si l'utilisateur n'est pas connecté
   if (status === 'unauthenticated') {
@@ -64,7 +62,7 @@ export function FavoritesClient() {
   }
 
   // État de chargement
-  if (status === 'loading' || loading || favoritesLoading || ratingsLoading) {
+  if (status === 'loading' || loading || globalLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-10">
         <LoadingSpinner />

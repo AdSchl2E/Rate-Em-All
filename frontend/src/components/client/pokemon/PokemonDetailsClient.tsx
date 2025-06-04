@@ -2,22 +2,35 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useFavorites } from '../../../providers/FavoritesProvider';
-import { useRatings } from '../../../providers/RatingsProvider';
 import { ClientStarRating } from '../ui/ClientStarRating';
 import { Pokemon } from '../../../types/pokemon';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import Link from 'next/link';
-import { HeartIcon, StarIcon } from '@heroicons/react/24/solid';
+import { HeartIcon } from '@heroicons/react/24/solid';
 import { typeColors } from '../../../lib/utils/pokemonTypes';
+import { useGlobal } from '../../../providers/GlobalProvider';
+import { CommunityRating } from '../ui/CommunityRating';
+import { getRatingColor } from '../../../lib/utils/ratingColors';
 
-export function PokemonDetailsClient({ pokemon }: { pokemon: Pokemon }) {
+export function PokemonDetailsClient({ pokemon: initialPokemon }: { pokemon: Pokemon }) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const { getRating, setRating } = useRatings();
+  const { 
+    isFavorite, 
+    toggleFavorite, 
+    getRating, 
+    setRating,
+    pokemonCache 
+  } = useGlobal();
   
+  // État local pour les données Pokémon
+  const [pokemon, setPokemon] = useState<Pokemon>({
+    ...initialPokemon,
+    // Utiliser les infos du cache si disponibles
+    rating: pokemonCache[initialPokemon.id]?.rating ?? initialPokemon.rating,
+    numberOfVotes: pokemonCache[initialPokemon.id]?.numberOfVotes ?? initialPokemon.numberOfVotes
+  });
   const [userRating, setUserRating] = useState(getRating(pokemon.id));
   const isPokemonFavorite = isFavorite(pokemon.id);
   
@@ -29,8 +42,19 @@ export function PokemonDetailsClient({ pokemon }: { pokemon: Pokemon }) {
 
     try {
       setLoading(true);
-      await setRating(pokemon.id, rating);
-      setUserRating(rating); // Mettre à jour l'état local
+      // Récupérer directement les données retournées par setRating
+      const result = await setRating(pokemon.id, rating);
+      
+      // Mise à jour avec les données retournées plutôt que de relire le cache
+      setPokemon(prev => ({
+        ...prev,
+        rating: result.updatedRating, 
+        numberOfVotes: result.numberOfVotes
+      }));
+      
+      // Mettre à jour l'état local de la note utilisateur
+      setUserRating(rating);
+      
       toast.success(`Vous avez noté ${pokemon.name} ${rating}/5 !`);
     } catch (error) {
       toast.error("Une erreur s'est produite");
@@ -111,21 +135,21 @@ export function PokemonDetailsClient({ pokemon }: { pokemon: Pokemon }) {
               })}
             </div>
             
-            {/* Rating section */}
+            {/* Rating section - Updated with new prominent CommunityRating */}
             <div className="mb-6" data-detail-pokemon-id={pokemon.id} data-rating={pokemon.rating || 0} data-votes={pokemon.numberOfVotes || 0}>
               <h3 className="text-lg font-medium mb-2">Community Rating</h3>
-              <div className="flex items-center gap-2">
-                <ClientStarRating value={pokemon.rating || 0} fixed={true} size="lg" />
-                <span className="text-lg font-medium rating-value">
-                  {(pokemon.rating || 0).toFixed(1)}/5
-                </span>
-                <span className="text-gray-400 text-sm ml-2 vote-count">
-                  ({pokemon.numberOfVotes || 0} votes)
-                </span>
+              <div className="flex items-center">
+                <CommunityRating
+                  rating={pokemon.rating || 0}
+                  votes={pokemon.numberOfVotes || 0}
+                  size="lg"
+                  showStars={false}
+                  prominent={true}
+                />
               </div>
             </div>
             
-            {/* User rating */}
+            {/* User rating - Updated with color support */}
             <div className="mb-6">
               <h3 className="text-lg font-medium mb-2">Your Rating</h3>
               <ClientStarRating
@@ -133,6 +157,7 @@ export function PokemonDetailsClient({ pokemon }: { pokemon: Pokemon }) {
                 onChange={handleRating}
                 size="lg"
                 disabled={loading}
+                useColors={true}
               />
               {!session && (
                 <p className="text-sm text-gray-400 mt-2">

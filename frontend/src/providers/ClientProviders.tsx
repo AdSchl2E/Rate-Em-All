@@ -2,19 +2,15 @@
 
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "react-hot-toast";
-import { FavoritesProvider } from './FavoritesProvider';
-import { RatingsProvider } from './RatingsProvider';
+import { GlobalProvider } from './GlobalProvider';
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <FavoritesProvider>
-        <RatingsProvider>
-          {/* Ce composant ajoute les fonctionnalités client à la navbar serveur */}
-          {children}
-          <Toaster position="bottom-right" />
-        </RatingsProvider>
-      </FavoritesProvider>
+      <GlobalProvider>
+        {children}
+        <Toaster position="bottom-right" />
+      </GlobalProvider>
     </SessionProvider>
   );
 }

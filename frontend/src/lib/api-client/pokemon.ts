@@ -44,8 +44,7 @@ export async function ratePokemonForUser(userId: number, pokedexId: number, rati
       },
       body: JSON.stringify({ rating })
     });
-    console.log(`Response status: ${response.status}`);
-
+    
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Rating API error:', response.status, errorText);
@@ -53,8 +52,13 @@ export async function ratePokemonForUser(userId: number, pokedexId: number, rati
     }
 
     const data = await response.json();
-    console.log('Rating successfully saved:', data);
-    return data;
+    
+    // Retourner les données mises à jour
+    return {
+      updatedRating: data.pokemon?.rating || 0,
+      numberOfVotes: data.pokemon?.numberOfVotes || 0,
+      userRating: data.userRating?.rating || rating
+    };
   } catch (error) {
     console.error('Error in ratePokemonForUser:', error);
     throw error;
@@ -145,6 +149,25 @@ export async function searchPokemons(query: string): Promise<Pokemon[]> {
     return response.json();
   } catch (error) {
     console.error('Error searching Pokémon:', error);
+    throw error;
+  }
+}
+
+// Récupère les détails d'un Pokémon par son ID avec les notes à jour
+export async function fetchPokemonById(id: number): Promise<Pokemon> {
+  try {
+    const res = await fetch(`/api/pokemons/${id}`, {
+      // Désactiver le cache pour toujours avoir des données fraîches
+      cache: 'no-store'
+    });
+    
+    if (!res.ok) {
+      throw new Error(`Failed to fetch Pokemon with id ${id}`);
+    }
+    
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching Pokemon details:', error);
     throw error;
   }
 }
