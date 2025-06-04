@@ -8,12 +8,9 @@ export async function GET(request: Request, context: { params: { userId: string 
     const { userId } = await Promise.resolve(context.params);
     console.log(`[Server] Fetching ratings for user ${userId}...`);
 
-    // Corriger l'erreur d'API asynchrone avec await pour les headers
-    const headersList = headers();
-    const authHeader = await headersList.get("Authorization");
-    
+    // Extraire le token du header Authorization
+    const authHeader = request.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.error("[Server] Missing or invalid Authorization header");
       return NextResponse.json({ message: "Authorization header missing or invalid" }, { status: 401 });
     }
     
@@ -69,12 +66,9 @@ export async function POST(request: Request, context: { params: { userId: string
       return NextResponse.json({ message: "Invalid request body" }, { status: 400 });
     }
 
-    // Corriger l'erreur d'API asynchrone avec await pour les headers
-    const headersList = headers();
-    const authHeader = await headersList.get("Authorization");
-    
+    // Extraire le token du header Authorization
+    const authHeader = request.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.error("[Server] Missing or invalid Authorization header");
       return NextResponse.json({ message: "Authorization header missing or invalid" }, { status: 401 });
     }
     

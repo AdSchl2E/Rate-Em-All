@@ -116,18 +116,6 @@ export class UserController {
     return { isFavorite };
   }
 
-  // Ajouter ces endpoints si manquants
-
-  @Get(':id/favorite-pokemon')
-  async getUserFavoritePokemons(@Param('id', ParseIntPipe) userId: number) {
-    try {
-      const favorites = await this.userService.getUserFavoritePokemons(userId);
-      return { favorites };
-    } catch (error) {
-      throw new NotFoundException('User favorites not found');
-    }
-  }
-
   @Post(':id/favorite-pokemon/:pokedexId')
   async toggleFavoritePokemon(
     @Param('id', ParseIntPipe) userId: number,

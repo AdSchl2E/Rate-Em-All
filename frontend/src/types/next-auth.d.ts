@@ -12,6 +12,7 @@ declare module "next-auth" {
       updatedAt: string;
       ratedPokemons: number[];
       favoritePokemons: number[];
+      image?: string;
     };
   }
 
@@ -25,5 +26,6 @@ declare module "next-auth" {
     accessToken: string;
     ratedPokemons: number[];
     favoritePokemons: number[];
+    image?: string;
   }
 }
