@@ -6,7 +6,7 @@ import { useFavorites } from '../../../providers/FavoritesProvider';
 import { useRatings } from '../../../providers/RatingsProvider';
 import { ClientPokemonCard } from '../pokemon/ClientPokemonCard';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
-import { pokemonType } from '../../../types/pokemon';
+import { PokemonDetails } from '../../../types/pokemon';
 import { fetchPokemonsByIds } from '../../../lib/api-client/pokemon';
 import Link from 'next/link';
 
@@ -16,7 +16,7 @@ export function FavoritesClient() {
   const { favorites, loading: favoritesLoading } = useFavorites();
   const { loading: ratingsLoading } = useRatings();
   
-  const [favoritePokemons, setFavoritePokemons] = useState<pokemonType[]>([]);
+  const [favoritePokemons, setFavoritePokemons] = useState<PokemonDetails[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 

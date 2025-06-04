@@ -27,11 +27,20 @@ export interface PokemonSprites {
   };
 }
 
-export interface pokemonType {
+export interface PokemonDetails {
   id: number;
   name: string;
   height: number;
   weight: number;
+  base_experience: number;
+  abilities: {
+    ability: {
+      name: string;
+      url: string;
+    };
+    is_hidden: boolean;
+    slot: number;
+  }[];
   sprites: PokemonSprites;
   types: PokemonType[];
   stats?: PokemonStat[];

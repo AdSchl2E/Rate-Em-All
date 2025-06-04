@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { ClientPokemonCard } from './ClientPokemonCard';
-import { pokemonType } from '../../../types/pokemon';
+import { PokemonDetails } from '../../../types/pokemon';
 
 interface PokemonGridProps {
-  pokemons: pokemonType[];
+  pokemons: PokemonDetails[];
   withRank?: boolean;
   showActions?: boolean;
 }

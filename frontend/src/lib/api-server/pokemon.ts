@@ -1,8 +1,8 @@
-import { pokemonType } from '../../types/pokemon';
+import { PokemonDetails } from '../../types/pokemon';
 import { API_CONFIG } from '../api-config';
 
 // Récupérer les meilleurs Pokémon
-export async function fetchTopRated(limit: number = 10): Promise<pokemonType[]> {
+export async function fetchTopRated(limit: number = 10): Promise<PokemonDetails[]> {
   // Correction: Suppression de "/api" dans l'URL
   const res = await fetch(`${API_CONFIG.baseUrl}/pokemons/top-rated?limit=${limit}`, {
     next: API_CONFIG.cacheConfig.medium
@@ -55,7 +55,7 @@ export async function fetchTopRated(limit: number = 10): Promise<pokemonType[]> 
 }
 
 // Récupérer les Pokémon tendance
-export async function fetchTrending(limit: number = 10): Promise<pokemonType[]> {
+export async function fetchTrending(limit: number = 10): Promise<PokemonDetails[]> {
   // Correction: Appel direct au bon endpoint
   const res = await fetch(`${API_CONFIG.baseUrl}/pokemons/trending?limit=${limit}`, {
     next: API_CONFIG.cacheConfig.short
@@ -110,7 +110,7 @@ export async function fetchTrending(limit: number = 10): Promise<pokemonType[]> 
 }
 
 // Récupérer les détails d'un Pokémon
-export async function fetchPokemonDetails(id: number): Promise<pokemonType> {
+export async function fetchPokemonDetails(id: number): Promise<PokemonDetails> {
   try {
     // Récupération parallèle des données de base et des notes
     const [pokeDetails, ratings] = await Promise.all([

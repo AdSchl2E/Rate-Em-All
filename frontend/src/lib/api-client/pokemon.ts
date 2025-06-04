@@ -1,4 +1,4 @@
-import { pokemonType } from '../../types/pokemon';
+import { PokemonDetails } from '../../types/pokemon';
 import { API_CONFIG } from '../api-config';
 
 // Garder les urls relatives comme actuellement
@@ -36,17 +36,15 @@ export async function ratePokemonForUser(userId: number, pokedexId: number, rati
   try {
     console.log(`Rating Pokémon ${pokedexId} with score ${rating} for user ${userId}`);
     
-    const response = await fetch(`/api/user/${userId}/ratings`, {
-      method: 'POST',
+    const response = await fetch(`/api/user/${userId}/rate-pokemon/${pokedexId}`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        pokedexId,
-        rating
-      })
+      body: JSON.stringify({ rating })
     });
+    console.log(`Response status: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -80,7 +78,7 @@ export async function setFavoritePokemonForUser(userId: number, pokedexId: numbe
 }
 
 // Récupérer plusieurs Pokémon par leurs IDs
-export async function fetchPokemonsByIds(pokemonIds: number[]): Promise<pokemonType[]> {
+export async function fetchPokemonsByIds(pokemonIds: number[]): Promise<PokemonDetails[]> {
   if (!pokemonIds || pokemonIds.length === 0) {
     return [];
   }
@@ -136,7 +134,7 @@ export async function fetchPokemonsByIds(pokemonIds: number[]): Promise<pokemonT
 }
 
 // Rechercher des Pokémon
-export async function searchPokemons(query: string): Promise<pokemonType[]> {
+export async function searchPokemons(query: string): Promise<PokemonDetails[]> {
   try {
     const response = await fetch(`/api/pokemons/search?q=${encodeURIComponent(query)}`);
     

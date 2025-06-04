@@ -5,14 +5,14 @@ import { useSession } from 'next-auth/react';
 import { useFavorites } from '../../../providers/FavoritesProvider';
 import { useRatings } from '../../../providers/RatingsProvider';
 import { ClientStarRating } from '../ui/ClientStarRating';
-import { pokemonDetailType } from '../../../types/pokemon';
+import { PokemonDetails } from '../../../types/pokemon';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeartIcon, StarIcon } from '@heroicons/react/24/solid';
 import { typeColors } from '../../../lib/utils/pokemonTypes';
 
-export function PokemonDetailsClient({ pokemon }: { pokemon: pokemonDetailType }) {
+export function PokemonDetailsClient({ pokemon }: { pokemon: PokemonDetails }) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const { isFavorite, toggleFavorite } = useFavorites();

@@ -32,7 +32,7 @@ export function RatingsProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       
-      const userId = session.user.id;
+      const userId = Number(session.user.id);
       const token = session.accessToken as string;
       
       console.log(`Fetching ratings for user ${userId}`);
@@ -135,7 +135,7 @@ export function RatingsProvider({ children }: { children: React.ReactNode }) {
       throw new Error('User not authenticated');
     }
     
-    const userId = session.user.id;
+    const userId = Number(session.user.id);
     const token = session.accessToken as string;
     const oldRating = getRating(pokemonId);
     

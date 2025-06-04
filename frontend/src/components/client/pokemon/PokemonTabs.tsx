@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { ServerStatBar } from '../../server/display/ServerStatBar';
-import { pokemonType } from '../../../types/pokemon';
+import { PokemonDetails } from '../../../types/pokemon';
 import { typeColors } from '../../../lib/utils/pokemonTypes';
 
 interface TabButtonProps {
@@ -27,7 +27,7 @@ function TabButton({ active, onClick, children }: TabButtonProps) {
   );
 }
 
-export function PokemonTabs({ pokemon }: { pokemon: pokemonType }) {
+export function PokemonTabs({ pokemon }: { pokemon: PokemonDetails }) {
   const [activeTab, setActiveTab] = useState<'stats' | 'moves' | 'evolution'>('stats');
   
   // Fonction pour formatter les noms (première lettre majuscule)

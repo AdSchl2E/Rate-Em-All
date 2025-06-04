@@ -8,13 +8,13 @@ import { useFavorites } from '../../../providers/FavoritesProvider';
 import { useRatings } from '../../../providers/RatingsProvider';
 import { useSession } from 'next-auth/react';
 import { ClientStarRating } from '../ui/ClientStarRating';
-import { pokemonType } from '../../../types/pokemon';
+import { PokemonDetails } from '../../../types/pokemon';
 import { typeColors } from '../../../lib/utils/pokemonTypes';
 import { HeartIcon, StarIcon } from '@heroicons/react/24/solid';
 import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
 
 interface ClientPokemonCardProps {
-  pokemon: pokemonType;
+  pokemon: PokemonDetails;
   showRating?: boolean;
   showActions?: boolean;
   highlighted?: boolean;
@@ -133,7 +133,7 @@ export function ClientPokemonCard({
       aria-label={`View details for ${formattedName}`}
     >
       {/* Image with type background */}
-      <div className="relative overflow-hidden h-40">
+      <div className="relative overflow-hidden h-56">
         <div className="absolute inset-0 opacity-20" 
           style={{ 
             background: `radial-gradient(circle at center, ${gradientColor} 0%, transparent 70%)` 
@@ -147,7 +147,6 @@ export function ClientPokemonCard({
             fill
             sizes="(max-width: 768px) 100vw, 300px"
             className="object-contain p-2"
-            priority={rank && rank <= 10}
           />
         </div>
         
@@ -161,21 +160,20 @@ export function ClientPokemonCard({
           
           {isPokemonFavorite && (
             <span className="badge badge-red ml-auto flex items-center gap-1">
-              <HeartIcon className="h-3 w-3" />
+              <HeartIcon className="h-6 w-6" />
             </span>
           )}
         </div>
         
-        {/* Favorite button */}
+        {/* Favorite button - Always visible now */}
         {showActions && (
           <button 
             className={`absolute top-2 right-2 z-10 p-2 rounded-full transition-all duration-300
-            ${isPokemonFavorite ? 'bg-red-500 text-white' : 'bg-gray-700/70 text-gray-300 hover:bg-gray-700'}
-            ${isHovering ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
+            ${isPokemonFavorite ? 'bg-red-500 text-white shadow-md shadow-red-500/30' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
             onClick={handleFavorite}
             aria-label={isPokemonFavorite ? `Remove ${formattedName} from favorites` : `Add ${formattedName} to favorites`}
           >
-            <HeartIcon className="h-5 w-5" />
+            <HeartIcon className="h-6 w-6" />
           </button>
         )}
         
@@ -212,8 +210,8 @@ export function ClientPokemonCard({
         
         {/* IMPROVED COMMUNITY RATING - Numerical with star icon and vote count */}
         {showRating && (
-          <div className="flex items-center justify-center px-3 py-1 bg-gray-700/50 rounded-full" data-pokemon-id={pokemon.id}>
-            <StarIcon className="h-4 w-4 text-amber-400 mr-1.5" />
+          <div className="flex items-center justify-center px-4 py-2 bg-gray-700/50 rounded-full" data-pokemon-id={pokemon.id}>
+            <StarIcon className="h-6 w-6 text-amber-400 mr-1.5" />
             <span 
               className="font-medium text-amber-100"
               data-community-rating
@@ -233,50 +231,22 @@ export function ClientPokemonCard({
           <div 
             className={`mt-3 w-full rounded-lg px-3 py-2
               ${isPokemonRated 
-                ? 'bg-blue-700/30 border-2 border-blue-500/40' 
+                ? 'bg-blue-700/40 border-2 border-blue-400 hover:border-blue-300/50' 
                 : 'bg-gray-700/30 border border-gray-700/50 hover:border-gray-500/50'}
               transition-all duration-300`}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Status badge */}
-            <div className="flex justify-between items-center mb-1">
-              {isPokemonRated ? (
-                <div className="text-xs font-medium text-blue-300 bg-blue-500/20 px-2 py-0.5 rounded-full inline-flex items-center">
-                  <StarIcon className="h-3 w-3 mr-1" />
-                  Rated
-                </div>
-              ) : (
-                <div className="text-xs font-medium text-gray-400">
-                  Not rated yet
-                </div>
-              )}
-              
-              {/* Show numerical value when rated */}
-              {isPokemonRated && (
-                <div className="text-sm font-medium text-white">
-                  {pokemonUserRating}/5
-                </div>
-              )}
-            </div>
             
-            <div className="flex justify-center mt-1">
+            <div className="flex justify-center">
               <ClientStarRating 
                 value={pokemonUserRating} 
                 onChange={handleRate} 
                 disabled={isRating || !userId}
                 highlight={isPokemonRated}
-                size={isPokemonRated ? "sm" : "md"}
+                size="lg"
               />
             </div>
-            
-            {/* Call to action for non-rated Pokémon */}
-            {!isPokemonRated && (
-              <div className="text-center mt-1">
-                <span className="text-sm font-medium text-blue-400">
-                  {userId ? "Rate now" : "Login to rate"}
-                </span>
-              </div>
-            )}
+          
           </div>
         )}
       </div>

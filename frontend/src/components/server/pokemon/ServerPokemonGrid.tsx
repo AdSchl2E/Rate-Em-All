@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { pokemonType } from '../../../types/pokemon';
+import { PokemonDetails } from '../../../types/pokemon';
 import { typeColors } from '../../../lib/utils/pokemonTypes';
 import { ServerStarRating } from '../display/ServerStarRating';
 
 interface ServerPokemonGridProps {
-  pokemons: pokemonType[];
+  pokemons: PokemonDetails[];
 }
 
 export function ServerPokemonGrid({ pokemons }: ServerPokemonGridProps) {

@@ -1,10 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { pokemonType } from '../../../types/pokemon';
+import { PokemonDetails } from '../../../types/pokemon';
 import { ServerStarRating } from '../display/ServerStarRating';
 
 interface ServerPodiumProps {
-  pokemons: pokemonType[];
+  pokemons: PokemonDetails[];
 }
 
 export function ServerPodium({ pokemons }: ServerPodiumProps) {
@@ -13,7 +13,7 @@ export function ServerPodium({ pokemons }: ServerPodiumProps) {
   
   // Si moins de 3 Pokémon, compléter avec des placeholders
   while (topThree.length < 3) {
-    topThree.push({} as pokemonType);
+    topThree.push({} as PokemonDetails);
   }
   
   // Réorganiser pour avoir le 1er au milieu, 2e à gauche, 3e à droite
@@ -60,7 +60,7 @@ export function ServerPodium({ pokemons }: ServerPodiumProps) {
 }
 
 interface PodiumPlaceProps {
-  pokemon: pokemonType;
+  pokemon: PokemonDetails;
   place: number;
   height: string;
   isCenter?: boolean;

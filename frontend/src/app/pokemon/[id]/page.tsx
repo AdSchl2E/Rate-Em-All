@@ -2,12 +2,13 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { fetchPokemonDetails } from '../../../lib/api-server/pokemon';
 import { PokemonDetailsClient } from '../../../components/client/pokemon/PokemonDetailsClient';
-import { ServerPokemonInfo } from '../../../components/server/pokemon/ServerPokemonInfo';
 
-// Génération dynamique de métadonnées
+// Génération dynamique de métadonnées avec gestion correcte des params
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   try {
-    const id = parseInt(params.id);
+    // Utiliser une promesse résolue pour satisfaire l'exigence de Next.js
+    const resolvedParams = await Promise.resolve(params);
+    const id = parseInt(resolvedParams.id);
     const pokemon = await fetchPokemonDetails(id);
     
     return {
@@ -33,19 +34,19 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 
 export default async function PokemonDetailPage({ params }: { params: { id: string } }) {
   try {
-    const id = parseInt(params.id);
+    // Utiliser une promesse résolue pour satisfaire l'exigence de Next.js
+    const resolvedParams = await Promise.resolve(params);
+    const id = parseInt(resolvedParams.id);
     const pokemon = await fetchPokemonDetails(id);
     
     return (
       <div className="space-y-8">
-        {/* Partie statique rendue côté serveur */}
-        <ServerPokemonInfo pokemon={pokemon} />
-        
         {/* Partie interactive chargée côté client */}
         <PokemonDetailsClient pokemon={pokemon} />
       </div>
     );
   } catch (error) {
+    console.error("Erreur lors du chargement des détails du Pokémon:", error);
     notFound();
   }
 }
