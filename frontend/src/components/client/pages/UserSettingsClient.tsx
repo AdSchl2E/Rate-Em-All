@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -173,14 +173,17 @@ export function UserSettingsClient() {
         method: 'DELETE'
       });
       
+      const data = await response.json();
+      
       if (response.ok) {
         toast.success('Votre compte a été supprimé');
-        // Redirection vers la déconnexion après un court délai
-        setTimeout(() => {
-          router.push('/api/auth/signout');
-        }, 1500);
+        
+        // Sign out and redirect to home page immediately without confirmation page
+        signOut({ 
+          callbackUrl: '/',
+          redirect: true 
+        });
       } else {
-        const data = await response.json();
         toast.error(data.error || 'Échec de la suppression du compte');
       }
     } catch (error) {

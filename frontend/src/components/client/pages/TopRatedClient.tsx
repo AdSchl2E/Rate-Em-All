@@ -61,16 +61,16 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
   const [showFilters, setShowFilters] = useState(false);
   const { pokemonCache, userRatings, favorites } = useGlobal();
   const { data: session } = useSession();
-  
+
   // État pour l'animation du podium
   const [animationComplete, setAnimationComplete] = useState(false);
-  
+
   // State for storing all Pokémon data (initial + any updates)
   const [allPokemons, setAllPokemons] = useState<Pokemon[]>(initialPokemons);
-  
+
   // Track user ratings changes to trigger refresh when needed
   const [lastRatingTimestamp, setLastRatingTimestamp] = useState<number>(0);
-  
+
   // Effect to refresh data when a rating changes
   useEffect(() => {
     const refreshTopRated = async () => {
@@ -87,25 +87,25 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
 
     refreshTopRated();
   }, [lastRatingTimestamp]);
-  
+
   // Watch for changes in userRatings to detect new ratings
   useEffect(() => {
     setLastRatingTimestamp(Date.now());
   }, [userRatings]);
-  
+
   // Extraire tous les types uniques de Pokémon
   const pokemonTypes = useMemo(() => {
     const types = new Set<string>();
-    
+
     allPokemons.forEach(pokemon => {
       pokemon.types?.forEach(typeObj => {
         types.add(typeObj.type.name);
       });
     });
-    
+
     return Array.from(types).sort();
   }, [allPokemons]);
-  
+
   // Préparer les Pokémon avec les données du cache
   const enhancedPokemons = useMemo(() => {
     return allPokemons.map(pokemon => ({
@@ -114,7 +114,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
       numberOfVotes: pokemonCache[pokemon.id]?.numberOfVotes ?? pokemon.numberOfVotes
     }));
   }, [allPokemons, pokemonCache]);
-  
+
   // Gestionnaire de tri
   const handleSortChange = (criteria: 'rating' | 'votes' | 'name') => {
     if (sortBy === criteria) {
@@ -125,12 +125,12 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
       setSortDirection(criteria === 'name' ? 'asc' : 'desc');
     }
   };
-  
+
   // Toggle type selection
   const toggleType = (type: string) => {
-    setSelectedTypes(prev => 
-      prev.includes(type) 
-        ? prev.filter(t => t !== type) 
+    setSelectedTypes(prev =>
+      prev.includes(type)
+        ? prev.filter(t => t !== type)
         : [...prev, type]
     );
   };
@@ -150,7 +150,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
         : [...prev, category]
     );
   };
-  
+
   // Reset all filters
   const resetFilters = () => {
     setSelectedTypes([]);
@@ -160,7 +160,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
     setSortBy('rating');
     setSortDirection('desc');
   };
-  
+
   // Filtrer et trier les Pokémon
   const displayedPokemons = useMemo(() => {
     // Filtrer d'abord
@@ -172,7 +172,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
           return false;
         }
       }
-      
+
       // Generation filter
       if (selectedGenerations.length > 0) {
         const genMatch = selectedGenerations.some(genIndex => {
@@ -181,7 +181,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
         });
         if (!genMatch) return false;
       }
-      
+
       // Special categories filter
       if (selectedCategories.length > 0) {
         const legendaryIds = [144, 145, 146, 150, 243, 244, 245, 249, 250, 377, 378, 379, 380, 381, 382, 383, 384, 480, 481, 482, 483, 484, 485, 486, 487, 488, 638, 639, 640, 641, 642, 643, 644, 645, 646, 716, 717, 718, 772, 773, 785, 786, 787, 788, 789, 790, 791, 792, 800, 888, 889, 890, 891, 892, 894, 895, 896, 897, 898];
@@ -191,7 +191,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
         const isLegendary = legendaryIds.includes(pokemon.id);
         const isMythical = mythicalIds.includes(pokemon.id);
         const isStarter = starterIds.includes(pokemon.id);
-        
+
         const pokemonName = pokemon.name.toLowerCase();
         const isMega = pokemonName.includes('mega');
         const isGmax = pokemonName.includes('gmax') || pokemonName.includes('gigantamax');
@@ -209,24 +209,24 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
           galarian: isGalarian,
           hisuian: isHisuian
         };
-        
+
         if (!selectedCategories.some(cat => categoryMatches[cat as keyof typeof categoryMatches])) {
           return false;
         }
       }
-      
+
       // Rating filter
       if (minRating !== null) {
         const pokemonRating = pokemon.rating || 0;
         if (pokemonRating < minRating) return false;
       }
-      
+
       return true;
     });
-    
+
     // Puis trier
     const directionFactor = sortDirection === 'asc' ? 1 : -1;
-    
+
     return filtered.sort((a, b) => {
       switch (sortBy) {
         case 'rating':
@@ -243,48 +243,48 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
 
   // Limiter aux 10 premiers résultats
   const topTenPokemons = displayedPokemons.slice(0, 10);
-  
+
   // Séparation pour le podium et la liste
   const podiumPokemons = topTenPokemons.slice(0, 3);
   const listPokemons = topTenPokemons.slice(3, 10);
-  
-  const isFiltering = selectedTypes.length > 0 || 
-                     selectedGenerations.length > 0 || 
-                     selectedCategories.length > 0 ||
-                     minRating !== null;
-  
+
+  const isFiltering = selectedTypes.length > 0 ||
+    selectedGenerations.length > 0 ||
+    selectedCategories.length > 0 ||
+    minRating !== null;
+
   // Animation variants pour Framer Motion
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
-      transition: { 
+      transition: {
         staggerChildren: 0.3,
         delayChildren: 0.3,
         when: "beforeChildren"
       }
     }
   };
-  
+
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0, 
+    visible: {
+      y: 0,
       opacity: 1,
-      transition: { 
-        type: "spring", 
+      transition: {
+        type: "spring",
         stiffness: 100,
         damping: 12
       }
     }
   };
-  
+
   const medalVariants = {
     hidden: { scale: 0, rotate: -180 },
-    visible: { 
-      scale: 1, 
+    visible: {
+      scale: 1,
       rotate: 0,
-      transition: { 
+      transition: {
         type: "spring",
         stiffness: 200,
         damping: 15,
@@ -292,13 +292,13 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
       }
     }
   };
-  
+
   const imageVariants = {
     hidden: { scale: 0.8, opacity: 0 },
-    visible: { 
-      scale: 1, 
+    visible: {
+      scale: 1,
       opacity: 1,
-      transition: { 
+      transition: {
         type: "spring",
         stiffness: 100,
         delay: 0.8
@@ -309,30 +309,30 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
       transition: { type: "spring", stiffness: 400, damping: 10 }
     }
   };
-  
+
   // Animation de confettis autour du 1er
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimationComplete(true);
     }, 2000);
-    
+
     return () => clearTimeout(timer);
   }, []);
-  
+
   return (
     <div className="mt-12 animate-fade-in">
-      
-      
+
+
       {/* PODIUM DES MEILLEURS - ANIMATED VERSION */}
       {podiumPokemons.length > 0 && (
-        <motion.div 
+        <motion.div
           className="mb-16 mt-24"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
           onAnimationComplete={() => setAnimationComplete(true)}
         >
-          
+
           {/* Confetti animation container */}
           <div className="relative mx-auto max-w-5xl">
             {animationComplete && (
@@ -347,17 +347,17 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                 </div>
               </div>
             )}
-            
+
             <div className="flex flex-col md:flex-row justify-center items-end gap-4 mx-auto">
               {/* 2ème place - maintenant à gauche */}
               {podiumPokemons.length >= 2 && (
-                <motion.div 
+                <motion.div
                   className="order-1 md:order-0 w-full md:w-1/3 flex flex-col items-center"
                   variants={itemVariants}
                 >
-                  
+
                   <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-t-xl w-full p-4 pt-0 relative border border-gray-700">
-                    <motion.div 
+                    <motion.div
                       className="h-32 flex items-center justify-center -mt-16"
                       variants={imageVariants}
                       whileHover="hover"
@@ -379,8 +379,8 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         </div>
                       </Link>
                     </motion.div>
-                    
-                    <motion.h3 
+
+                    <motion.h3
                       className="text-center text-xl font-semibold capitalize mb-1 flex items-center justify-center"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -393,8 +393,8 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         <HeartIcon className="h-4 w-4 ml-2 text-red-500" />
                       )}
                     </motion.h3>
-                    
-                    <motion.div 
+
+                    <motion.div
                       className="flex justify-center mb-2"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -413,8 +413,8 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         );
                       })}
                     </motion.div>
-                    
-                    <motion.div 
+
+                    <motion.div
                       className="flex justify-center items-center"
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -427,9 +427,9 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         showStars={false}
                       />
                     </motion.div>
-                    
+
                     {/* Après le bloc de CommunityRating, ajouter la note personnelle: */}
-                    <motion.div 
+                    <motion.div
                       className="flex justify-center items-center mt-2"
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -438,9 +438,10 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                       {userRatings[podiumPokemons[1]?.id] ? (
                         <div className="flex flex-col items-center">
                           <div className="flex items-center">
-                            <ClientStarRating 
-                              value={userRatings[podiumPokemons[1]?.id]} 
-                              size="sm" 
+                            <ClientStarRating
+                              value={userRatings[podiumPokemons[1]?.id]}
+                              size="sm"
+                              fixed={true}
                             />
                           </div>
                         </div>
@@ -449,23 +450,23 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                       )}
                     </motion.div>
                   </div>
-                  
+
                   <div className="bg-gradient-to-br from-gray-600 to-gray-700 h-24 w-full rounded-b-xl flex items-center justify-center overflow-hidden relative">
                     <div className="absolute inset-0 bg-[url('/images/silver-texture.jpg')] opacity-20 bg-cover mix-blend-overlay"></div>
                     <div className="text-2xl font-bold text-gray-300">2</div>
                   </div>
                 </motion.div>
               )}
-              
+
               {/* 1ère place - maintenant au milieu */}
               {podiumPokemons.length >= 1 && (
-                <motion.div 
+                <motion.div
                   className="order-0 md:order-1 w-full md:w-1/3 flex flex-col items-center mb-0 md:-mb-6 z-10"
                   variants={itemVariants}
                 >
-                  
+
                   <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-t-xl w-full p-4 pt-0 relative shadow-xl border border-yellow-500/50">
-                    <motion.div 
+                    <motion.div
                       className="h-36 flex items-center justify-center -mt-20"
                       variants={imageVariants}
                       whileHover="hover"
@@ -487,8 +488,8 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         </div>
                       </Link>
                     </motion.div>
-                    
-                    <motion.h3 
+
+                    <motion.h3
                       className="text-center text-2xl font-bold capitalize mb-2 flex items-center justify-center"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -501,8 +502,8 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         <HeartIcon className="h-5 w-5 ml-2 text-red-500 animate-pulse" />
                       )}
                     </motion.h3>
-                    
-                    <motion.div 
+
+                    <motion.div
                       className="flex justify-center mb-2"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -521,8 +522,8 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         );
                       })}
                     </motion.div>
-                    
-                    <motion.div 
+
+                    <motion.div
                       className="flex justify-center items-center"
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -535,9 +536,9 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         showStars={false}
                       />
                     </motion.div>
-                    
+
                     {/* Après le bloc de CommunityRating, ajouter la note personnelle: */}
-                    <motion.div 
+                    <motion.div
                       className="flex justify-center items-center mt-2"
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -546,9 +547,10 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                       {userRatings[podiumPokemons[0]?.id] ? (
                         <div className="flex flex-col items-center">
                           <div className="flex items-center">
-                            <ClientStarRating 
-                              value={userRatings[podiumPokemons[0]?.id]} 
-                              size="md" 
+                            <ClientStarRating
+                              value={userRatings[podiumPokemons[0]?.id]}
+                              size="md"
+                              fixed={true}
                             />
                           </div>
                         </div>
@@ -557,7 +559,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                       )}
                     </motion.div>
                   </div>
-                  
+
                   <div className="bg-gradient-to-br from-yellow-600 to-amber-700 h-32 w-full rounded-b-xl flex items-center justify-center overflow-hidden relative">
                     <div className="absolute inset-0 bg-[url('/images/gold-texture.jpg')] opacity-30 bg-cover mix-blend-overlay"></div>
                     <div className="absolute inset-0 bg-gradient-to-t from-yellow-400/20 to-transparent"></div>
@@ -565,16 +567,16 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                   </div>
                 </motion.div>
               )}
-              
+
               {/* 3ème place - maintenant à droite */}
               {podiumPokemons.length >= 3 && (
-                <motion.div 
+                <motion.div
                   className="order-2 md:order-2 w-full md:w-1/3 flex flex-col items-center"
                   variants={itemVariants}
                 >
-                  
+
                   <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-t-xl w-full p-4 pt-0 relative border border-amber-700/50">
-                    <motion.div 
+                    <motion.div
                       className="h-28 flex items-center justify-center -mt-14"
                       variants={imageVariants}
                       whileHover="hover"
@@ -596,8 +598,8 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         </div>
                       </Link>
                     </motion.div>
-                    
-                    <motion.h3 
+
+                    <motion.h3
                       className="text-center text-lg font-medium capitalize mb-1 flex items-center justify-center"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -610,8 +612,8 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         <HeartIcon className="h-3.5 w-3.5 ml-2 text-red-500" />
                       )}
                     </motion.h3>
-                    
-                    <motion.div 
+
+                    <motion.div
                       className="flex justify-center mb-2"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -630,8 +632,8 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         );
                       })}
                     </motion.div>
-                    
-                    <motion.div 
+
+                    <motion.div
                       className="flex justify-center items-center"
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -644,9 +646,9 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         showStars={false}
                       />
                     </motion.div>
-                    
+
                     {/* Après le bloc de CommunityRating, ajouter la note personnelle: */}
-                    <motion.div 
+                    <motion.div
                       className="flex justify-center items-center mt-2"
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -655,9 +657,10 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                       {userRatings[podiumPokemons[2]?.id] ? (
                         <div className="flex flex-col items-center">
                           <div className="flex items-center">
-                            <ClientStarRating 
-                              value={userRatings[podiumPokemons[2]?.id]} 
-                              size="sm" 
+                            <ClientStarRating
+                              value={userRatings[podiumPokemons[2]?.id]}
+                              size="sm"
+                              fixed={true}
                             />
                           </div>
                         </div>
@@ -666,7 +669,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                       )}
                     </motion.div>
                   </div>
-                  
+
                   <div className="bg-gradient-to-br from-amber-800 to-amber-900 h-20 w-full rounded-b-xl flex items-center justify-center overflow-hidden relative">
                     <div className="absolute inset-0 bg-[url('/images/bronze-texture.jpg')] opacity-20 bg-cover mix-blend-overlay"></div>
                     <div className="text-xl font-bold text-amber-200">3</div>
@@ -705,7 +708,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
               </button>
             ))}
           </div>
-          
+
           {/* Toggle button for filters */}
           <button
             className={`flex items-center gap-2 px-4 py-3 rounded-lg whitespace-nowrap transition
@@ -716,11 +719,11 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
             Filtres {isFiltering && `(${selectedTypes.length + selectedGenerations.length + selectedCategories.length + (minRating !== null ? 1 : 0)})`}
           </button>
         </div>
-        
+
         {/* Expanded filter options */}
         {showFilters && (
           <div className="bg-gray-800 rounded-lg p-4 shadow-lg space-y-6 mt-2">
-            
+
             {/* Type filters */}
             <div>
               <h3 className="font-medium mb-2 text-gray-300">Types</h3>
@@ -733,7 +736,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         ? `bg-opacity-90 text-white`
                         : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
                     style={{
-                      backgroundColor: selectedTypes.includes(type) 
+                      backgroundColor: selectedTypes.includes(type)
                         ? typeColors[type]
                         : undefined
                     }}
@@ -744,7 +747,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                 ))}
               </div>
             </div>
-            
+
             {/* Generation filters */}
             <div>
               <h3 className="font-medium mb-2 text-gray-300">Génération</h3>
@@ -763,7 +766,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                 ))}
               </div>
             </div>
-            
+
             {/* Special categories */}
             <div>
               <h3 className="font-medium mb-2 text-gray-300">Catégories</h3>
@@ -782,7 +785,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                 ))}
               </div>
             </div>
-            
+
             {/* Reset filters button */}
             <div className="flex justify-end">
               <button
@@ -795,30 +798,30 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
           </div>
         )}
       </div>
-      
+
       {/* LISTE DES POSITIONS 4-10 - Modern design without table headers */}
       {listPokemons.length > 0 && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5 }}
         >
-          
+
           <div className="space-y-3">
             {listPokemons.map((pokemon, idx) => (
-              <div 
-                key={pokemon.id} 
+              <div
+                key={pokemon.id}
                 className="bg-gray-800/80 hover:bg-gray-700 transition rounded-lg shadow-lg overflow-hidden flex items-center"
               >
                 {/* Rank number */}
                 <div className="p-4 flex-shrink-0 w-16 font-bold text-2xl text-center bg-gradient-to-br from-gray-800 to-gray-900">
                   {idx + 4}
                 </div>
-                
+
                 {/* Pokémon info */}
                 <Link href={`/pokemon/${pokemon.id}`} className="flex items-center flex-grow p-3 hover:text-blue-400 transition">
                   <div className="w-12 h-12 mr-4 bg-gray-700/50 rounded-full overflow-hidden flex items-center justify-center">
-                    <Image 
+                    <Image
                       src={pokemon.sprites.front_default || '/images/pokeball.png'}
                       alt={pokemon.name}
                       width={48}
@@ -829,7 +832,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                       }}
                     />
                   </div>
-                  
+
                   <div>
                     <div className="font-medium capitalize text-lg flex items-center">
                       {pokemon.name}
@@ -837,7 +840,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                         <HeartIcon className="h-4 w-4 ml-2 text-red-500" />
                       )}
                     </div>
-                    
+
                     {/* Types */}
                     <div className="flex flex-wrap gap-1 mt-1">
                       {pokemon.types?.map((typeObj, typeIdx) => {
@@ -855,9 +858,24 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                     </div>
                   </div>
                 </Link>
-                
-                {/* Rating & votes info */}
-                <div className="mr-6 flex gap-4 items-center">
+
+                {/* Rating info - Community and User */}
+                <div className="mr-6 flex flex-col md:flex-row gap-3 items-center">
+                  {/* User Rating */}
+                  <div className="flex items-center">
+                    {userRatings[pokemon.id] ? (
+                      <div className="flex items-center gap-1">
+                        <ClientStarRating
+                          value={userRatings[pokemon.id]}
+                          size="sm"
+                          fixed={true}
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-500 italic">Non noté</div>
+                    )}
+                  </div>
+                  {/* Community Rating */}
                   <div>
                     <CommunityRating
                       rating={pokemon.rating || 0}
@@ -865,8 +883,11 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                       size="md"
                       showVotes={true}
                       prominent={true}
+                      showStars={false}
                     />
                   </div>
+
+
                 </div>
               </div>
             ))}

@@ -62,6 +62,40 @@ export class UserService {
   }
 
   async remove(id: number) {
+    // First, get all ratings for this user
+    const userRatings = await this.userPokemonRatingRepository.find({
+      where: { userId: id },
+      relations: ['pokemon']
+    });
+
+    // Update each Pokémon's community rating
+    for (const userRating of userRatings) {
+      const pokemon = userRating.pokemon;
+      const userRatingValue = userRating.rating;
+      
+      // Calculate the new total rating
+      const currentTotalScore = pokemon.rating * pokemon.numberOfVotes;
+      const newNumberOfVotes = pokemon.numberOfVotes - 1;
+      
+      // Update the Pokémon rating and vote count
+      if (newNumberOfVotes > 0) {
+        // Calculate new average if there are still votes
+        pokemon.rating = (currentTotalScore - userRatingValue) / newNumberOfVotes;
+      } else {
+        // Reset to 0 if this was the last vote
+        pokemon.rating = 0;
+      }
+      
+      pokemon.numberOfVotes = newNumberOfVotes;
+      
+      // Save the updated Pokémon
+      await this.pokemonRepository.save(pokemon);
+    }
+    
+    // Now delete all the user's ratings
+    await this.userPokemonRatingRepository.delete({ userId: id });
+    
+    // Finally, delete the user
     await this.usersRepository.delete(id);
 
     return { id };
