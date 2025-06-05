@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, UnauthorizedException, NotFoundException, InternalServerErrorException, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, UnauthorizedException, NotFoundException, InternalServerErrorException, ParseIntPipe, Query, BadRequestException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -8,6 +8,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  // Placez d'abord toutes les routes spécifiques
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
@@ -17,9 +18,53 @@ export class UserController {
   findAll() {
     return this.userService.findAll();
   }
+  
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getProfile(@Req() req) {
+    return req.user;
+  }
 
+  @Get('check-username')
+  async checkUsername(
+    @Query('username') username: string,
+    @Query('userId') userIdParam: string
+  ) {
+    if (!username) {
+      throw new BadRequestException('Le pseudo est requis');
+    }
+    
+    let userId: number | null = null;
+    
+    if (userIdParam) {
+      userId = parseInt(userIdParam);
+      if (isNaN(userId)) {
+        console.warn(`ID utilisateur invalide reçu: ${userIdParam}`);
+        userId = null;
+      }
+    }
+    
+    console.log(`Vérification de la disponibilité du pseudo: ${username}, ID utilisateur: ${userId}`);
+    const existingUser = await this.userService.findByUsername(username);
+    const available = !existingUser || (userId !== null && existingUser.id === userId);
+    
+    return { available };
+  }
+
+  @Get('email/:email')
+  findByEmail(@Param('email') email: string) {
+    return this.userService.findByEmail(email);
+  }
+
+  @Get('pseudo/:pseudo')
+  findByPseudo(@Param('pseudo') pseudo: string) {
+    return this.userService.findByPseudo(pseudo);
+  }
+
+  // Placez ensuite les routes avec paramètres dynamiques
   @Get(':id')
   findOne(@Param('id') id: string) {
+    console.log(`Recherche de l'utilisateur avec l'ID: ${id}`);
     return this.userService.findOne(+id);
   }
 
@@ -31,16 +76,6 @@ export class UserController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
-  }
-
-  @Get('email/:email')
-  findByEmail(@Param('email') email: string) {
-    return this.userService.findByEmail(email);
-  }
-
-  @Get('pseudo/:pseudo')
-  findByPseudo(@Param('pseudo') pseudo: string) {
-    return this.userService.findByPseudo(pseudo);
   }
 
   @Get(':userId/rated-pokemons')
@@ -85,12 +120,6 @@ export class UserController {
     return { favorites: Array.isArray(favorites) ? favorites : [] };
   }
 
-  @Get('me')
-  @UseGuards(JwtAuthGuard) // Protège la route avec le guard JWT
-  getProfile(@Req() req) {
-    return req.user; // `user` est accessible grâce au JwtStrategy
-  }
-
   // Ajouter cet endpoint au UserController
   @UseGuards(JwtAuthGuard)
   @Get(':userId/ratings')
@@ -128,6 +157,35 @@ export class UserController {
         throw error;
       }
       throw new InternalServerErrorException('Error updating favorite');
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':userId/change-password')
+  async changePassword(
+    @Req() req,
+    @Param('userId') userIdParam: string,
+    @Body() body: { currentPassword: string; newPassword: string }
+  ) {
+    // Conversion sécurisée de l'ID utilisateur
+    const userId = parseInt(userIdParam);
+    if (isNaN(userId)) {
+      throw new BadRequestException('ID utilisateur invalide');
+    }
+    
+    // Vérifier que l'utilisateur ne peut changer que son propre mot de passe
+    if (userId !== req.user.id) {
+      throw new UnauthorizedException("Vous ne pouvez pas changer le mot de passe d'un autre utilisateur");
+    }
+    
+    try {
+      return await this.userService.changePassword(userId, body.currentPassword, body.newPassword);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      console.error('Erreur lors du changement de mot de passe:', error);
+      throw new InternalServerErrorException('Erreur lors du changement de mot de passe');
     }
   }
 }

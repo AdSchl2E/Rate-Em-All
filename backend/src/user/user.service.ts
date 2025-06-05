@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,12 +6,13 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Pokemon } from '../pokemon/entities/pokemon.entity';
 import { UserPokemonRating } from '../pokemon/entities/user-pokemon-rating.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private usersRepository: Repository<User>,
     @InjectRepository(Pokemon)
     private readonly pokemonRepository: Repository<Pokemon>,
     @InjectRepository(UserPokemonRating)
@@ -19,21 +20,37 @@ export class UserService {
   ) { }
 
   async create(createUserDto: CreateUserDto) {
-    const user = this.userRepository.create(createUserDto);
+    const user = this.usersRepository.create(createUserDto);
 
-    return await this.userRepository.save(user);
+    return await this.usersRepository.save(user);
   }
 
   async findAll() {
-    return await this.userRepository.find();
+    return await this.usersRepository.find();
   }
 
-  async findOne(id: number) {
-    return await this.userRepository.findOne({ where: { id } });
+  // Améliorer la méthode findOne pour vérifier la validité de l'ID
+  async findOne(id: any): Promise<User | null> {
+    // S'assurer que l'ID est un nombre valide
+    const numericId = typeof id === 'string' ? parseInt(id) : id;
+    
+    if (isNaN(numericId)) {
+      console.warn(`ID utilisateur invalide fourni: ${id}`);
+      return null;
+    }
+    
+    try {
+      return await this.usersRepository.findOne({
+        where: { id: numericId }
+      });
+    } catch (error) {
+      console.error(`Erreur lors de la recherche de l'utilisateur avec l'ID ${numericId}:`, error);
+      throw error;
+    }
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.usersRepository.findOne({ where: { id } });
 
     if (!user) {
       throw new Error('User not found');
@@ -41,25 +58,25 @@ export class UserService {
 
     Object.assign(user, updateUserDto);
 
-    return await this.userRepository.save(user);
+    return await this.usersRepository.save(user);
   }
 
   async remove(id: number) {
-    await this.userRepository.delete(id);
+    await this.usersRepository.delete(id);
 
     return { id };
   }
 
   async findByEmail(email: string) {
-    return await this.userRepository.findOne({ where: { email } });
+    return await this.usersRepository.findOne({ where: { email } });
   }
 
   async findByPseudo(pseudo: string) {
-    return await this.userRepository.findOne({ where: { pseudo } });
+    return await this.usersRepository.findOne({ where: { pseudo } });
   }
 
   async findRatedPokemons(userId: number) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
 
     if (!user) {
       throw new Error('User not found');
@@ -70,7 +87,7 @@ export class UserService {
 
   async ratePokemon(userId: number, pokedexId: number, rating: number) {
     // Récupère l'utilisateur
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
     }
@@ -129,7 +146,7 @@ export class UserService {
 
 
   async setFavoritePokemon(userId: number, pokedexId: number) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
 
     if (!user) {
         throw new Error('User not found');
@@ -152,7 +169,7 @@ export class UserService {
         user.favoritePokemons.push(pokedexId);
     }
 
-    await this.userRepository.save(user);
+    await this.usersRepository.save(user);
 
     // Retourne l'état du favori et le nom du Pokémon
     return { 
@@ -163,7 +180,7 @@ export class UserService {
 
 
   async findFavoritePokemons(userId: number) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
 
     if (!user) {
       throw new Error('User not found');
@@ -172,12 +189,12 @@ export class UserService {
   }
 
   async login(email: string, password: string) {
-    return await this.userRepository.findOne({ where: { email, password } });
+    return await this.usersRepository.findOne({ where: { email, password } });
   }
 
   // Ajouter cette méthode à UserService
   async getUserRatings(userId: number) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
 
     if (!user) {
       throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
@@ -198,7 +215,7 @@ export class UserService {
 
   // Ajouter cette méthode à UserService
   async checkIsFavorite(userId: number, pokedexId: number) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
     
     if (!user) {
       throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
@@ -208,7 +225,7 @@ export class UserService {
   }
 
   async toggleFavoritePokemon(userId: number, pokedexId: number): Promise<{isFavorite: boolean}> {
-    const user = await this.userRepository.findOne({where: {id: userId}});
+    const user = await this.usersRepository.findOne({where: {id: userId}});
     
     if (!user) {
       throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
@@ -232,14 +249,14 @@ export class UserService {
       isFavorite = true;
     }
 
-    await this.userRepository.save(user);
+    await this.usersRepository.save(user);
     console.log(`User ${userId} favorites updated: ${user.favoritePokemons}`);
     
     return { isFavorite };
   }
 
   async getUserFavoritePokemons(userId: number): Promise<number[]> {
-    const user = await this.userRepository.findOne({where: {id: userId}});
+    const user = await this.usersRepository.findOne({where: {id: userId}});
     
     if (!user) {
       throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
@@ -247,5 +264,42 @@ export class UserService {
 
     // Assurez-vous que favoritePokemons est défini
     return user.favoritePokemons || [];
+  }
+
+  async changePassword(userId: number, currentPassword: string, newPassword: string) {
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+    
+    if (!user) {
+      throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
+    }
+    
+    // Vérifier que le mot de passe actuel est correct
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Le mot de passe actuel est incorrect');
+    }
+    
+    // Hacher le nouveau mot de passe
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Mettre à jour le mot de passe
+    user.password = hashedPassword;
+    await this.usersRepository.save(user);
+    
+    return { success: true };
+  }
+
+  // Ajouter/améliorer la méthode findByUsername
+  async findByUsername(username: string): Promise<User | null> {
+    if (!username) return null;
+    
+    try {
+      return await this.usersRepository.findOne({
+        where: { name: username }
+      });
+    } catch (error) {
+      console.error(`============================Erreur lors de la recherche de l'utilisateur avec le pseudo ${username}:`, error);
+      return null;
+    }
   }
 }

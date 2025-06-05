@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { signOut } from 'next-auth/react';
+import { useGlobal } from '../../../providers/GlobalProvider';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Session } from 'next-auth';
@@ -13,6 +14,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ session, status }: UserMenuProps) {
+  const { username } = useGlobal();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   
@@ -83,14 +85,14 @@ export function UserMenu({ session, status }: UserMenuProps) {
           )}
         </div>
         <span className="hidden md:inline-block text-sm font-medium group-hover:text-blue-400 transition-colors">
-          {session?.user?.name || 'Utilisateur'}
+          {username || session?.user?.name || 'Utilisateur'}
         </span>
       </button>
       
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-slate-800 rounded-xl shadow-lg overflow-hidden border border-slate-700 animate-fade-in z-30">
           <div className="px-4 py-3 border-b border-slate-700 bg-gradient-to-r from-blue-500/10 to-violet-500/10">
-            <p className="text-sm font-medium">{session?.user?.name}</p>
+            <p className="text-sm font-medium">{username || session?.user?.name}</p>
             <p className="text-xs text-slate-400 truncate">{session?.user?.email}</p>
           </div>
           

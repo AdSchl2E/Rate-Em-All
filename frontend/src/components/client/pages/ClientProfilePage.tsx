@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { HeartIcon, StarIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
-import { UserIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { UserIcon, ChevronDownIcon, CogIcon } from '@heroicons/react/24/outline';
 import { ClientStarRating } from '../ui/ClientStarRating';
 import { useGlobal } from '../../../providers/GlobalProvider';
 import { fetchPokemonsByIds } from '../../../lib/api-client/pokemon';
@@ -17,8 +17,8 @@ import { getRatingColor } from '../../../lib/utils/ratingColors';
 
 export function ClientProfilePage() {
   const { data: session } = useSession();
-  const { favorites, userRatings, loading: globalLoading, pokemonCache } = useGlobal();
-
+  const { favorites, userRatings, loading: globalLoading, pokemonCache, username } = useGlobal();
+  
   const [favoritePokemons, setFavoritePokemons] = useState<Pokemon[]>([]);
   const [ratedPokemons, setRatedPokemons] = useState<Pokemon[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -40,7 +40,7 @@ export function ClientProfilePage() {
 
   // Get user info
   const userId = session?.user?.id;
-  const userName = session?.user?.name || "User";
+  const userName = username || session?.user?.name || "User";
   const userImage = session?.user?.image;
 
   // Charger les détails des Pokémon favoris et notés
@@ -179,27 +179,41 @@ export function ClientProfilePage() {
             </div>
 
             {/* User stats - maintenant alignés avec l'image et le nom */}
-            <div className="flex gap-8">
-              <div className="flex flex-col items-center">
-                <div className="text-2xl font-bold text-red-400">{favorites?.length || 0}</div>
-                <div className="text-sm text-gray-400">Favoris</div>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="text-2xl font-bold text-amber-400">{ratedPokemonCount}</div>
-                <div className="text-sm text-gray-400">Notés</div>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="text-2xl font-bold flex items-center">
-                  {userRatings && Object.keys(userRatings).length > 0 ? (
-                    <>
-                      {calculateAverageRating(userRatings).toFixed(1)}
-                      <StarIcon className="h-4 w-4 text-amber-400 ml-1" />
-                    </>
-                  ) : '0.0'}
+            <div className="flex items-center">
+
+              <div className="flex gap-8">
+                <div className="flex flex-col items-center">
+                  <div className="text-2xl font-bold text-red-400">{favorites?.length || 0}</div>
+                  <div className="text-sm text-gray-400">Favoris</div>
                 </div>
-                <div className="text-sm text-gray-400">Note moyenne</div>
+                <div className="flex flex-col items-center">
+                  <div className="text-2xl font-bold text-amber-400">{ratedPokemonCount}</div>
+                  <div className="text-sm text-gray-400">Notés</div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="text-2xl font-bold flex items-center">
+                    {userRatings && Object.keys(userRatings).length > 0 ? (
+                      <>
+                        {calculateAverageRating(userRatings).toFixed(1)}
+                        <StarIcon className="h-4 w-4 text-amber-400 ml-1" />
+                      </>
+                    ) : '0.0'}
+                  </div>
+                  <div className="text-sm text-gray-400">Note moyenne</div>
+                </div>
               </div>
             </div>
+
+            {/* Ajouter le bouton paramètres ici */}
+              <Link
+                href="/settings"
+                className="flex items-center bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition-colors"
+              >
+                <CogIcon className="h-5 w-5 mr-2" />
+                <span>Paramètres</span>
+              </Link>
+
+              
           </div>
         </div>
       </div>

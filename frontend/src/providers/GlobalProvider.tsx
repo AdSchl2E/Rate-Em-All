@@ -7,12 +7,16 @@ import { ratePokemonForUser, setFavoritePokemonForUser } from '../lib/api-client
 import { getUserRatings } from '../lib/api-client/user';
 
 interface GlobalContextProps {
-    // Données
+    // User data
+    username: string;
+    setUsername: (newUsername: string) => void;
+    
+    // Existing data
     pokemonCache: Record<number, Pokemon>;
     userRatings: Record<number, number>;
     favorites: number[];
 
-    // Méthodes rating
+    // Rating methods
     setRating: (pokemonId: number, rating: number) => Promise<{
         updatedRating: number;
         numberOfVotes: number;
@@ -20,29 +24,44 @@ interface GlobalContextProps {
     getRating: (pokemonId: number) => number;
     hasRated: (pokemonId: number) => boolean;
 
-    // Méthodes favoris
+    // Favorite methods
     toggleFavorite: (pokemonId: number) => Promise<boolean>;
     isFavorite: (pokemonId: number) => boolean;
 
-    // État de chargement
+    // Loading state
     loading: boolean;
 }
 
 const GlobalContext = createContext<GlobalContextProps | undefined>(undefined);
 
 export function GlobalProvider({ children }: { children: React.ReactNode }) {
-    // Session utilisateur
+    // User session
     const { data: session, status } = useSession();
     const userId = session?.user?.id as number | undefined;
     const token = session?.accessToken as string | undefined;
 
-    // États
+    // States
     const [pokemonCache, setPokemonCache] = useState<Record<number, Pokemon>>({});
     const [userRatings, setUserRatings] = useState<Record<number, number>>({});
     const [favorites, setFavorites] = useState<number[]>([]);
     const [loading, setLoading] = useState(true);
+    
+    // User state
+    const [username, setUsernameState] = useState<string>('');
 
-    // Chargement initial des données
+    // Sync username with session on initial load and session changes
+    useEffect(() => {
+        if (session?.user?.name) {
+            setUsernameState(session.user.name);
+        }
+    }, [session?.user?.name]);
+
+    // Function to update username in our global state
+    const setUsername = useCallback((newUsername: string) => {
+        setUsernameState(newUsername);
+    }, []);
+
+    // Initial data loading
     useEffect(() => {
         if (status === 'authenticated' && userId && token) {
             Promise.all([
@@ -61,7 +80,7 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
         }
     }, [status, userId, token]);
 
-    // Récupérer les notes utilisateur
+    // Fetch user ratings
     const fetchUserRatings = async () => {
         if (!userId || !token) return;
 
@@ -85,7 +104,7 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    // Récupérer les favoris utilisateur
+    // Fetch user favorites
     const fetchUserFavorites = async () => {
         if (!userId || !token) return;
 
@@ -111,7 +130,7 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    // Méthodes pour les ratings
+    // Rating methods
     const getRating = useCallback((pokemonId: number): number => {
         return userRatings[pokemonId] || 0;
     }, [userRatings]);
@@ -158,7 +177,7 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    // Méthodes pour les favoris
+    // Favorite methods
     const isFavorite = useCallback((pokemonId: number): boolean => {
         return favorites.includes(pokemonId);
     }, [favorites]);
@@ -188,7 +207,7 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    // Valeur du contexte
+    // Context value
     const contextValue: GlobalContextProps = {
         pokemonCache,
         userRatings,
@@ -198,7 +217,9 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
         hasRated,
         toggleFavorite,
         isFavorite,
-        loading
+        loading,
+        username,
+        setUsername
     };
 
     return (

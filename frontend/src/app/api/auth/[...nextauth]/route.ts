@@ -1,8 +1,9 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { API_CONFIG } from '../../../../lib/api-config';
 
-const handler = NextAuth({
+// Extraire la configuration dans une constante exportable
+export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
@@ -86,6 +87,9 @@ const handler = NextAuth({
       return session;
     }
   }
-});
+};
+
+// Utiliser la configuration exportée pour créer le handler
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
