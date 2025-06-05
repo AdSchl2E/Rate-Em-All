@@ -33,12 +33,12 @@ export class UserService {
   async findOne(id: any): Promise<User | null> {
     // S'assurer que l'ID est un nombre valide
     const numericId = typeof id === 'string' ? parseInt(id) : id;
-    
+
     if (isNaN(numericId)) {
       console.warn(`ID utilisateur invalide fourni: ${id}`);
       return null;
     }
-    
+
     try {
       return await this.usersRepository.findOne({
         where: { id: numericId }
@@ -72,29 +72,35 @@ export class UserService {
     for (const userRating of userRatings) {
       const pokemon = userRating.pokemon;
       const userRatingValue = userRating.rating;
-      
+
       // Calculate the new total rating
       const currentTotalScore = pokemon.rating * pokemon.numberOfVotes;
       const newNumberOfVotes = pokemon.numberOfVotes - 1;
-      
+
       // Update the Pokémon rating and vote count
       if (newNumberOfVotes > 0) {
         // Calculate new average if there are still votes
         pokemon.rating = (currentTotalScore - userRatingValue) / newNumberOfVotes;
+        pokemon.numberOfVotes = newNumberOfVotes;
+        // Save the updated Pokémon
+        await this.pokemonRepository.save(pokemon);
+
       } else {
-        // Reset to 0 if this was the last vote
-        pokemon.rating = 0;
+        // Delete the Pokémon if no votes left
+        // Check before if the pkmn not in the user_pokemon_rating table
+        const hasRatings = await this.userPokemonRatingRepository.findOne({ where: { pokemonId: pokemon.id } });
+        if (!hasRatings) {
+          // If no ratings left, delete the Pokémon
+          await this.pokemonRepository.delete(pokemon.id);
+        }
+        // Remove the Pokémon from the repository
+        await this.pokemonRepository.remove(pokemon);
       }
-      
-      pokemon.numberOfVotes = newNumberOfVotes;
-      
-      // Save the updated Pokémon
-      await this.pokemonRepository.save(pokemon);
     }
-    
+
     // Now delete all the user's ratings
     await this.userPokemonRatingRepository.delete({ userId: id });
-    
+
     // Finally, delete the user
     await this.usersRepository.delete(id);
 
@@ -128,7 +134,7 @@ export class UserService {
 
     // Récupère le Pokémon par son Pokedex ID
     let pokemon = await this.pokemonRepository.findOne({ where: { pokedexId: pokedexId } })
-    
+
     if (!pokemon) {
       // Si le Pokémon n'existe pas, on le crée avec sa première note
       pokemon = this.pokemonRepository.create({
@@ -141,11 +147,14 @@ export class UserService {
 
     // Vérifie si l'utilisateur a déjà noté ce Pokémon
     let existingRating = await this.userPokemonRatingRepository.findOne({
-      where: { 
-        user: { id: user.id }, 
-        pokemon: { id: pokemon.id } 
+      where: {
+        user: { id: user.id },
+        pokemon: { id: pokemon.id }
       }
     });
+
+    // Vérifie si le Pokémon est déjà dans la liste des Pokémon notés par l'utilisateur
+    const ratedPokemonIndex = user.ratedPokemons.indexOf(pokedexId);
 
     if (existingRating) {
       // Mise à jour du vote utilisateur et recalcul de la note globale
@@ -161,7 +170,7 @@ export class UserService {
     } else {
       // L'utilisateur n'a pas encore voté : ajout du vote et mise à jour du nombre de votes
       const totalBefore = pokemon.rating * pokemon.numberOfVotes;
-      
+
       pokemon.numberOfVotes++;
       pokemon.rating = (totalBefore + rating) / pokemon.numberOfVotes;
 
@@ -174,6 +183,12 @@ export class UserService {
       });
       await this.userPokemonRatingRepository.save(newRatingRecord);
 
+      // Ajouter le Pokémon à la liste des Pokémon notés par l'utilisateur s'il n'y est pas déjà
+      if (ratedPokemonIndex === -1) {
+        user.ratedPokemons.push(pokedexId);
+        await this.usersRepository.save(user);
+      }
+
       return { message: 'Rating created', pokemon, userRating: newRatingRecord };
     }
   }
@@ -183,7 +198,7 @@ export class UserService {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
 
     if (!user) {
-        throw new Error('User not found');
+      throw new Error('User not found');
     }
 
     // Obtenir le nom du Pokémon via l'API Pokémon
@@ -196,21 +211,21 @@ export class UserService {
     const isFavorite = index === -1;
 
     if (index !== -1) {
-        // Si présent, on l'enlève
-        user.favoritePokemons.splice(index, 1);
+      // Si présent, on l'enlève
+      user.favoritePokemons.splice(index, 1);
     } else {
-        // Sinon, on l'ajoute
-        user.favoritePokemons.push(pokedexId);
+      // Sinon, on l'ajoute
+      user.favoritePokemons.push(pokedexId);
     }
 
     await this.usersRepository.save(user);
 
     // Retourne l'état du favori et le nom du Pokémon
-    return { 
-        isFavorite: isFavorite, 
-        pokemonName 
+    return {
+      isFavorite: isFavorite,
+      pokemonName
     };
-}
+  }
 
 
   async findFavoritePokemons(userId: number) {
@@ -250,17 +265,17 @@ export class UserService {
   // Ajouter cette méthode à UserService
   async checkIsFavorite(userId: number, pokedexId: number) {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
-    
+
     if (!user) {
       throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
     }
-    
+
     return user.favoritePokemons.includes(pokedexId);
   }
 
-  async toggleFavoritePokemon(userId: number, pokedexId: number): Promise<{isFavorite: boolean}> {
-    const user = await this.usersRepository.findOne({where: {id: userId}});
-    
+  async toggleFavoritePokemon(userId: number, pokedexId: number): Promise<{ isFavorite: boolean }> {
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+
     if (!user) {
       throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
     }
@@ -272,7 +287,7 @@ export class UserService {
 
     const index = user.favoritePokemons.indexOf(pokedexId);
     let isFavorite = false;
-    
+
     if (index > -1) {
       // Le Pokémon est déjà un favori, on le retire
       user.favoritePokemons.splice(index, 1);
@@ -285,13 +300,13 @@ export class UserService {
 
     await this.usersRepository.save(user);
     console.log(`User ${userId} favorites updated: ${user.favoritePokemons}`);
-    
+
     return { isFavorite };
   }
 
   async getUserFavoritePokemons(userId: number): Promise<number[]> {
-    const user = await this.usersRepository.findOne({where: {id: userId}});
-    
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+
     if (!user) {
       throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
     }
@@ -302,31 +317,31 @@ export class UserService {
 
   async changePassword(userId: number, currentPassword: string, newPassword: string) {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
-    
+
     if (!user) {
       throw new NotFoundException(`Utilisateur avec l'ID ${userId} introuvable.`);
     }
-    
+
     // Vérifier que le mot de passe actuel est correct
     const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Le mot de passe actuel est incorrect');
     }
-    
+
     // Hacher le nouveau mot de passe
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
+
     // Mettre à jour le mot de passe
     user.password = hashedPassword;
     await this.usersRepository.save(user);
-    
+
     return { success: true };
   }
 
   // Ajouter/améliorer la méthode findByUsername
   async findByUsername(username: string): Promise<User | null> {
     if (!username) return null;
-    
+
     try {
       return await this.usersRepository.findOne({
         where: { name: username }
