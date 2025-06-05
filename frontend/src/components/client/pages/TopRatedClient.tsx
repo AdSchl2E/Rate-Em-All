@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ClientPokemonCard } from '../pokemon/ClientPokemonCard';
 import { Pokemon } from '../../../types/pokemon';
 import { typeColors } from '../../../lib/utils/pokemonTypes';
@@ -10,6 +10,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useGlobal } from '../../../providers/GlobalProvider';
 import { CommunityRating } from '../ui/CommunityRating';
+import { fetchTopRated } from '../../../lib/api-server/pokemon';
+import { useSession } from 'next-auth/react';
 
 interface TopRatedClientProps {
   initialPokemons: Pokemon[];
@@ -18,30 +20,60 @@ interface TopRatedClientProps {
 export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
   const [sortBy, setSortBy] = useState<'rating' | 'votes' | 'name'>('rating');
   const [typeFilter, setTypeFilter] = useState<string>('all');
-  const { pokemonCache } = useGlobal();
+  const { pokemonCache, userRatings } = useGlobal();
+  const { data: session } = useSession();
+  
+  // State for storing all Pokémon data (initial + any updates)
+  const [allPokemons, setAllPokemons] = useState<Pokemon[]>(initialPokemons);
+  
+  // Track user ratings changes to trigger refresh when needed
+  const [lastRatingTimestamp, setLastRatingTimestamp] = useState<number>(0);
+  
+  // Effect to refresh data when a rating changes
+  useEffect(() => {
+    const refreshTopRated = async () => {
+      try {
+        // Only refresh if a rating has been made (lastRatingTimestamp > 0)
+        if (lastRatingTimestamp > 0) {
+          console.log('Refreshing top rated Pokémon after new rating');
+          const freshTopRated = await fetchTopRated(50);
+          setAllPokemons(freshTopRated);
+        }
+      } catch (error) {
+        console.error('Failed to refresh top rated Pokémon:', error);
+      }
+    };
+
+    refreshTopRated();
+  }, [lastRatingTimestamp]);
+  
+  // Watch for changes in userRatings to detect new ratings
+  useEffect(() => {
+    setLastRatingTimestamp(Date.now());
+  }, [userRatings]);
   
   // Extraire tous les types uniques de Pokémon
   const pokemonTypes = useMemo(() => {
     const types = new Set<string>();
     types.add('all');
     
-    initialPokemons.forEach(pokemon => {
+    allPokemons.forEach(pokemon => {
       pokemon.types?.forEach(typeObj => {
         types.add(typeObj.type.name);
       });
     });
     
     return Array.from(types).sort();
-  }, [initialPokemons]);
+  }, [allPokemons]);
   
   // Préparer les Pokémon avec les données du cache
   const enhancedPokemons = useMemo(() => {
-    return initialPokemons.map(pokemon => ({
+    return allPokemons.map(pokemon => ({
       ...pokemon,
       rating: pokemonCache[pokemon.id]?.rating ?? pokemon.rating,
       numberOfVotes: pokemonCache[pokemon.id]?.numberOfVotes ?? pokemon.numberOfVotes
     }));
-  }, [initialPokemons, pokemonCache]);
+  }, [allPokemons, pokemonCache]);
   
   // Filtrer et trier les Pokémon
   const displayedPokemons = useMemo(() => {
