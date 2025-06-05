@@ -11,10 +11,10 @@ export function ServerNavbar() {
           <Link href="/" className="flex items-center gap-2 group">
             <div className="relative w-8 h-8 overflow-hidden">
               <Image
-                src="/logo.png"
+                src="/images/logo.webp"
                 alt="Rate-Em-All Logo"
-                width={32}
-                height={32}
+                width={30}
+                height={30}
                 className="object-contain group-hover:scale-110 transition-transform"
               />
             </div>

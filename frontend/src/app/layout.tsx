@@ -7,6 +7,11 @@ import { ServerNavbar } from '../components/server/layout/ServerNavbar';
 export const metadata: Metadata = {
   title: 'Rate-Em-All',
   description: 'Explore and rate your favorite Pokémon',
+  icons: {
+    icon: [
+      { url: '/icon/favicon.ico' }
+    ]
+  }
 };
 
 // Déplacement de themeColor des métadonnées vers le viewport

@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { ClientPokemonCard } from '../pokemon/ClientPokemonCard';
 import { Pokemon } from '../../../types/pokemon';
 import { typeColors } from '../../../lib/utils/pokemonTypes';
-import { StarIcon, TrophyIcon, AdjustmentsHorizontalIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
+import { StarIcon, TrophyIcon, AdjustmentsHorizontalIcon, ArrowUpIcon, ArrowDownIcon, HeartIcon } from '@heroicons/react/24/solid';
+import { HeartIcon as HeartIconOutline } from '@heroicons/react/24/outline';
 import { ClientStarRating } from '../ui/ClientStarRating';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -58,7 +59,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [minRating, setMinRating] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const { pokemonCache, userRatings } = useGlobal();
+  const { pokemonCache, userRatings, favorites } = useGlobal();
   const { data: session } = useSession();
   
   // État pour l'animation du podium
@@ -320,6 +321,363 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
   
   return (
     <div className="mt-12 animate-fade-in">
+      
+      
+      {/* PODIUM DES MEILLEURS - ANIMATED VERSION */}
+      {podiumPokemons.length > 0 && (
+        <motion.div 
+          className="mb-16 mt-24"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          onAnimationComplete={() => setAnimationComplete(true)}
+        >
+          
+          {/* Confetti animation container */}
+          <div className="relative mx-auto max-w-5xl">
+            {animationComplete && (
+              <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-50">
+                <div className="absolute top-0 left-1/2 transform -translate-x-1/2">
+                  <div className="animate-confetti-1 absolute w-2 h-2 bg-yellow-300 rounded-full"></div>
+                  <div className="animate-confetti-2 absolute w-3 h-3 bg-blue-400 rounded-full"></div>
+                  <div className="animate-confetti-3 absolute w-2 h-2 bg-red-400 rounded-full"></div>
+                  <div className="animate-confetti-4 absolute w-4 h-1 bg-green-400"></div>
+                  <div className="animate-confetti-5 absolute w-2 h-2 bg-purple-400 rounded-full"></div>
+                  <div className="animate-confetti-6 absolute w-3 h-3 bg-pink-400 rounded-full"></div>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex flex-col md:flex-row justify-center items-end gap-4 mx-auto">
+              {/* 2ème place - maintenant à gauche */}
+              {podiumPokemons.length >= 2 && (
+                <motion.div 
+                  className="order-1 md:order-0 w-full md:w-1/3 flex flex-col items-center"
+                  variants={itemVariants}
+                >
+                  
+                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-t-xl w-full p-4 pt-0 relative border border-gray-700">
+                    <motion.div 
+                      className="h-32 flex items-center justify-center -mt-16"
+                      variants={imageVariants}
+                      whileHover="hover"
+                    >
+                      <Link href={`/pokemon/${podiumPokemons[1]?.id}`}>
+                        <div className="relative group">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-gray-200 to-gray-400 rounded-full opacity-30 group-hover:opacity-100 blur-md transition duration-1000"></div>
+                          <Image
+                            src={podiumPokemons[1]?.sprites.other?.['official-artwork']?.front_default || podiumPokemons[1]?.sprites.front_default || '/images/pokeball.png'}
+                            width={120}
+                            height={120}
+                            alt={podiumPokemons[1]?.name || ''}
+                            className="drop-shadow-xl relative z-10"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = "/images/pokeball.png";
+                            }}
+                          />
+                        </div>
+                      </Link>
+                    </motion.div>
+                    
+                    <motion.h3 
+                      className="text-center text-xl font-semibold capitalize mb-1 flex items-center justify-center"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1.2 }}
+                    >
+                      <Link href={`/pokemon/${podiumPokemons[1]?.id}`} className="hover:text-blue-400 transition">
+                        {podiumPokemons[1]?.name}
+                      </Link>
+                      {favorites.includes(podiumPokemons[1]?.id) && (
+                        <HeartIcon className="h-4 w-4 ml-2 text-red-500" />
+                      )}
+                    </motion.h3>
+                    
+                    <motion.div 
+                      className="flex justify-center mb-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1.3 }}
+                    >
+                      {podiumPokemons[1]?.types?.map((typeObj, idx) => {
+                        const type = typeObj.type.name;
+                        return (
+                          <span
+                            key={idx}
+                            className="badge px-2 py-1 text-xs text-white font-medium mx-1"
+                            style={{ backgroundColor: typeColors[type] }}
+                          >
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                          </span>
+                        );
+                      })}
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="flex justify-center items-center"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.4 }}
+                    >
+                      <CommunityRating
+                        rating={podiumPokemons[1]?.rating || 0}
+                        votes={podiumPokemons[1]?.numberOfVotes || 0}
+                        size="md"
+                        showStars={false}
+                      />
+                    </motion.div>
+                    
+                    {/* Après le bloc de CommunityRating, ajouter la note personnelle: */}
+                    <motion.div 
+                      className="flex justify-center items-center mt-2"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.5 }}
+                    >
+                      {userRatings[podiumPokemons[1]?.id] ? (
+                        <div className="flex flex-col items-center">
+                          <div className="flex items-center">
+                            <ClientStarRating 
+                              value={userRatings[podiumPokemons[1]?.id]} 
+                              size="sm" 
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-xs text-gray-500 italic">Vous n'avez pas encore noté ce Pokémon</div>
+                      )}
+                    </motion.div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-br from-gray-600 to-gray-700 h-24 w-full rounded-b-xl flex items-center justify-center overflow-hidden relative">
+                    <div className="absolute inset-0 bg-[url('/images/silver-texture.jpg')] opacity-20 bg-cover mix-blend-overlay"></div>
+                    <div className="text-2xl font-bold text-gray-300">2</div>
+                  </div>
+                </motion.div>
+              )}
+              
+              {/* 1ère place - maintenant au milieu */}
+              {podiumPokemons.length >= 1 && (
+                <motion.div 
+                  className="order-0 md:order-1 w-full md:w-1/3 flex flex-col items-center mb-0 md:-mb-6 z-10"
+                  variants={itemVariants}
+                >
+                  
+                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-t-xl w-full p-4 pt-0 relative shadow-xl border border-yellow-500/50">
+                    <motion.div 
+                      className="h-36 flex items-center justify-center -mt-20"
+                      variants={imageVariants}
+                      whileHover="hover"
+                    >
+                      <Link href={`/pokemon/${podiumPokemons[0]?.id}`}>
+                        <div className="relative group">
+                          <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400 to-amber-600 rounded-full opacity-40 group-hover:opacity-80 blur-md transition duration-1000 animate-pulse"></div>
+                          <Image
+                            src={podiumPokemons[0]?.sprites.other?.['official-artwork']?.front_default || podiumPokemons[0]?.sprites.front_default || '/images/pokeball.png'}
+                            width={140}
+                            height={140}
+                            alt={podiumPokemons[0]?.name || ''}
+                            className="drop-shadow-xl relative z-10"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = "/images/pokeball.png";
+                            }}
+                          />
+                        </div>
+                      </Link>
+                    </motion.div>
+                    
+                    <motion.h3 
+                      className="text-center text-2xl font-bold capitalize mb-2 flex items-center justify-center"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1.2 }}
+                    >
+                      <Link href={`/pokemon/${podiumPokemons[0]?.id}`} className="hover:text-blue-400 transition bg-gradient-to-r from-yellow-200 to-amber-400 text-transparent bg-clip-text">
+                        {podiumPokemons[0]?.name}
+                      </Link>
+                      {favorites.includes(podiumPokemons[0]?.id) && (
+                        <HeartIcon className="h-5 w-5 ml-2 text-red-500 animate-pulse" />
+                      )}
+                    </motion.h3>
+                    
+                    <motion.div 
+                      className="flex justify-center mb-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1.3 }}
+                    >
+                      {podiumPokemons[0]?.types?.map((typeObj, idx) => {
+                        const type = typeObj.type.name;
+                        return (
+                          <span
+                            key={idx}
+                            className="badge px-3 py-1 text-white font-medium mx-1"
+                            style={{ backgroundColor: typeColors[type] }}
+                          >
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                          </span>
+                        );
+                      })}
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="flex justify-center items-center"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.4 }}
+                    >
+                      <CommunityRating
+                        rating={podiumPokemons[0]?.rating || 0}
+                        votes={podiumPokemons[0]?.numberOfVotes || 0}
+                        size="lg"
+                        showStars={false}
+                      />
+                    </motion.div>
+                    
+                    {/* Après le bloc de CommunityRating, ajouter la note personnelle: */}
+                    <motion.div 
+                      className="flex justify-center items-center mt-2"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.5 }}
+                    >
+                      {userRatings[podiumPokemons[0]?.id] ? (
+                        <div className="flex flex-col items-center">
+                          <div className="flex items-center">
+                            <ClientStarRating 
+                              value={userRatings[podiumPokemons[0]?.id]} 
+                              size="md" 
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-xs text-gray-500 italic">Vous n'avez pas encore noté ce Pokémon</div>
+                      )}
+                    </motion.div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-br from-yellow-600 to-amber-700 h-32 w-full rounded-b-xl flex items-center justify-center overflow-hidden relative">
+                    <div className="absolute inset-0 bg-[url('/images/gold-texture.jpg')] opacity-30 bg-cover mix-blend-overlay"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-yellow-400/20 to-transparent"></div>
+                    <div className="text-3xl font-bold text-white">1</div>
+                  </div>
+                </motion.div>
+              )}
+              
+              {/* 3ème place - maintenant à droite */}
+              {podiumPokemons.length >= 3 && (
+                <motion.div 
+                  className="order-2 md:order-2 w-full md:w-1/3 flex flex-col items-center"
+                  variants={itemVariants}
+                >
+                  
+                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-t-xl w-full p-4 pt-0 relative border border-amber-700/50">
+                    <motion.div 
+                      className="h-28 flex items-center justify-center -mt-14"
+                      variants={imageVariants}
+                      whileHover="hover"
+                    >
+                      <Link href={`/pokemon/${podiumPokemons[2]?.id}`}>
+                        <div className="relative group">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-amber-700 to-amber-900 rounded-full opacity-30 group-hover:opacity-100 blur-md transition duration-1000"></div>
+                          <Image
+                            src={podiumPokemons[2]?.sprites.other?.['official-artwork']?.front_default || podiumPokemons[2]?.sprites.front_default || '/images/pokeball.png'}
+                            width={100}
+                            height={100}
+                            alt={podiumPokemons[2]?.name || ''}
+                            className="drop-shadow-xl relative z-10"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = "/images/pokeball.png";
+                            }}
+                          />
+                        </div>
+                      </Link>
+                    </motion.div>
+                    
+                    <motion.h3 
+                      className="text-center text-lg font-medium capitalize mb-1 flex items-center justify-center"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1.2 }}
+                    >
+                      <Link href={`/pokemon/${podiumPokemons[2]?.id}`} className="hover:text-blue-400 transition">
+                        {podiumPokemons[2]?.name}
+                      </Link>
+                      {favorites.includes(podiumPokemons[2]?.id) && (
+                        <HeartIcon className="h-3.5 w-3.5 ml-2 text-red-500" />
+                      )}
+                    </motion.h3>
+                    
+                    <motion.div 
+                      className="flex justify-center mb-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1.3 }}
+                    >
+                      {podiumPokemons[2]?.types?.map((typeObj, idx) => {
+                        const type = typeObj.type.name;
+                        return (
+                          <span
+                            key={idx}
+                            className="badge px-2 py-0.5 text-xs text-white font-medium mx-1"
+                            style={{ backgroundColor: typeColors[type] }}
+                          >
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                          </span>
+                        );
+                      })}
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="flex justify-center items-center"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.4 }}
+                    >
+                      <CommunityRating
+                        rating={podiumPokemons[2]?.rating || 0}
+                        votes={podiumPokemons[2]?.numberOfVotes || 0}
+                        size="md"
+                        showStars={false}
+                      />
+                    </motion.div>
+                    
+                    {/* Après le bloc de CommunityRating, ajouter la note personnelle: */}
+                    <motion.div 
+                      className="flex justify-center items-center mt-2"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.5 }}
+                    >
+                      {userRatings[podiumPokemons[2]?.id] ? (
+                        <div className="flex flex-col items-center">
+                          <div className="flex items-center">
+                            <ClientStarRating 
+                              value={userRatings[podiumPokemons[2]?.id]} 
+                              size="sm" 
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-xs text-gray-500 italic">Vous n'avez pas encore noté ce Pokémon</div>
+                      )}
+                    </motion.div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-br from-amber-800 to-amber-900 h-20 w-full rounded-b-xl flex items-center justify-center overflow-hidden relative">
+                    <div className="absolute inset-0 bg-[url('/images/bronze-texture.jpg')] opacity-20 bg-cover mix-blend-overlay"></div>
+                    <div className="text-xl font-bold text-amber-200">3</div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Filtres et options de tri */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-4">
@@ -438,363 +796,13 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
         )}
       </div>
       
-      {/* PODIUM DES MEILLEURS - ANIMATED VERSION */}
-      {podiumPokemons.length > 0 && (
-        <motion.div 
-          className="mb-16 mt-32"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          onAnimationComplete={() => setAnimationComplete(true)}
-        >
-          
-          {/* Confetti animation container */}
-          <div className="relative mx-auto max-w-5xl">
-            {animationComplete && (
-              <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-50">
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2">
-                  <div className="animate-confetti-1 absolute w-2 h-2 bg-yellow-300 rounded-full"></div>
-                  <div className="animate-confetti-2 absolute w-3 h-3 bg-blue-400 rounded-full"></div>
-                  <div className="animate-confetti-3 absolute w-2 h-2 bg-red-400 rounded-full"></div>
-                  <div className="animate-confetti-4 absolute w-4 h-1 bg-green-400"></div>
-                  <div className="animate-confetti-5 absolute w-2 h-2 bg-purple-400 rounded-full"></div>
-                  <div className="animate-confetti-6 absolute w-3 h-3 bg-pink-400 rounded-full"></div>
-                </div>
-              </div>
-            )}
-            
-            <div className="flex flex-col md:flex-row justify-center items-end gap-4 mx-auto">
-              {/* 2ème place - maintenant à gauche */}
-              {podiumPokemons.length >= 2 && (
-                <motion.div 
-                  className="order-1 md:order-0 w-full md:w-1/3 flex flex-col items-center"
-                  variants={itemVariants}
-                >
-                  
-                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-t-xl w-full p-4 pt-0 relative border border-gray-700">
-                    <motion.div 
-                      className="h-32 flex items-center justify-center -mt-16"
-                      variants={imageVariants}
-                      whileHover="hover"
-                    >
-                      <Link href={`/pokemon/${podiumPokemons[1]?.id}`}>
-                        <div className="relative group">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-gray-200 to-gray-400 rounded-full opacity-30 group-hover:opacity-100 blur-md transition duration-1000"></div>
-                          <Image
-                            src={podiumPokemons[1]?.sprites.other?.['official-artwork']?.front_default || podiumPokemons[1]?.sprites.front_default || '/images/pokeball.png'}
-                            width={120}
-                            height={120}
-                            alt={podiumPokemons[1]?.name || ''}
-                            className="drop-shadow-xl relative z-10"
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = "/images/pokeball.png";
-                            }}
-                          />
-                        </div>
-                      </Link>
-                    </motion.div>
-                    
-                    <motion.h3 
-                      className="text-center text-xl font-semibold capitalize mb-1"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 1.2 }}
-                    >
-                      <Link href={`/pokemon/${podiumPokemons[1]?.id}`} className="hover:text-blue-400 transition">
-                        {podiumPokemons[1]?.name}
-                      </Link>
-                    </motion.h3>
-                    
-                    <motion.div 
-                      className="flex justify-center mb-2"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 1.3 }}
-                    >
-                      {podiumPokemons[1]?.types?.map((typeObj, idx) => {
-                        const type = typeObj.type.name;
-                        return (
-                          <span
-                            key={idx}
-                            className="badge px-2 py-1 text-xs text-white font-medium mx-1"
-                            style={{ backgroundColor: typeColors[type] }}
-                          >
-                            {type.charAt(0).toUpperCase() + type.slice(1)}
-                          </span>
-                        );
-                      })}
-                    </motion.div>
-                    
-                    <motion.div 
-                      className="flex justify-center items-center"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.4 }}
-                    >
-                      <CommunityRating
-                        rating={podiumPokemons[1]?.rating || 0}
-                        votes={podiumPokemons[1]?.numberOfVotes || 0}
-                        size="md"
-                        showStars={false}
-                      />
-                    </motion.div>
-                    
-                    {/* Après le bloc de CommunityRating, ajouter la note personnelle: */}
-                    <motion.div 
-                      className="flex justify-center items-center mt-2"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.5 }}
-                    >
-                      {userRatings[podiumPokemons[1]?.id] ? (
-                        <div className="flex flex-col items-center">
-                          <div className="flex items-center">
-                            <ClientStarRating 
-                              value={userRatings[podiumPokemons[1]?.id]} 
-                              size="sm" 
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-xs text-gray-500 italic">Vous n'avez pas encore noté ce Pokémon</div>
-                      )}
-                    </motion.div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-gray-600 to-gray-700 h-24 w-full rounded-b-xl flex items-center justify-center overflow-hidden relative">
-                    <div className="absolute inset-0 bg-[url('/images/silver-texture.jpg')] opacity-20 bg-cover mix-blend-overlay"></div>
-                    <div className="text-2xl font-bold text-gray-300">2</div>
-                  </div>
-                </motion.div>
-              )}
-              
-              {/* 1ère place - maintenant au milieu */}
-              {podiumPokemons.length >= 1 && (
-                <motion.div 
-                  className="order-0 md:order-1 w-full md:w-1/3 flex flex-col items-center mb-0 md:-mb-6 z-10"
-                  variants={itemVariants}
-                >
-                  
-                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-t-xl w-full p-4 pt-0 relative shadow-xl border border-yellow-500/50">
-                    <motion.div 
-                      className="h-36 flex items-center justify-center -mt-20"
-                      variants={imageVariants}
-                      whileHover="hover"
-                    >
-                      <Link href={`/pokemon/${podiumPokemons[0]?.id}`}>
-                        <div className="relative group">
-                          <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400 to-amber-600 rounded-full opacity-40 group-hover:opacity-80 blur-md transition duration-1000 animate-pulse"></div>
-                          <Image
-                            src={podiumPokemons[0]?.sprites.other?.['official-artwork']?.front_default || podiumPokemons[0]?.sprites.front_default || '/images/pokeball.png'}
-                            width={140}
-                            height={140}
-                            alt={podiumPokemons[0]?.name || ''}
-                            className="drop-shadow-xl relative z-10"
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = "/images/pokeball.png";
-                            }}
-                          />
-                        </div>
-                      </Link>
-                    </motion.div>
-                    
-                    <motion.h3 
-                      className="text-center text-2xl font-bold capitalize mb-2"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 1.2 }}
-                    >
-                      <Link href={`/pokemon/${podiumPokemons[0]?.id}`} className="hover:text-blue-400 transition bg-gradient-to-r from-yellow-200 to-amber-400 text-transparent bg-clip-text">
-                        {podiumPokemons[0]?.name}
-                      </Link>
-                    </motion.h3>
-                    
-                    <motion.div 
-                      className="flex justify-center mb-2"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 1.3 }}
-                    >
-                      {podiumPokemons[0]?.types?.map((typeObj, idx) => {
-                        const type = typeObj.type.name;
-                        return (
-                          <span
-                            key={idx}
-                            className="badge px-3 py-1 text-white font-medium mx-1"
-                            style={{ backgroundColor: typeColors[type] }}
-                          >
-                            {type.charAt(0).toUpperCase() + type.slice(1)}
-                          </span>
-                        );
-                      })}
-                    </motion.div>
-                    
-                    <motion.div 
-                      className="flex justify-center items-center"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.4 }}
-                    >
-                      <CommunityRating
-                        rating={podiumPokemons[0]?.rating || 0}
-                        votes={podiumPokemons[0]?.numberOfVotes || 0}
-                        size="lg"
-                        showStars={false}
-                      />
-                    </motion.div>
-                    
-                    {/* Après le bloc de CommunityRating, ajouter la note personnelle: */}
-                    <motion.div 
-                      className="flex justify-center items-center mt-2"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.5 }}
-                    >
-                      {userRatings[podiumPokemons[0]?.id] ? (
-                        <div className="flex flex-col items-center">
-                          <div className="flex items-center">
-                            <ClientStarRating 
-                              value={userRatings[podiumPokemons[0]?.id]} 
-                              size="md" 
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-xs text-gray-500 italic">Vous n'avez pas encore noté ce Pokémon</div>
-                      )}
-                    </motion.div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-yellow-600 to-amber-700 h-32 w-full rounded-b-xl flex items-center justify-center overflow-hidden relative">
-                    <div className="absolute inset-0 bg-[url('/images/gold-texture.jpg')] opacity-30 bg-cover mix-blend-overlay"></div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-yellow-400/20 to-transparent"></div>
-                    <div className="text-3xl font-bold text-white">1</div>
-                  </div>
-                </motion.div>
-              )}
-              
-              {/* 3ème place - maintenant à droite */}
-              {podiumPokemons.length >= 3 && (
-                <motion.div 
-                  className="order-2 md:order-2 w-full md:w-1/3 flex flex-col items-center"
-                  variants={itemVariants}
-                >
-                  
-                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-t-xl w-full p-4 pt-0 relative border border-amber-700/50">
-                    <motion.div 
-                      className="h-28 flex items-center justify-center -mt-14"
-                      variants={imageVariants}
-                      whileHover="hover"
-                    >
-                      <Link href={`/pokemon/${podiumPokemons[2]?.id}`}>
-                        <div className="relative group">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-amber-700 to-amber-900 rounded-full opacity-30 group-hover:opacity-100 blur-md transition duration-1000"></div>
-                          <Image
-                            src={podiumPokemons[2]?.sprites.other?.['official-artwork']?.front_default || podiumPokemons[2]?.sprites.front_default || '/images/pokeball.png'}
-                            width={100}
-                            height={100}
-                            alt={podiumPokemons[2]?.name || ''}
-                            className="drop-shadow-xl relative z-10"
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = "/images/pokeball.png";
-                            }}
-                          />
-                        </div>
-                      </Link>
-                    </motion.div>
-                    
-                    <motion.h3 
-                      className="text-center text-lg font-medium capitalize mb-1"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 1.2 }}
-                    >
-                      <Link href={`/pokemon/${podiumPokemons[2]?.id}`} className="hover:text-blue-400 transition">
-                        {podiumPokemons[2]?.name}
-                      </Link>
-                    </motion.h3>
-                    
-                    <motion.div 
-                      className="flex justify-center mb-2"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 1.3 }}
-                    >
-                      {podiumPokemons[2]?.types?.map((typeObj, idx) => {
-                        const type = typeObj.type.name;
-                        return (
-                          <span
-                            key={idx}
-                            className="badge px-2 py-0.5 text-xs text-white font-medium mx-1"
-                            style={{ backgroundColor: typeColors[type] }}
-                          >
-                            {type.charAt(0).toUpperCase() + type.slice(1)}
-                          </span>
-                        );
-                      })}
-                    </motion.div>
-                    
-                    <motion.div 
-                      className="flex justify-center items-center"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.4 }}
-                    >
-                      <CommunityRating
-                        rating={podiumPokemons[2]?.rating || 0}
-                        votes={podiumPokemons[2]?.numberOfVotes || 0}
-                        size="md"
-                        showStars={false}
-                      />
-                    </motion.div>
-                    
-                    {/* Après le bloc de CommunityRating, ajouter la note personnelle: */}
-                    <motion.div 
-                      className="flex justify-center items-center mt-2"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.5 }}
-                    >
-                      {userRatings[podiumPokemons[2]?.id] ? (
-                        <div className="flex flex-col items-center">
-                          <div className="flex items-center">
-                            <ClientStarRating 
-                              value={userRatings[podiumPokemons[2]?.id]} 
-                              size="sm" 
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-xs text-gray-500 italic">Vous n'avez pas encore noté ce Pokémon</div>
-                      )}
-                    </motion.div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-amber-800 to-amber-900 h-20 w-full rounded-b-xl flex items-center justify-center overflow-hidden relative">
-                    <div className="absolute inset-0 bg-[url('/images/bronze-texture.jpg')] opacity-20 bg-cover mix-blend-overlay"></div>
-                    <div className="text-xl font-bold text-amber-200">3</div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </div>
-        </motion.div>
-      )}
-      
       {/* LISTE DES POSITIONS 4-10 - Modern design without table headers */}
       {listPokemons.length > 0 && (
         <motion.div 
-          className="mt-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5 }}
         >
-          <h3 className="text-xl font-semibold mb-6 flex items-center">
-            Les autres meilleurs Pokémon
-          </h3>
           
           <div className="space-y-3">
             {listPokemons.map((pokemon, idx) => (
@@ -823,7 +831,12 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                   </div>
                   
                   <div>
-                    <div className="font-medium capitalize text-lg">{pokemon.name}</div>
+                    <div className="font-medium capitalize text-lg flex items-center">
+                      {pokemon.name}
+                      {favorites.includes(pokemon.id) && (
+                        <HeartIcon className="h-4 w-4 ml-2 text-red-500" />
+                      )}
+                    </div>
                     
                     {/* Types */}
                     <div className="flex flex-wrap gap-1 mt-1">

@@ -32,6 +32,9 @@ export function ClientProfilePage() {
   // État pour afficher tous les Pokémon notés
   const [showAllRated, setShowAllRated] = useState(false);
 
+  // Ajout d'un état pour contrôler l'affichage de tous les favoris (en haut du composant)
+  const [showAllFavorites, setShowAllFavorites] = useState(false);
+
   // Count rated Pokémon
   const ratedPokemonCount = userRatings ? Object.keys(userRatings).length : 0;
 
@@ -120,6 +123,9 @@ export function ClientProfilePage() {
 
   // Limiter le nombre de Pokémon affichés
   const displayedRated = showAllRated ? sortedRated : sortedRated.slice(0, 30);
+
+  // Limiter les favoris affichés
+  const displayedFavorites = showAllFavorites ? sortedFavorites : sortedFavorites.slice(0, 10);
 
   // Loading states
   if (!session) {
@@ -272,7 +278,7 @@ export function ClientProfilePage() {
         {favoritePokemons.length > 0 ? (
           <div className="mb-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {sortedFavorites.slice(0, 10).map(pokemon => (
+              {displayedFavorites.map(pokemon => (
                 <div key={pokemon.id} className="bg-gray-800 hover:bg-gray-700 transition rounded-lg overflow-hidden">
                   <Link href={`/pokemon/${pokemon.id}`} className="block">
                     {/* Contenu existant des cartes de favoris */}
@@ -338,12 +344,28 @@ export function ClientProfilePage() {
               ))}
             </div>
 
-            {favoritePokemons.length > 10 && (
+            {/* Remplacer le lien par un bouton pour afficher tous les favoris */}
+            {favoritePokemons.length > 10 && !showAllFavorites && (
               <div className="text-center mt-6">
-                <Link href="/favoris" className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-white flex items-center justify-center w-full max-w-xs mx-auto transition">
+                <button
+                  onClick={() => setShowAllFavorites(true)}
+                  className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-white flex items-center justify-center w-full max-w-xs mx-auto transition"
+                >
                   <span>Voir les {favoritePokemons.length - 10} autres favoris</span>
                   <ChevronDownIcon className="h-4 w-4 ml-1" />
-                </Link>
+                </button>
+              </div>
+            )}
+
+            {/* Ajouter un bouton pour réduire la liste quand elle est déployée */}
+            {showAllFavorites && favoritePokemons.length > 10 && (
+              <div className="text-center mt-6">
+                <button
+                  onClick={() => setShowAllFavorites(false)}
+                  className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-white flex items-center justify-center w-full max-w-xs mx-auto transition"
+                >
+                  <span>Réduire la liste</span>
+                </button>
               </div>
             )}
           </div>
@@ -452,7 +474,12 @@ export function ClientProfilePage() {
                     </div>
 
                     <div>
-                      <span className="capitalize font-medium">{pokemon.name}</span>
+                      <div className="flex items-center gap-1">
+                        <span className="capitalize font-medium">{pokemon.name}</span>
+                        {favorites.includes(pokemon.id) && (
+                          <HeartIcon className="h-4 w-4 text-red-500" />
+                        )}
+                      </div>
 
                       {/* Types */}
                       <div className="flex gap-1 mt-1">
