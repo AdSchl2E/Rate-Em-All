@@ -101,3 +101,64 @@ body {
 .animate-fade-in {
   animation: fade-in 0.5s ease-out forwards;
 }
+
+/* Confetti animations */
+@keyframes confetti-fall-1 {
+  0% { transform: translateY(-100px) translateX(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(500px) translateX(100px) rotate(360deg); opacity: 0; }
+}
+
+@keyframes confetti-fall-2 {
+  0% { transform: translateY(-100px) translateX(50px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(400px) translateX(-50px) rotate(-360deg); opacity: 0; }
+}
+
+@keyframes confetti-fall-3 {
+  0% { transform: translateY(-100px) translateX(-30px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(450px) translateX(30px) rotate(720deg); opacity: 0; }
+}
+
+@keyframes confetti-fall-4 {
+  0% { transform: translateY(-100px) translateX(20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(500px) translateX(-60px) rotate(180deg); opacity: 0; }
+}
+
+@keyframes confetti-fall-5 {
+  0% { transform: translateY(-100px) translateX(-50px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(450px) translateX(80px) rotate(-540deg); opacity: 0; }
+}
+
+@keyframes confetti-fall-6 {
+  0% { transform: translateY(-100px) translateX(70px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(500px) translateX(-20px) rotate(360deg); opacity: 0; }
+}
+
+.animate-confetti-1 {
+  animation: confetti-fall-1 3s ease-out infinite;
+  animation-delay: 0.2s;
+}
+
+.animate-confetti-2 {
+  animation: confetti-fall-2 3.5s ease-out infinite;
+  animation-delay: 0.5s;
+}
+
+.animate-confetti-3 {
+  animation: confetti-fall-3 2.8s ease-out infinite;
+  animation-delay: 0.3s;
+}
+
+.animate-confetti-4 {
+  animation: confetti-fall-4 3.2s ease-out infinite;
+  animation-delay: 0.7s;
+}
+
+.animate-confetti-5 {
+  animation: confetti-fall-5 3.7s ease-out infinite;
+  animation-delay: 0.1s;
+}
+
+.animate-confetti-6 {
+  animation: confetti-fall-6 3s ease-out infinite;
+  animation-delay: 0.9s;
+}

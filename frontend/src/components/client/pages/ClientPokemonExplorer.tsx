@@ -482,94 +482,95 @@ export function ClientPokemonExplorer() {
     <div className="animate-fade-in">
       {/* Search and filters header */}
       <div className="mb-6 space-y-4">
-        {/* Search bar */}
-        <div className="relative" ref={searchContainerRef}>
-          <div className="flex w-full items-center bg-gray-800 rounded-lg overflow-hidden shadow-lg focus-within:ring-2 focus-within:ring-blue-500">
-            <MagnifyingGlassIcon className="h-5 w-5 ml-3 text-gray-400" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              className="flex-grow bg-transparent border-0 py-3 pl-2 pr-10 text-white focus:outline-none focus:ring-0"
-              placeholder="Rechercher un Pokémon par nom..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => searchQuery && setShowSearchSuggestions(true)}
-            />
-            {searchQuery && (
-              <button
-                onClick={handleClearSearch}
-                className="absolute right-3 text-gray-400 hover:text-white"
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </button>
+        {/* Flex container for search bar and filter button */}
+        <div className="flex items-center gap-2">
+          {/* Search bar - with flex-grow to take available space */}
+          <div className="flex-grow relative" ref={searchContainerRef}>
+            <div className="flex w-full items-center bg-gray-800 rounded-lg overflow-hidden shadow-lg focus-within:ring-2 focus-within:ring-blue-500">
+              <MagnifyingGlassIcon className="h-5 w-5 ml-3 text-gray-400" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                className="flex-grow bg-transparent border-0 py-3 pl-2 pr-10 text-white focus:outline-none focus:ring-0"
+                placeholder="Rechercher un Pokémon par nom..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => searchQuery && setShowSearchSuggestions(true)}
+              />
+              {searchQuery && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute right-3 text-gray-400 hover:text-white"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+
+            {/* Search suggestions dropdown */}
+            {showSearchSuggestions && searchResults.length > 0 && (
+              <div className="absolute z-50 mt-1 w-full bg-gray-800 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                {searchResults.map(pokemon => (
+                  <div
+                    key={pokemon.id}
+                    className="flex items-center gap-3 p-2 hover:bg-gray-700 cursor-pointer"
+                    onClick={() => handleSelectSearchResult(pokemon)}
+                  >
+                    <div className="w-10 h-10 flex-shrink-0">
+                      <img
+                        src={pokemon.sprites?.front_default || pokemon.sprites?.other?.["official-artwork"]?.front_default || "/images/pokeball.png"}
+                        alt={pokemon.name}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "/images/pokeball.png";
+                        }}
+                      />
+                    </div>
+                    <div className="flex-grow">
+                      <div className="font-medium capitalize">{pokemon.name}</div>
+                      <div className="text-xs text-gray-400">#{pokemon.id.toString().padStart(3, '0')}</div>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mr-2">
+                      {pokemon.types?.map(typeObj => (
+                        <span
+                          key={typeObj.type.name}
+                          className="px-2 py-0.5 text-xs rounded-full capitalize"
+                          style={{
+                            backgroundColor: `${typeColors[typeObj.type.name]}40`,
+                            color: typeColors[typeObj.type.name]
+                          }}
+                        >
+                          {typeObj.type.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {isSearching && (
+              <div className="absolute top-full mt-2 w-full flex justify-center">
+                <LoadingSpinner size="sm" />
+              </div>
             )}
           </div>
 
-          {/* Search suggestions dropdown */}
-          {showSearchSuggestions && searchResults.length > 0 && (
-            <div className="absolute z-50 mt-1 w-full bg-gray-800 rounded-lg shadow-lg max-h-80 overflow-y-auto">
-              {searchResults.map(pokemon => (
-                <div
-                  key={pokemon.id}
-                  className="flex items-center gap-3 p-2 hover:bg-gray-700 cursor-pointer"
-                  onClick={() => handleSelectSearchResult(pokemon)}
-                >
-                  <div className="w-10 h-10 flex-shrink-0">
-                    <img
-                      src={pokemon.sprites?.front_default || pokemon.sprites?.other?.["official-artwork"]?.front_default || "/images/pokeball.png"}
-                      alt={pokemon.name}
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/images/pokeball.png";
-                      }}
-                    />
-                  </div>
-                  <div className="flex-grow">
-                    <div className="font-medium capitalize">{pokemon.name}</div>
-                    <div className="text-xs text-gray-400">#{pokemon.id.toString().padStart(3, '0')}</div>
-                  </div>
-                  <div className="flex flex-wrap gap-1 mr-2">
-                    {pokemon.types?.map(typeObj => (
-                      <span
-                        key={typeObj.type.name}
-                        className="px-2 py-0.5 text-xs rounded-full capitalize"
-                        style={{
-                          backgroundColor: `${typeColors[typeObj.type.name]}40`,
-                          color: typeColors[typeObj.type.name]
-                        }}
-                      >
-                        {typeObj.type.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {isSearching && (
-            <div className="absolute top-full mt-2 w-full flex justify-center">
-              <LoadingSpinner size="sm" />
-            </div>
-          )}
-        </div>
-
-        {/* Filters toggle button */}
-        <div>
+          {/* Filters toggle button - now next to search bar */}
           <button
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition
+            className={`flex items-center gap-2 px-4 py-3 rounded-lg whitespace-nowrap transition
               ${showFilters ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
             onClick={() => setShowFilters(!showFilters)}
           >
             <AdjustmentsHorizontalIcon className="h-5 w-5" />
-            Filtres {isFiltering && `(${selectedTypes.length + selectedGenerations.length + selectedCategories.length})`}
+            Filtres {isFiltering && `(${selectedTypes.length + selectedGenerations.length + selectedCategories.length + (minRating !== null ? 1 : 0) + (minVotes !== null ? 1 : 0)})`}
           </button>
         </div>
 
-        {/* Filters panel */}
+        {/* Filters panel - remains below both elements */}
         {showFilters && (
-          <div className="bg-gray-800 rounded-lg p-4 shadow-lg space-y-6">
+          <div className="bg-gray-800 rounded-lg p-4 shadow-lg space-y-6 mt-2">
             
                         {/* Sort options */}
             <div>
