@@ -1,15 +1,13 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { fetchPokemonDetails } from '../../../lib/api-server/pokemon';
-import { PokemonDetailsClient } from '../../../components/client/pokemon/PokemonDetailsClient';
+import { serverPokemon } from '@/lib/api/server';
+import { PokemonDetailPage } from '@/components/server/pokemon/PokemonDetailPage';
 
-// Génération dynamique de métadonnées avec gestion correcte des params
+// Génération dynamique de métadonnées
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   try {
-    // Utiliser une promesse résolue pour satisfaire l'exigence de Next.js
-    const resolvedParams = await Promise.resolve(params);
-    const id = parseInt(resolvedParams.id);
-    const pokemon = await fetchPokemonDetails(id);
+    const id = parseInt(params.id);
+    const pokemon = await serverPokemon.getDetails(id);
     
     return {
       title: `${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)} | Rate-Em-All`,
@@ -17,7 +15,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
       openGraph: {
         images: [
           {
-            url: pokemon.sprites.other['official-artwork'].front_default,
+            url: pokemon.sprites.other?.['official-artwork']?.front_default || '/images/pokeball.png',
             width: 600,
             height: 600,
             alt: pokemon.name
@@ -32,19 +30,11 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 }
 
-export default async function PokemonDetailPage({ params }: { params: { id: string } }) {
+export default async function Page({ params }: { params: { id: string } }) {
   try {
-    // Utiliser une promesse résolue pour satisfaire l'exigence de Next.js
-    const resolvedParams = await Promise.resolve(params);
-    const id = parseInt(resolvedParams.id);
-    const pokemon = await fetchPokemonDetails(id);
+    const id = parseInt(params.id);
     
-    return (
-      <div className="space-y-8">
-        {/* Partie interactive chargée côté client */}
-        <PokemonDetailsClient pokemon={pokemon} />
-      </div>
-    );
+    return <PokemonDetailPage id={id} />;
   } catch (error) {
     console.error("Erreur lors du chargement des détails du Pokémon:", error);
     notFound();

@@ -1,16 +1,13 @@
 import { Metadata } from 'next';
-import { ClientLoginForm } from '../../components/client/forms/ClientLoginForm';
+import { LoginPage } from '@/components/server/auth/LoginPage';
 
 export const metadata: Metadata = {
   title: 'Connexion | Rate-Em-All',
-  description: 'Connectez-vous à votre compte Rate-Em-All',
+  description: 'Connectez-vous à votre compte Rate-Em-All pour noter vos Pokémon préférés',
 };
 
-export default function LoginPage() {
-  return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Connexion</h1>
-      <ClientLoginForm />
-    </div>
-  );
+// Cette fonction est automatiquement un composant serveur dans Next.js App Router
+export default function Page() {
+  // Utilise le composant serveur qui à son tour injecte le composant client où nécessaire
+  return <LoginPage />;
 }

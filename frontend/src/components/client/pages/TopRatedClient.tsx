@@ -452,7 +452,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                   </div>
 
                   <div className="bg-gradient-to-br from-gray-600 to-gray-700 h-24 w-full rounded-b-xl flex items-center justify-center overflow-hidden relative">
-                    <div className="absolute inset-0 bg-[url('/images/silver-texture.jpg')] opacity-20 bg-cover mix-blend-overlay"></div>
+                    <div className="absolute inset-0 opacity-20 bg-cover mix-blend-overlay"></div>
                     <div className="text-2xl font-bold text-gray-300">2</div>
                   </div>
                 </motion.div>
@@ -561,7 +561,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                   </div>
 
                   <div className="bg-gradient-to-br from-yellow-600 to-amber-700 h-32 w-full rounded-b-xl flex items-center justify-center overflow-hidden relative">
-                    <div className="absolute inset-0 bg-[url('/images/gold-texture.jpg')] opacity-30 bg-cover mix-blend-overlay"></div>
+                    <div className="absolute inset-0 opacity-30 bg-cover mix-blend-overlay"></div>
                     <div className="absolute inset-0 bg-gradient-to-t from-yellow-400/20 to-transparent"></div>
                     <div className="text-3xl font-bold text-white">1</div>
                   </div>
@@ -671,7 +671,7 @@ export function TopRatedClient({ initialPokemons }: TopRatedClientProps) {
                   </div>
 
                   <div className="bg-gradient-to-br from-amber-800 to-amber-900 h-20 w-full rounded-b-xl flex items-center justify-center overflow-hidden relative">
-                    <div className="absolute inset-0 bg-[url('/images/bronze-texture.jpg')] opacity-20 bg-cover mix-blend-overlay"></div>
+                    <div className="absolute inset-0 opacity-20 bg-cover mix-blend-overlay"></div>
                     <div className="text-xl font-bold text-amber-200">3</div>
                   </div>
                 </motion.div>
