@@ -66,7 +66,6 @@ export default function RankingListItem({ pokemon, rank, userRating, isFavorite 
               <ClientStarRating
                 value={userRating}
                 size="sm"
-                fixed={true}
               />
             </div>
           ) : (

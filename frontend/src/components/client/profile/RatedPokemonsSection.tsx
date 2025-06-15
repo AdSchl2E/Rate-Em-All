@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { Pokemon } from '@/types/pokemon';
 import SortControls from './SortControls';
-import PokemonList from './PokemonList';
+import PokemonCardCollection from './PokemonCardCollection';
 import ShowMoreButton from './ShowMoreButton';
 import Link from 'next/link';
 
@@ -31,6 +31,7 @@ export default function RatedPokemonsSection({
   const [sortBy, setSortBy] = useState<'userRating' | 'communityRating' | 'votes'>('userRating');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [showAll, setShowAll] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   
   // Méthode de tri
   const sortedPokemons = useMemo(() => {
@@ -55,7 +56,7 @@ export default function RatedPokemonsSection({
   }, [pokemonList, sortBy, sortDir, userRatings, pokemonCache]);
   
   // Limiter les Pokémon affichés
-  const displayedPokemons = showAll ? sortedPokemons : sortedPokemons.slice(0, 30);
+  const displayedPokemons = showAll ? sortedPokemons : sortedPokemons.slice(0, viewMode === 'grid' ? 20 : 15);
   
   // Gérer le changement de tri
   const handleSortChange = (option: string, direction: 'asc' | 'desc') => {
@@ -87,18 +88,17 @@ export default function RatedPokemonsSection({
 
       {pokemonList.length > 0 ? (
         <div>
-          <PokemonList
+          <PokemonCardCollection
             pokemons={displayedPokemons}
-            userRatings={userRatings}
-            pokemonCache={pokemonCache}
-            favorites={favorites}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
 
-          {pokemonList.length > 30 && (
+          {pokemonList.length > (viewMode === 'grid' ? 20 : 15) && (
             <ShowMoreButton
               isExpanded={showAll}
               itemCount={pokemonList.length}
-              visibleCount={30}
+              visibleCount={viewMode === 'grid' ? 20 : 15}
               onToggle={() => setShowAll(!showAll)}
             />
           )}

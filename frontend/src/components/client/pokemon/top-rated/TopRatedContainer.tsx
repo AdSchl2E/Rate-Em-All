@@ -42,7 +42,16 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
         try {
           console.log('Refreshing top rated Pokémon after new rating');
           const freshTopRated = await clientApi.pokemon.getTopRated(50);
-          setAllPokemons(freshTopRated);
+          console.log('Fetched fresh top rated Pokémon:', freshTopRated);
+          allPokemons.forEach(pokemon => {
+            const freshPokemon = freshTopRated.find(p => p.id === pokemon.id);
+            if (freshPokemon) {
+              pokemon.rating = freshPokemon.rating;
+              pokemon.numberOfVotes = freshPokemon.numberOfVotes;
+            }
+          }
+          );
+          setAllPokemons([...allPokemons]); // Trigger re-render
         } catch (error) {
           console.error('Failed to refresh top rated Pokémon:', error);
         }
@@ -65,6 +74,8 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
       numberOfVotes: pokemonCache[pokemon.id]?.numberOfVotes ?? pokemon.numberOfVotes
     }));
   }, [allPokemons, pokemonCache]);
+
+  console.log('Enhanced Pokémons:', enhancedPokemons);
 
   // Gestionnaire pour changer le tri
   const handleSortChange = (criteria: SortCriteria) => {

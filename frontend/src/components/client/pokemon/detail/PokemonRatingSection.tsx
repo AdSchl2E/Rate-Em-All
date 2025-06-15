@@ -65,7 +65,7 @@ export default function PokemonRatingSection({
             rating={pokemon.rating || 0}
             votes={pokemon.numberOfVotes || 0}
             size="lg"
-            showStars={true}
+            showStars={false}
             prominent={true}
           />
         </div>

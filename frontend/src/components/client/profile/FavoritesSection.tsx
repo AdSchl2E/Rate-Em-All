@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { HeartIcon } from '@heroicons/react/24/solid';
 import { Pokemon } from '@/types/pokemon';
 import SortControls from './SortControls';
-import PokemonGrid from './PokemonGrid';
+import PokemonCardCollection from './PokemonCardCollection';
 import ShowMoreButton from './ShowMoreButton';
 import Link from 'next/link';
 
@@ -31,6 +31,7 @@ export default function FavoritesSection({
   const [sortBy, setSortBy] = useState<'userRating' | 'communityRating' | 'votes'>('userRating');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [showAll, setShowAll] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   // Méthode de tri pour les favoris
   const sortedPokemons = useMemo(() => {
@@ -55,7 +56,7 @@ export default function FavoritesSection({
   }, [pokemonList, sortBy, sortDir, userRatings, pokemonCache]);
   
   // Limiter les favoris affichés
-  const displayedPokemons = showAll ? sortedPokemons : sortedPokemons.slice(0, 10);
+  const displayedPokemons = showAll ? sortedPokemons : sortedPokemons.slice(0, viewMode === 'grid' ? 15 : 10);
   
   // Gérer le changement de tri
   const handleSortChange = (option: string, direction: 'asc' | 'desc') => {
@@ -72,7 +73,7 @@ export default function FavoritesSection({
       <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <h2 className="text-2xl font-bold flex items-center">
           <HeartIcon className="h-6 w-6 mr-2 text-red-500" />
-          Vos Favoris
+          Vos Favoris ({pokemonList.length})
         </h2>
 
         {pokemonList.length > 0 && (
@@ -86,26 +87,25 @@ export default function FavoritesSection({
       </div>
 
       {pokemonList.length > 0 ? (
-        <div className="mb-4">
-          <PokemonGrid 
-            pokemons={displayedPokemons} 
-            userRatings={userRatings}
-            pokemonCache={pokemonCache}
-            favorites={favorites}
+        <div className="mb-6">
+          <PokemonCardCollection
+            pokemons={displayedPokemons}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
 
-          {pokemonList.length > 10 && (
+          {pokemonList.length > (viewMode === 'grid' ? 15 : 10) && (
             <ShowMoreButton
               isExpanded={showAll}
               itemCount={pokemonList.length}
-              visibleCount={10}
+              visibleCount={viewMode === 'grid' ? 15 : 10}
               onToggle={() => setShowAll(!showAll)}
             />
           )}
         </div>
       ) : (
         <motion.div 
-          className="bg-gray-800/70 rounded-xl p-8 text-center mb-4"
+          className="bg-gray-800/70 rounded-xl p-8 text-center mb-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}

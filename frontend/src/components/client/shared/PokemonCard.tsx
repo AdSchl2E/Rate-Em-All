@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { HeartIcon } from '@heroicons/react/24/solid';
-import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
+import { StarIcon } from '@heroicons/react/24/solid';
 import { Pokemon } from '@/types/pokemon';
 import { useGlobal } from '@/providers/GlobalProvider';
 import { getPokemonTypeColors } from '@/lib/utils/pokemonTypes';
@@ -14,66 +14,90 @@ import { useSession } from 'next-auth/react';
 import { ClientStarRating } from '@/components/client/ui/ClientStarRating';
 import PokemonTypeTag from './PokemonTypeTag';
 
+// Ajouter cette fonction utilitaire en début de fichier, après les imports
+function getRatingColor(rating: number) {
+  if (rating < 1) return 'text-gray-400';
+  if (rating < 2) return 'text-yellow-400';
+  if (rating < 3) return 'text-yellow-500';
+  if (rating < 3.5) return 'text-amber-500';
+  if (rating < 4) return 'text-amber-600';
+  if (rating < 4.5) return 'text-orange-500';
+  if (rating < 5) return 'text-orange-600';
+  return 'text-red-500'; // Pour 5 exactement
+}
+
+// Ajouter type pour la taille
+type CardSize = 'sm' | 'md' | 'lg';
+
 interface PokemonCardProps {
   pokemon: Pokemon;
   showActions?: boolean;
   showRating?: boolean;
   viewMode?: 'grid' | 'list';
+  size?: CardSize; // Nouvelle prop pour la taille
 }
 
-export default function PokemonCard({ 
-  pokemon, 
-  showActions = false, 
-  showRating = false,
-  viewMode = 'grid'
+export default function PokemonCard({
+  pokemon,
+  showActions = true,
+  showRating = true,
+  viewMode = 'grid',
+  size = 'md' // Taille moyenne par défaut
 }: PokemonCardProps) {
   const { status } = useSession();
-  const { 
-    isFavorite, 
-    toggleFavorite, 
-    getRating, 
+  const {
+    isFavorite,
+    toggleFavorite,
+    getRating,
     setRating,
     cachePokemon
   } = useGlobal();
-  
+
   const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
   const [isLoadingRating, setIsLoadingRating] = useState(false);
-  const [showRatingPanel, setShowRatingPanel] = useState(false);
-  
+  const [localUserRating, setLocalUserRating] = useState(0);
+
   // Utiliser les fonctions du nouveau GlobalProvider
   const isPokemonInFavorites = isFavorite(pokemon.id);
   const userRating = getRating(pokemon.id);
-  
-  // S'assurer que le pokemon est dans le cache
-  if (pokemon) {
-    cachePokemon(pokemon);
-  }
-  
+
+  // Initialiser la note locale à partir de la note utilisateur au chargement
+  useEffect(() => {
+    setLocalUserRating(userRating);
+  }, [userRating]);
+
+  // Déplacer l'appel de cachePokemon dans un useEffect
+  useEffect(() => {
+    if (pokemon) {
+      cachePokemon(pokemon);
+    }
+  }, [pokemon, cachePokemon]);
+
   // Get pokemon type colors for gradient background
   const [primaryColor, secondaryColor] = getPokemonTypeColors(pokemon);
-  
+
   // Toggle favorite status
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (status !== 'authenticated') {
       toast.error('Connectez-vous pour ajouter des favoris');
       return;
     }
-    
+
     try {
       setIsLoadingFavorite(true);
-      
+
       // Utilise la fonction toggleFavorite du GlobalProvider qui inclut une mise à jour optimiste
       const isFavoriteNow = await toggleFavorite(pokemon.id);
-      
-      // Afficher une notification en fonction du résultat
-      if (isFavoriteNow) {
-        toast.success(`${pokemon.name} ajouté aux favoris`);
-      } else {
-        toast.success(`${pokemon.name} retiré des favoris`);
-      }
+
+      // Notification plus discrète pour éviter de surcharger l'utilisateur
+      toast.success(isFavoriteNow
+        ? `${pokemon.name} ajouté aux favoris`
+        : `${pokemon.name} retiré des favoris`,
+        { duration: 2000 }
+      );
     } catch (error) {
       console.error('Error toggling favorite:', error);
       toast.error('Erreur lors de la modification des favoris');
@@ -81,128 +105,249 @@ export default function PokemonCard({
       setIsLoadingFavorite(false);
     }
   };
-  
-  // Handle rating click
-  const handleRateClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+
+  // Handle rating change
+  const handleRatingChange = async (rating: number) => {
     if (status !== 'authenticated') {
       toast.error('Connectez-vous pour noter des Pokémon');
       return;
     }
-    
-    setShowRatingPanel(!showRatingPanel);
-  };
-  
-  // Handle rating change
-  const handleRatingChange = async (rating: number) => {
-    if (status !== 'authenticated') return;
-    
+
     try {
       setIsLoadingRating(true);
-      
+      setLocalUserRating(rating);
+
       // Utiliser la fonction setRating du GlobalProvider qui gère la mise à jour optimiste
       const result = await setRating(pokemon.id, rating);
-      
-      toast.success(`Vous avez noté ${pokemon.name} ${rating}/5`);
-      setShowRatingPanel(false);
+
+      // Notification plus discrète
+      toast.success(`Vous avez noté ${pokemon.name} ${rating}/5`, {
+        duration: 2000
+      });
     } catch (error) {
       console.error('Error rating pokemon:', error);
       toast.error('Erreur lors de l\'enregistrement de la note');
+      setLocalUserRating(userRating); // Restaurer la note précédente en cas d'erreur
     } finally {
       setIsLoadingRating(false);
     }
   };
-  
-  // Si mode liste, afficher une version horizontale de la carte
+
+  // Définir les classes et dimensions en fonction de la taille
+  const listSizeClasses = {
+    sm: {
+      container: "p-1.5",
+      image: "w-12 h-12",
+      imageSize: { width: 40, height: 40 },
+      name: "text-sm",
+      idBadge: "text-xs px-0.5",
+      type: "px-1 py-0 text-xs",
+      starSize: "sm",
+      commRating: {
+        container: "px-1.5 py-0.5",
+        icon: "h-4 w-4 mr-0.5",
+        text: "text-sm"
+      },
+      heartIcon: "h-3.5 w-3.5",
+      gap: "gap-2"
+    },
+    md: {
+      container: "p-2",
+      image: "w-16 h-16",
+      imageSize: { width: 50, height: 50 },
+      name: "text-base",
+      idBadge: "text-xs px-1",
+      type: "px-1.5 py-0.5 text-xs",
+      starSize: "md",
+      commRating: {
+        container: "px-2 py-1",
+        icon: "h-6 w-6 mr-1",
+        text: "text-base"
+      },
+      heartIcon: "h-4 w-4",
+      gap: "gap-3"
+    },
+    lg: {
+      container: "p-3",
+      image: "w-20 h-20",
+      imageSize: { width: 60, height: 60 },
+      name: "text-lg",
+      idBadge: "text-sm px-1.5",
+      type: "px-2 py-0.5 text-sm",
+      starSize: "lg",
+      commRating: {
+        container: "px-3 py-1.5",
+        icon: "h-7 w-7 mr-1.5",
+        text: "text-lg"
+      },
+      heartIcon: "h-5 w-5",
+      gap: "gap-4"
+    }
+  };
+
+  const gridSizeClasses = {
+    sm: {
+      imageHeight: "h-24",
+      imageSize: { width: 80, height: 80 },
+      container: "p-2",
+      name: "text-sm",
+      commRating: {
+        container: "px-1.5 py-0.5",
+        icon: "h-4 w-4 mr-0.5",
+        text: "text-sm"
+      },
+      starSize: "sm"
+    },
+    md: {
+      imageHeight: "h-32",
+      imageSize: { width: 100, height: 100 },
+      container: "p-4",
+      name: "text-base",
+      commRating: {
+        container: "px-2 py-0.5",
+        icon: "h-5 w-5 mr-1",
+        text: "text-base"
+      },
+      starSize: "md"
+    },
+    lg: {
+      imageHeight: "h-40",
+      imageSize: { width: 120, height: 120 },
+      container: "p-5",
+      name: "text-lg",
+      commRating: {
+        container: "px-2.5 py-1.5",
+        icon: "h-6 w-6 mr-1.5",
+        text: "text-lg"
+      },
+      starSize: "lg"
+    }
+  };
+
+  // Version liste avec taille ajustable
   if (viewMode === 'list') {
+    const listClasses = listSizeClasses[size];
+
     return (
-      <div className="p-3 flex bg-gray-800/40 hover:bg-gray-800/70 rounded-lg transition">
-        <Link href={`/pokemon/${pokemon.id}`} className="flex flex-grow items-center">
-          <div className="w-16 h-16 relative flex-shrink-0 mr-4">
-            <Image
-              src={pokemon.sprites.other?.['official-artwork']?.front_default || pokemon.sprites.front_default || '/images/pokeball.png'}
-              width={64}
-              height={64}
-              alt={pokemon.name}
-              className="rounded-full"
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = '/images/pokeball.png';
+      <div className="bg-gray-800/40 hover:bg-gray-800/60 rounded-lg transition-all duration-200 shadow-sm">
+        <div className={`flex items-center ${listClasses.container}`}>
+          {/* Image avec fond coloré (à gauche) */}
+          <div className="relative mr-3 flex-shrink-0">
+            <div
+              className={`${listClasses.image} rounded-lg flex items-center justify-center`}
+              style={{
+                background: `linear-gradient(135deg, ${primaryColor}50 0%, ${secondaryColor}80 100%)`
               }}
-            />
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-black/10 to-black/40 pointer-events-none" />
-          </div>
-          
-          <div className="flex-grow">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium capitalize">{pokemon.name}</h3>
-              <span className="text-sm text-gray-400">#{pokemon.id}</span>
+            >
+              <Link href={`/pokemon/${pokemon.id}`}>
+                <Image
+                  src={pokemon.sprites.other?.['official-artwork']?.front_default || pokemon.sprites.front_default || '/images/pokeball.png'}
+                  width={listClasses.imageSize.width}
+                  height={listClasses.imageSize.height}
+                  alt={pokemon.name}
+                  className="drop-shadow-md z-10"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = '/images/pokeball.png';
+                  }}
+                />
+              </Link>
+              <div className={`absolute bottom-0 right-0 bg-black/40 rounded font-mono ${listClasses.idBadge} text-gray-200`}>
+                #{pokemon.id}
+              </div>
             </div>
-            
+          </div>
+
+          {/* Nom et types (au centre) */}
+          <div className="flex-grow">
+            <Link href={`/pokemon/${pokemon.id}`} className="block">
+              <h3 className={`font-medium capitalize hover:text-blue-400 transition truncate ${listClasses.name}`}>
+                {pokemon.name.length > 16 ? `${pokemon.name.slice(0, 16).replace(/-/g, ' ')}...` : pokemon.name.replace(/-/g, ' ')}
+              </h3>
+            </Link>
+
             <div className="flex flex-wrap gap-1 mt-1">
               {pokemon.types?.map((typeObj, idx) => (
                 <PokemonTypeTag
                   key={idx}
                   type={typeObj.type.name}
-                  className="px-2 py-0.5 text-xs"
+                  className={listClasses.type}
                 />
               ))}
             </div>
           </div>
-        </Link>
-        
-        {showActions && (
-          <div className="flex flex-col justify-center gap-2 ml-4">
-            <button
-              onClick={handleToggleFavorite}
-              className={`flex items-center justify-center p-2 rounded-full ${
-                isPokemonInFavorites ? 'bg-red-500/20 text-red-500' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'
-              }`}
-              disabled={isLoadingFavorite}
-            >
-              <HeartIcon className="h-5 w-5" />
-            </button>
-            
-            {showRating && (
+
+          {/* Actions (à droite): Bouton favoris, note utilisateur, note communauté */}
+          <div className={`flex items-center ${listClasses.gap} ml-2`}>
+            {/* Bouton favoris */}
+            {showActions && (
               <button
-                onClick={handleRateClick}
-                className={`flex items-center justify-center p-2 rounded-full ${
-                  userRating ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'
-                }`}
+                onClick={handleToggleFavorite}
+                className={`flex items-center justify-center p-1.5 rounded-full 
+                  ${isPokemonInFavorites ? 'bg-red-500/90 text-white' : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700'}
+                  transition-all duration-200 hover:scale-110`}
+                disabled={isLoadingFavorite}
+                title={isPokemonInFavorites ? "Retirer des favoris" : "Ajouter aux favoris"}
               >
-                <StarOutline className="h-5 w-5" />
+                <HeartIcon className={listClasses.heartIcon} />
               </button>
             )}
+
+            {/* Note utilisateur */}
+            {showActions && showRating && (
+              <div className="flex flex-col items-center">
+                <ClientStarRating
+                  value={localUserRating}
+                  onChange={handleRatingChange}
+                  size={listClasses.starSize as any}
+                  disabled={isLoadingRating || status !== 'authenticated'}
+                  useColors={true}
+                />
+              </div>
+            )}
+
+            {/* Note communauté - VERSION AGRANDIE avec taille ajustable et couleur dynamique */}
+            {showRating && (
+              <div className="flex flex-col items-center">
+                <div className={`flex items-center bg-gray-800/60 rounded-md ${listClasses.commRating.container}`}>
+                  <StarIcon
+                    className={`${listClasses.commRating.icon} ${getRatingColor(pokemon.rating ?? 0)}`}
+                  />
+                  <span className={`font-bold ${listClasses.commRating.text} ${getRatingColor(pokemon.rating ?? 0)}`}>
+                    {(pokemon.rating ?? 0) > 0 ? (pokemon.rating ?? 0).toFixed(1) : '0.0'}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     );
   }
-  
-  // Mode grille par défaut
+
+  // Mode grille avec taille ajustable
+  const gridClasses = gridSizeClasses[size];
+
   return (
-    <motion.div 
-      className="bg-gray-900 rounded-lg overflow-hidden shadow-lg relative group"
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+    <motion.div
+      className="bg-gray-800 rounded-lg overflow-hidden shadow-lg relative group"
+      whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
     >
-      <div 
-        className="h-32 flex items-center justify-center bg-gradient-to-br"
-        style={{ backgroundColor: primaryColor }}
-      >
-        <div 
-          className="absolute inset-0 opacity-50" 
-          style={{ 
-            background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)` 
+      {/* Section image avec fond de couleur subtil */}
+      <div className={`flex items-center justify-center bg-gray-850 relative ${gridClasses.imageHeight}`}>
+        {/* Fond subtil avec couleur de type */}
+        <div
+          className="absolute inset-0 backdrop-filter backdrop-blur-sm"
+          style={{
+            background: `linear-gradient(135deg, ${primaryColor}25 0%, ${secondaryColor}30 100%)`
           }}
         />
-        
+
         <Link href={`/pokemon/${pokemon.id}`} className="relative z-10">
           <Image
             src={pokemon.sprites.other?.['official-artwork']?.front_default || pokemon.sprites.front_default || '/images/pokeball.png'}
-            width={100}
-            height={100}
+            width={gridClasses.imageSize.width}
+            height={gridClasses.imageSize.height}
             alt={pokemon.name}
             className="drop-shadow-lg transform group-hover:scale-110 transition-transform duration-300"
             onError={(e) => {
@@ -211,33 +356,51 @@ export default function PokemonCard({
             }}
           />
         </Link>
-        
+
         <div className="absolute top-2 right-2 bg-black/40 rounded p-1 text-xs font-mono text-gray-200">
           #{pokemon.id}
         </div>
+
+        {/* Bouton favoris flottant */}
+        {showActions && (
+          <button
+            onClick={handleToggleFavorite}
+            className={`absolute top-2 left-2 flex items-center justify-center p-1.5 rounded-full shadow-md z-20
+              ${isPokemonInFavorites
+                ? 'bg-red-500/90 text-white hover:bg-red-600'
+                : 'bg-gray-800/80 text-gray-300 hover:bg-gray-700'
+              } backdrop-blur-sm transition-all`}
+            disabled={isLoadingFavorite}
+            title={isPokemonInFavorites ? "Retirer des favoris" : "Ajouter aux favoris"}
+          >
+            <HeartIcon className="h-4 w-4" />
+          </button>
+        )}
       </div>
-      
-      <div className="p-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-medium capitalize">
+
+      <div className={gridClasses.container}>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className={`font-medium capitalize ${gridClasses.name}`}>
             <Link href={`/pokemon/${pokemon.id}`} className="hover:text-blue-400 transition">
-              {pokemon.name}
+              {pokemon.name.length > 13
+                ? `${pokemon.name.slice(0, 12).replace(/-/g, ' ')}...`
+                : pokemon.name.replace(/-/g, ' ')}
             </Link>
           </h3>
-          
-          {showActions && (
-            <button
-              onClick={handleToggleFavorite}
-              className={`flex items-center justify-center p-1.5 rounded-full ${
-                isPokemonInFavorites ? 'bg-red-500/20 text-red-500' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-              }`}
-              disabled={isLoadingFavorite}
-            >
-              <HeartIcon className="h-4 w-4" />
-            </button>
+
+          {/* Note communautaire AGRANDIE avec taille ajustable et couleur dynamique */}
+          {showRating && (
+            <div className={`flex items-center bg-gray-700/60 rounded-md ${gridClasses.commRating.container}`}>
+              <StarIcon
+                className={`${gridClasses.commRating.icon} ${getRatingColor(pokemon.rating ?? 0)}`}
+              />
+              <span className={`font-bold ${gridClasses.commRating.text} ${getRatingColor(pokemon.rating ?? 0)}`}>
+                {(pokemon.rating ?? 0) > 0 ? (pokemon.rating ?? 0).toFixed(1) : '0.0'}
+              </span>
+            </div>
           )}
         </div>
-        
+
         <div className="flex flex-wrap gap-1 mt-2">
           {pokemon.types?.map((typeObj, idx) => (
             <PokemonTypeTag
@@ -247,41 +410,25 @@ export default function PokemonCard({
             />
           ))}
         </div>
-        
+
+        {/* Section de notation utilisateur */}
         {showRating && (
-          <div className="mt-3 border-t border-gray-800 pt-3">
-            {userRating > 0 ? (
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400">Votre note:</span>
-                <div className="flex items-center">
-                  <ClientStarRating
-                    value={userRating}
-                    size="sm"
-                    fixed={true}
-                  />
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={handleRateClick}
-                className="w-full py-1 px-2 text-sm bg-gray-800 hover:bg-gray-700 rounded text-gray-300 transition"
-              >
-                Noter ce Pokémon
-              </button>
-            )}
-            
-            {showRatingPanel && (
-              <div className="mt-2 p-2 bg-gray-800 rounded-md">
-                <p className="text-xs text-center mb-1 text-gray-400">Sélectionnez une note:</p>
-                <div className="flex justify-center">
-                  <ClientStarRating
-                    value={userRating}
-                    onChange={handleRatingChange}
-                    size="md"
-                    disabled={isLoadingRating}
-                  />
-                </div>
-              </div>
+          <div className="mt-3 border-t border-gray-700 pt-3">
+            <div className="flex items-center justify-center">
+              <ClientStarRating
+                value={localUserRating}
+                onChange={handleRatingChange}
+                size={gridClasses.starSize as any}
+                disabled={isLoadingRating || status !== 'authenticated'}
+                useColors={true}
+              />
+            </div>
+            {status !== 'authenticated' && (
+              <p className="text-xs text-gray-500 mt-1 text-center">
+                <Link href="/login" className="text-blue-400 hover:underline">
+                  Connectez-vous
+                </Link> pour noter
+              </p>
             )}
           </div>
         )}

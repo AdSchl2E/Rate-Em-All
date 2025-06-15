@@ -9,10 +9,12 @@ import FilterPanel from './FilterPanel';
 import PokemonGrid from './PokemonGrid';
 import LoadingIndicator from './LoadingIndicator';
 import EmptyState from './EmptyState';
+import { ListBulletIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 
 export type SortCriteria = 'id' | 'name' | 'rating' | 'votes';
 export type SortDirection = 'asc' | 'desc';
 export type POKEMON_CATEGORY = 'favorite' | 'rated' | 'legendary' | 'mythical' | 'baby' | 'all';
+export type ViewMode = 'grid' | 'list';
 
 // Définition des filtres
 export interface PokemonFilters {
@@ -72,6 +74,9 @@ export default function ExplorerContainer({ initialTypes, totalCount }: Explorer
     criteria: 'id',
     direction: 'asc',
   });
+  
+  // Nouvel état pour le mode d'affichage
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   
   // 3. Charger plus de Pokémon lors du défilement
   const loadMorePokemons = useCallback(async () => {
@@ -335,24 +340,45 @@ export default function ExplorerContainer({ initialTypes, totalCount }: Explorer
           <EmptyState onReset={resetFilters} />
         ) : (
           <>
-            {/* Affichage des résultats */}
-            <div className="mb-4 text-sm text-gray-400">
-              {filteredPokemons.length} résultat{filteredPokemons.length > 1 ? 's' : ''}
-              {isFiltering && (
-                <button 
-                  onClick={resetFilters}
-                  className="ml-2 text-blue-400 hover:text-blue-300 transition"
+            {/* Affichage des résultats avec sélecteur de vue */}
+            <div className="mb-4 flex justify-between items-center">
+              <div className="text-sm text-gray-400">
+                {filteredPokemons.length} résultat{filteredPokemons.length > 1 ? 's' : ''}
+                {isFiltering && (
+                  <button 
+                    onClick={resetFilters}
+                    className="ml-2 text-blue-400 hover:text-blue-300 transition"
+                  >
+                    Réinitialiser
+                  </button>
+                )}
+              </div>
+              
+              {/* Sélecteur de mode d'affichage */}
+              <div className="bg-gray-800 rounded-lg p-1 inline-flex">
+                <button
+                  className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+                  onClick={() => setViewMode('grid')}
+                  title="Affichage en grille"
                 >
-                  Réinitialiser
+                  <Squares2X2Icon className="h-5 w-5" />
                 </button>
-              )}
+                <button
+                  className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+                  onClick={() => setViewMode('list')}
+                  title="Affichage en liste"
+                >
+                  <ListBulletIcon className="h-5 w-5" />
+                </button>
+              </div>
             </div>
             
-            {/* Grille de Pokémon */}
+            {/* Grille/Liste de Pokémon */}
             <PokemonGrid 
               pokemons={displayedPokemons}
               loading={loading}
-              lastPokemonRef={lastPokemonElementRef} 
+              lastPokemonRef={lastPokemonElementRef}
+              viewMode={viewMode}
             />
             
             {/* Indicateur de chargement pour infinite scroll */}

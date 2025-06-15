@@ -185,7 +185,6 @@ export default function PodiumPokemon({ pokemon, rank, userRating, isFavorite }:
                 <ClientStarRating
                   value={userRating}
                   size={rank === 1 ? "md" : "sm"}
-                  fixed={true}
                 />
               </div>
             </div>

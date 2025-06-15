@@ -59,16 +59,6 @@ export default function PokemonImageSection({ pokemon }: PokemonImageSectionProp
             e.currentTarget.src = "/images/pokeball.png";
           }}
         />
-        
-        <div className="absolute -bottom-6 left-0 right-0 flex justify-center opacity-50">
-          <Image
-            src="/images/pokeball-silhouette.png"
-            alt="Pokéball"
-            width={120}
-            height={120}
-            className="opacity-20"
-          />
-        </div>
       </motion.div>
     </div>
   );

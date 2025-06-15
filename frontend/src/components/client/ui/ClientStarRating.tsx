@@ -1,121 +1,110 @@
 'use client';
 
 import { useState } from 'react';
-import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
-import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
-import { getRatingColor } from '../../../lib/utils/ratingColors';
+import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
+import { StarIcon } from '@heroicons/react/24/solid';
 
 interface ClientStarRatingProps {
   value: number;
   onChange?: (rating: number) => void;
-  disabled?: boolean;
   size?: 'xs' | 'sm' | 'md' | 'lg';
-  highlight?: boolean;
-  fixed?: boolean;
+  disabled?: boolean;
   useColors?: boolean;
+  interactive?: boolean;
+  starSpacing?: 'normal' | 'tight' | 'wide';
 }
 
 export function ClientStarRating({
   value = 0,
   onChange,
-  disabled = false,
   size = 'md',
-  highlight = false,
-  fixed = false,
-  useColors = true
+  disabled = false,
+  useColors = false,
+  interactive = true,
+  starSpacing = 'normal'
 }: ClientStarRatingProps) {
-  const [hoverRating, setHoverRating] = useState(0);
-  const [isHovering, setIsHovering] = useState(false);
+  // État local pour suivre la valeur survolée
+  const [hoveredValue, setHoveredValue] = useState<number | null>(null);
 
+  // Définir la taille des étoiles selon la prop size
   const sizeClasses = {
-    xs: 'h-3 w-3',
-    sm: 'h-4 w-4',
-    md: 'h-5 w-5',
-    lg: 'h-6 w-6'
+    xs: 'w-3 h-3',
+    sm: 'w-4 h-4',
+    md: 'w-5 h-5',
+    lg: 'w-6 h-6'
   };
 
-  const getStarProps = (index: number) => {
-    const rating = isHovering ? hoverRating : value;
-    const isFilled = index <= rating;
-    
-    // Déterminer la couleur en fonction de la valeur
-    let colorClass = 'text-slate-600'; // couleur par défaut pour les étoiles vides
-    
-    if (isFilled) {
-      if (useColors && !isHovering) {
-        // Utiliser la couleur basée sur la note
-        colorClass = getRatingColor(value);
-      } else {
-        // Couleur standard pour le hover ou si useColors est false
-        colorClass = highlight ? 'text-amber-400' : 'text-yellow-500';
-      }
+  // Définir les classes d'espacement
+  const spacingClasses = {
+    tight: 'gap-0.5',
+    normal: 'gap-1',
+    wide: 'gap-2'
+  };
+
+  // Fonction pour définir la couleur des étoiles en fonction de la valeur
+  const getStarColor = (starPosition: number) => {
+    // Si une valeur est survolée, l'utiliser pour déterminer la couleur
+    const ratingToUse = hoveredValue !== null ? hoveredValue : value;
+
+    if (!useColors) {
+      return 'text-yellow-500';
     }
-    
-    const sharedProps = {
-      className: `${sizeClasses[size]} ${colorClass} transition-all duration-200`,
-      'aria-hidden': true
-    };
-    
-    return sharedProps;
+
+    // Si l'étoile est remplie (sa position est <= à la valeur)
+    if (starPosition <= ratingToUse) {
+      if (ratingToUse < 1) return 'text-gray-400';
+      if (ratingToUse < 2) return 'text-yellow-400';
+      if (ratingToUse < 3) return 'text-yellow-500';
+      if (ratingToUse < 3.5) return 'text-amber-500';
+      if (ratingToUse < 4) return 'text-amber-600';
+      if (ratingToUse < 4.5) return 'text-orange-500';
+      if (ratingToUse < 5) return 'text-orange-600';
+      return 'text-red-500'; // 5 étoiles: red
+    }
+
+    return 'text-gray-400'; // Étoile non remplie
   };
 
-  const handleMouseOver = (index: number) => {
-    if (disabled || fixed) return;
-    
-    setHoverRating(index);
-    setIsHovering(true);
+  // Gérer le clic sur une étoile
+  const handleStarClick = (newValue: number) => {
+    if (disabled || !interactive || !onChange) return;
+    onChange(newValue);
   };
 
+  // Gérer le survol d'une étoile
+  const handleStarHover = (newValue: number) => {
+    if (disabled || !interactive) return;
+    setHoveredValue(newValue);
+  };
+
+  // Gérer la sortie du survol
   const handleMouseLeave = () => {
-    if (disabled || fixed) return;
-    
-    setHoverRating(0);
-    setIsHovering(false);
-  };
-
-  const handleClick = (index: number) => {
-    if (disabled || fixed || !onChange) return;
-    
-    onChange(index);
-  };
-  
-  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
-    if (disabled || fixed || !onChange) return;
-    
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      onChange(index);
-    }
+    setHoveredValue(null);
   };
 
   return (
-    <div 
-      className={`flex items-center gap-1 ${disabled ? 'opacity-70' : ''}`}
+    <div
+      className={`flex items-center ${spacingClasses[starSpacing]}`}
       onMouseLeave={handleMouseLeave}
-      role={onChange && !disabled && !fixed ? "radiogroup" : "presentation"}
-      aria-label="Note"
+      aria-label={`Note: ${value} sur 5`}
     >
-      {[1, 2, 3, 4, 5].map((index) => {
-        const rating = isHovering ? hoverRating : value;
-        const isFilled = index <= rating;
-        
+      {[1, 2, 3, 4, 5].map(starValue => {
+        // L'étoile est pleine si sa valeur est <= à la valeur actuelle (ou valeur survolée)
+        const isFilled = starValue <= (hoveredValue !== null ? hoveredValue : value);
+
         return (
           <span
-            key={index}
-            tabIndex={onChange && !disabled && !fixed ? 0 : -1}
-            role={onChange && !disabled && !fixed ? "radio" : "presentation"}
-            aria-checked={index === Math.round(value)}
-            aria-label={`${index} étoile${index > 1 ? 's' : ''}`}
-            className={`cursor-${disabled || fixed ? 'default' : 'pointer'} focus:outline-none focus:ring-2 focus:ring-blue-500 rounded`}
-            onMouseOver={() => handleMouseOver(index)}
-            onClick={() => handleClick(index)}
-            onKeyDown={(e) => handleKeyDown(e, index)}
-            data-rating={index}
+            key={starValue}
+            className={`${sizeClasses[size]} ${getStarColor(starValue)} cursor-pointer transition-colors duration-200`}
+            onClick={() => handleStarClick(starValue)}
+            onMouseEnter={() => handleStarHover(starValue)}
+            title={`${starValue} étoile${starValue > 1 ? 's' : ''}`}
           >
-            {isFilled ? 
-              <StarSolid {...getStarProps(index)} /> : 
-              <StarOutline {...getStarProps(index)} />
-            }
+            {isFilled ? (
+              <StarIcon className="w-full h-full" />
+            ) : (
+              <OutlineStarIcon className="w-full h-full" />
+            )}
           </span>
         );
       })}
