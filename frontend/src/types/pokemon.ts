@@ -45,6 +45,99 @@ export interface Pokemon {
   userRating?: number;
   isFavorite?: boolean;
   pokedexId?: number;
+
+  // Species data from Pokemon API
+  species_info?: {
+    // Basic species info
+    is_legendary?: boolean;
+    is_mythical?: boolean;
+    is_baby?: boolean;
+    
+    // Generation data
+    generation?: {
+      name: string;  // e.g., "generation-i"
+      url: string;
+    };
+    
+    // Color and physical properties
+    color?: {
+      name: string;
+      url: string;
+    };
+    shape?: {
+      name: string;
+      url: string;
+    };
+    
+    // Habitat and growth
+    habitat?: {
+      name: string;
+      url: string;
+    };
+    growth_rate?: {
+      name: string;
+      url: string;
+    };
+    
+    // Evolution 
+    evolution_chain?: {
+      url: string;
+    };
+    evolves_from_species?: {
+      name: string;
+      url: string;
+    };
+    
+    // Breeding groups
+    egg_groups?: {
+      name: string;
+      url: string;
+    }[];
+    
+    // Gender rate (-1 for genderless, otherwise the percentage of being female)
+    gender_rate?: number;
+    
+    // Capture and happiness
+    capture_rate?: number;
+    base_happiness?: number;
+    
+    // Hatch counter (steps to hatch an egg)
+    hatch_counter?: number;
+    
+    // Descriptions and category
+    flavor_text_entries?: {
+      flavor_text: string;
+      language: {
+        name: string;
+        url: string;
+      };
+      version: {
+        name: string;
+        url: string;
+      };
+    }[];
+    genera?: {
+      genus: string;
+      language: {
+        name: string;
+        url: string;
+      };
+    }[];
+    
+    // Forms info
+    forms_switchable?: boolean;
+    has_gender_differences?: boolean;
+    
+    // Additional misc info
+    order?: number;
+    varieties?: {
+      is_default: boolean;
+      pokemon: {
+        name: string;
+        url: string;
+      };
+    }[];
+  };
 }
 
 export interface UserRating {

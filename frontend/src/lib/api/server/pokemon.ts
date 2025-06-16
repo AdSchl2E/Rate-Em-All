@@ -13,28 +13,17 @@ export async function getTopRatedPokemon(limit: number = 10): Promise<Pokemon[]>
     cache: 'no-store' // Toujours des données fraîches
   });
   
-  // Enrichir avec les détails de l'API Pokémon
+  // Enrichir avec les détails de l'API Pokémon, y compris les données d'espèce
   return await Promise.all(
     data.map(async (pokemon: any) => {
       try {
-        const pokeData = await serverPokeApiRequest(`/pokemon/${pokemon.pokedexId}`);
-        return {
-          ...pokeData,
-          rating: pokemon.rating,
-          numberOfVotes: pokemon.numberOfVotes
-        };
+        return await loadPokemonWithSpeciesData(pokemon.pokedexId);
       } catch (error) {
         console.error(`Error fetching Pokemon ${pokemon.pokedexId}:`, error);
-        return {
+        return defaultPokemonData({
           ...pokemon,
           id: pokemon.pokedexId,
-          name: pokemon.name || `Unknown #${pokemon.pokedexId}`,
-          sprites: {
-            front_default: '/images/pokeball.png',
-            other: { 'official-artwork': { front_default: '/images/pokeball.png' } }
-          },
-          types: []
-        };
+        });
       }
     })
   );
@@ -75,14 +64,20 @@ export async function getTrendingPokemon(limit: number = 10): Promise<Pokemon[]>
 
 /**
  * Récupérer les détails d'un Pokémon - version serveur
+ * Incluant les détails d'espèce (génération, statut légendaire, etc.)
  */
 export async function getPokemonDetails(id: number): Promise<Pokemon> {
   try {
-    // Récupération parallèle des données de base et des notes
-    const [pokeDetails, ratings] = await Promise.all([
+    // Récupération parallèle des données de base, des notes et des informations d'espèce
+    const [pokeDetails, ratings, speciesData] = await Promise.all([
       serverPokeApiRequest(`/pokemon/${id}`),
       serverApiRequest(API_CONFIG.endpoints.pokemon.details(id))
-        .catch(() => ({ rating: 0, numberOfVotes: 0 }))
+        .catch(() => ({ rating: 0, numberOfVotes: 0 })),
+      serverPokeApiRequest(`/pokemon-species/${id}`)
+        .catch(error => {
+          console.error(`Error fetching species data for pokemon ${id}:`, error);
+          return null;
+        })
     ]);
     
     // Fusionner les données
@@ -90,6 +85,30 @@ export async function getPokemonDetails(id: number): Promise<Pokemon> {
       ...pokeDetails,
       rating: ratings.rating || 0,
       numberOfVotes: ratings.numberOfVotes || 0,
+      // Ajouter les informations d'espèce s'ils sont disponibles
+      species_info: speciesData ? {
+        is_legendary: speciesData.is_legendary,
+        is_mythical: speciesData.is_mythical,
+        is_baby: speciesData.is_baby,
+        generation: speciesData.generation,
+        color: speciesData.color,
+        shape: speciesData.shape,
+        habitat: speciesData.habitat,
+        growth_rate: speciesData.growth_rate,
+        evolution_chain: speciesData.evolution_chain,
+        evolves_from_species: speciesData.evolves_from_species,
+        egg_groups: speciesData.egg_groups,
+        gender_rate: speciesData.gender_rate,
+        capture_rate: speciesData.capture_rate,
+        base_happiness: speciesData.base_happiness,
+        hatch_counter: speciesData.hatch_counter,
+        flavor_text_entries: speciesData.flavor_text_entries,
+        genera: speciesData.genera,
+        forms_switchable: speciesData.forms_switchable,
+        has_gender_differences: speciesData.has_gender_differences,
+        order: speciesData.order,
+        varieties: speciesData.varieties
+      } : undefined
     };
   } catch (error) {
     console.error('Error fetching pokemon details:', error);
@@ -250,3 +269,15 @@ export const serverPokemon = {
     }
   }
 };
+
+/**
+ * Charger les données complètes d'un Pokémon (y compris les données d'espèce)
+ */
+async function loadPokemonWithSpeciesData(pokemonId: number): Promise<Pokemon> {
+  try {
+    return await getPokemonDetails(pokemonId);
+  } catch (error) {
+    console.error(`Failed to load complete pokemon data for ${pokemonId}:`, error);
+    return defaultPokemonData({ id: pokemonId, pokedexId: pokemonId });
+  }
+}

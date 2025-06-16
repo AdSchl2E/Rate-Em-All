@@ -142,6 +142,19 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
       
       // Process Pokemon objects to keep only essential data
       Object.entries(pokemonCache).forEach(([id, pokemon]) => {
+        // Extract only essential species data if it exists
+        const essentialSpeciesInfo = pokemon.species_info ? {
+          is_legendary: pokemon.species_info.is_legendary,
+          is_mythical: pokemon.species_info.is_mythical, 
+          is_baby: pokemon.species_info.is_baby,
+          generation: pokemon.species_info.generation ? 
+            { name: pokemon.species_info.generation.name } : undefined,
+          color: pokemon.species_info.color ? 
+            { name: pokemon.species_info.color.name } : undefined,
+          habitat: pokemon.species_info.habitat ? 
+            { name: pokemon.species_info.habitat.name } : undefined
+        } : undefined;
+        
         optimizedPokemonCache[Number(id)] = {
           id: pokemon.id,
           name: pokemon.name,
@@ -159,7 +172,9 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
           },
           // Keep rating data
           rating: pokemon.rating,
-          numberOfVotes: pokemon.numberOfVotes
+          numberOfVotes: pokemon.numberOfVotes,
+          // Add minimal species info
+          species_info: essentialSpeciesInfo
         };
       });
 
@@ -175,9 +190,6 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
         favorites: favorites,
         cacheTTL: DEFAULT_TTL
       };
-
-      // Remove debug logging
-      // console.log(localStorage.getItem(CACHE_KEY));
 
       localStorage.setItem(CACHE_KEY, JSON.stringify(cacheToSave));
     } catch (error) {
