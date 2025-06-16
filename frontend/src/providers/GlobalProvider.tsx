@@ -326,7 +326,7 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
         }
         return prev;
       });
-
+      // result n'est jamais atteint
       return result;
     } catch (error) {
       // En cas d'erreur, restaurer la note précédente

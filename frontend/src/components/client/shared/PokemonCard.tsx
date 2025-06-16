@@ -45,26 +45,26 @@ export default function PokemonCard({
   size = 'md' // Taille moyenne par défaut
 }: PokemonCardProps) {
   const { status } = useSession();
-  const {
-    isFavorite,
-    toggleFavorite,
-    getRating,
-    setRating,
-    cachePokemon
-  } = useGlobal();
+  const { isFavorite, toggleFavorite, getRating, setRating, cachePokemon } = useGlobal();
 
   const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
   const [isLoadingRating, setIsLoadingRating] = useState(false);
   const [localUserRating, setLocalUserRating] = useState(0);
 
+  // États locaux pour les notes communautaires et nombre de votes
+  const [localCommunityRating, setLocalCommunityRating] = useState(pokemon.rating || 0);
+  const [localVoteCount, setLocalVoteCount] = useState(pokemon.numberOfVotes || 0);
+
   // Utiliser les fonctions du nouveau GlobalProvider
   const isPokemonInFavorites = isFavorite(pokemon.id);
   const userRating = getRating(pokemon.id);
 
-  // Initialiser la note locale à partir de la note utilisateur au chargement
+  // Initialiser les états locaux avec les valeurs du Pokémon
   useEffect(() => {
     setLocalUserRating(userRating);
-  }, [userRating]);
+    setLocalCommunityRating(pokemon.rating || 0);
+    setLocalVoteCount(pokemon.numberOfVotes || 0);
+  }, [userRating, pokemon.rating, pokemon.numberOfVotes]);
 
   // Déplacer l'appel de cachePokemon dans un useEffect
   useEffect(() => {
@@ -117,8 +117,24 @@ export default function PokemonCard({
       setIsLoadingRating(true);
       setLocalUserRating(rating);
 
-      // Utiliser la fonction setRating du GlobalProvider qui gère la mise à jour optimiste
+      // Utiliser la fonction setRating du GlobalProvider
       const result = await setRating(pokemon.id, rating);
+
+      console.log('Rating updated:', result);
+
+      // Mettre à jour les états locaux avec les valeurs retournées par l'API
+      if (result) {
+        setLocalCommunityRating(result.pokemon.rating);
+        setLocalVoteCount(result.pokemon.numberOfVotes);
+
+        // Mettre à jour le Pokémon dans le cache
+        cachePokemon({
+          ...pokemon,
+          userRating: rating,
+          rating: result.pokemon.rating,
+          numberOfVotes: result.pokemon.numberOfVotes
+        });
+      }
 
       // Notification plus discrète
       toast.success(`Vous avez noté ${pokemon.name} ${rating}/5`, {
@@ -127,7 +143,7 @@ export default function PokemonCard({
     } catch (error) {
       console.error('Error rating pokemon:', error);
       toast.error('Erreur lors de l\'enregistrement de la note');
-      setLocalUserRating(userRating); // Restaurer la note précédente en cas d'erreur
+      setLocalUserRating(userRating);
     } finally {
       setIsLoadingRating(false);
     }
@@ -306,20 +322,24 @@ export default function PokemonCard({
               </div>
             )}
 
-            {/* Note communauté - VERSION AGRANDIE avec taille ajustable et couleur dynamique */}
+            {/* Note communauté - UTILISE LES VALEURS LOCALES MISES À JOUR */}
             {showRating && (
               <div className="flex flex-col items-center">
-                <div className={`flex items-center bg-gray-800/60 rounded-md ${listClasses.commRating.container}`}>
+                <motion.div
+                  className={`flex items-center bg-gray-800/60 rounded-md ${listClasses.commRating.container}`}
+                  animate={{ scale: isLoadingRating ? [1, 1.05, 1] : 1 }}
+                  transition={{ duration: 0.3 }}
+                >
                   <StarIcon
-                    className={`${listClasses.commRating.icon} ${getRatingColor(pokemon.rating ?? 0)}`}
+                    className={`${listClasses.commRating.icon} ${getRatingColor(localCommunityRating)}`}
                   />
-                  <span className={`font-bold ${listClasses.commRating.text} ${getRatingColor(pokemon.rating ?? 0)}`}>
-                    {(pokemon.rating ?? 0) > 0 ? (pokemon.rating ?? 0).toFixed(1) : '0.0'}
+                  <span className={`font-bold ${listClasses.commRating.text} ${getRatingColor(localCommunityRating)}`}>
+                    {localCommunityRating > 0 ? localCommunityRating.toFixed(1) : '0.0'}
                     <span className="ml-1 font-normal opacity-70 text-sm">
-                      ({pokemon.numberOfVotes || 0})
+                      ({localVoteCount})
                     </span>
                   </span>
-                </div>
+                </motion.div>
               </div>
             )}
           </div>
@@ -328,7 +348,7 @@ export default function PokemonCard({
     );
   }
 
-  // Mode grille avec taille ajustable
+  // Mode grille
   const gridClasses = gridSizeClasses[size];
 
   return (
@@ -391,19 +411,23 @@ export default function PokemonCard({
             </Link>
           </h3>
 
-          {/* Note communautaire AGRANDIE avec taille ajustable et couleur dynamique */}
+          {/* Note communautaire - UTILISE LES VALEURS LOCALES MISES À JOUR */}
           {showRating && (
-            <div className={`flex items-center bg-gray-700/60 rounded-md ${gridClasses.commRating.container}`}>
+            <motion.div
+              className={`flex items-center bg-gray-700/60 rounded-md ${gridClasses.commRating.container}`}
+              animate={{ scale: isLoadingRating ? [1, 1.05, 1] : 1 }}
+              transition={{ duration: 0.3 }}
+            >
               <StarIcon
-                className={`${gridClasses.commRating.icon} ${getRatingColor(pokemon.rating ?? 0)}`}
+                className={`${gridClasses.commRating.icon} ${getRatingColor(localCommunityRating)}`}
               />
-              <span className={`font-bold ${gridClasses.commRating.text} ${getRatingColor(pokemon.rating ?? 0)}`}>
-                {(pokemon.rating ?? 0) > 0 ? (pokemon.rating ?? 0).toFixed(1) : '0.0'}
+              <span className={`font-bold ${gridClasses.commRating.text} ${getRatingColor(localCommunityRating)}`}>
+                {localCommunityRating > 0 ? localCommunityRating.toFixed(1) : '0.0'}
                 <span className="ml-1 font-normal opacity-70 text-xs">
-                  ({pokemon.numberOfVotes || 0})
+                  ({localVoteCount})
                 </span>
               </span>
-            </div>
+            </motion.div>
           )}
         </div>
 
