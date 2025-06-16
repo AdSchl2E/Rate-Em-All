@@ -136,8 +136,35 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
   const saveCache = () => {
     try {
       const now = Date.now();
+      
+      // Simplified Pokemon cache with only essential data
+      let optimizedPokemonCache: Record<number, any> = {};
+      
+      // Process Pokemon objects to keep only essential data
+      Object.entries(pokemonCache).forEach(([id, pokemon]) => {
+        optimizedPokemonCache[Number(id)] = {
+          id: pokemon.id,
+          name: pokemon.name,
+          // Keep only type names, not the full objects
+          types: pokemon.types.map(t => ({
+            type: { name: t.type.name }
+          })),
+          // Keep only the essential sprite
+          sprites: {
+            other: {
+              'official-artwork': {
+                front_default: pokemon.sprites?.other?.['official-artwork']?.front_default
+              }
+            }
+          },
+          // Keep rating data
+          rating: pokemon.rating,
+          numberOfVotes: pokemon.numberOfVotes
+        };
+      });
+
       const cacheToSave: PersistentCache = {
-        pokemon: Object.entries(pokemonCache).reduce((acc, [id, pokemon]) => {
+        pokemon: Object.entries(optimizedPokemonCache).reduce((acc, [id, pokemon]) => {
           acc[Number(id)] = {
             data: pokemon,
             timestamp: now
@@ -149,9 +176,27 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
         cacheTTL: DEFAULT_TTL
       };
 
+      // Remove debug logging
+      // console.log(localStorage.getItem(CACHE_KEY));
+
       localStorage.setItem(CACHE_KEY, JSON.stringify(cacheToSave));
     } catch (error) {
       console.warn('Failed to save cache to localStorage:', error);
+      
+      // If we exceed the quota, try saving just user data
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        try {
+          const minimalCache = {
+            pokemon: {}, // Empty pokemon cache
+            ratings: userRatings,
+            favorites: favorites,
+            cacheTTL: DEFAULT_TTL
+          };
+          localStorage.setItem(CACHE_KEY, JSON.stringify(minimalCache));
+        } catch (fallbackError) {
+          console.error('Even minimal cache failed to save:', fallbackError);
+        }
+      }
     }
   };
 
