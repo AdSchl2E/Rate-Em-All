@@ -148,7 +148,7 @@ export const clientPokemon = {
       return clientApiRequest('/pokemon', {
         params: { 
           action: 'metadata',
-          limit: 1200 // Assez grand pour inclure tous les Pokémon
+          limit: 1500 // Assez grand pour inclure tous les Pokémon
         }
       });
     } catch (error) {
