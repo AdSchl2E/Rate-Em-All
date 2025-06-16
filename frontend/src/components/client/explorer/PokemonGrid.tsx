@@ -49,7 +49,7 @@ export default function PokemonGrid({ pokemons, loading, lastPokemonRef, viewMod
     <motion.div
       className={viewMode === 'grid' 
         ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" 
-        : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-2"
+        : "grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-2"
       }
       variants={containerVariants}
       initial="hidden"

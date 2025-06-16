@@ -315,6 +315,9 @@ export default function PokemonCard({
                   />
                   <span className={`font-bold ${listClasses.commRating.text} ${getRatingColor(pokemon.rating ?? 0)}`}>
                     {(pokemon.rating ?? 0) > 0 ? (pokemon.rating ?? 0).toFixed(1) : '0.0'}
+                    <span className="ml-1 font-normal opacity-70 text-sm">
+                      ({pokemon.numberOfVotes || 0})
+                    </span>
                   </span>
                 </div>
               </div>
@@ -396,6 +399,9 @@ export default function PokemonCard({
               />
               <span className={`font-bold ${gridClasses.commRating.text} ${getRatingColor(pokemon.rating ?? 0)}`}>
                 {(pokemon.rating ?? 0) > 0 ? (pokemon.rating ?? 0).toFixed(1) : '0.0'}
+                <span className="ml-1 font-normal opacity-70 text-xs">
+                  ({pokemon.numberOfVotes || 0})
+                </span>
               </span>
             </div>
           )}
