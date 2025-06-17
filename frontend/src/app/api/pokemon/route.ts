@@ -212,7 +212,7 @@ export async function GET(request: NextRequest) {
       
       try {
         // Get list of all Pokémon
-        const data = await serverPokeApiRequest('/pokemon?limit=1000');
+        const data = await serverPokeApiRequest('/pokemon?limit=1500');
         
         if (!data) {
           return NextResponse.json({ error: 'Failed to fetch Pokémon for search' }, { status: 500 });
@@ -270,7 +270,7 @@ export async function GET(request: NextRequest) {
     }
     
     case 'metadata': {
-      const limit = parseInt(searchParams.get('limit') || '1200');
+      const limit = parseInt(searchParams.get('limit') || '1500');
       
       try {
         // Utiliser l'API PokeAPI pour récupérer les métadonnées minimales

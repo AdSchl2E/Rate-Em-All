@@ -123,7 +123,7 @@ export async function serverPokeApiRequest<T = any>(
     });
     
     if (!response.ok) {
-      throw new Error(`PokeAPI error: ${response.status}`);
+      return Promise.reject(new Error(`PokeAPI request failed: ${response.status} ${response.statusText}`));
     }
     
     return await response.json();

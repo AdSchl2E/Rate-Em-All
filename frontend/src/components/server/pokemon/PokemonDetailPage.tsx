@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { serverPokemon } from '@/lib/api/server';
-import PokemonDetailContainer from '@/components/client/pokemon/detail/PokemonDetailContainer';
+import PokemonCard from '@/components/client/shared/PokemonCard';
 import RelatedPokemonSection from './RelatedPokemonSection';
 import PageHeader from '@/components/server/shared/PageHeader';
 
@@ -10,13 +10,13 @@ interface PokemonDetailPageProps {
 
 export async function PokemonDetailPage({ id }: PokemonDetailPageProps) {
   try {
-    // Récupération des données Pokémon depuis le serveur
-    const pokemon = await serverPokemon.getDetails(id); // Utiliser getDetails via serverPokemon
+    // Récupération des données Pokémon depuis le serveur avec tous les détails
+    const pokemon = await serverPokemon.getDetails(id);
     
     // Récupérer des Pokémon du même type (pour recommandations)
     const sameTypePokemon = await serverPokemon.getPokemonByType(
       pokemon.types?.[0]?.type.name || '',
-      5,
+      14,
       [pokemon.id]
     );
     
@@ -28,8 +28,13 @@ export async function PokemonDetailPage({ id }: PokemonDetailPageProps) {
           backLabel="Retour à l'exploration"
         />
         
-        {/* Conteneur principal avec toute la logique client */}
-        <PokemonDetailContainer pokemon={pokemon} />
+        {/* Utiliser PokemonCard en mode 'detail' pour le Pokémon principal */}
+        <PokemonCard 
+          pokemon={pokemon}
+          viewMode="detail"
+          showActions={true}
+          showRating={true}
+        />
         
         {/* Section des Pokémon similaires */}
         {sameTypePokemon.length > 0 && (

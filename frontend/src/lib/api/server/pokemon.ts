@@ -1,6 +1,7 @@
 import { serverApiRequest, serverPokeApiRequest } from './base';
 import { API_CONFIG } from '../shared/config';
 import type { Pokemon } from '../../../types/pokemon';
+import { spec } from 'node:test/reporters';
 
 /**
  * Récupérer les meilleurs Pokémon - version serveur
@@ -69,17 +70,20 @@ export async function getTrendingPokemon(limit: number = 10): Promise<Pokemon[]>
 export async function getPokemonDetails(id: number): Promise<Pokemon> {
   try {
     // Récupération parallèle des données de base, des notes et des informations d'espèce
-    const [pokeDetails, ratings, speciesData] = await Promise.all([
+    const [pokeDetails, ratings, initialSpeciesData] = await Promise.all([
       serverPokeApiRequest(`/pokemon/${id}`),
       serverApiRequest(API_CONFIG.endpoints.pokemon.details(id))
         .catch(() => ({ rating: 0, numberOfVotes: 0 })),
       serverPokeApiRequest(`/pokemon-species/${id}`)
-        .catch(error => {
-          console.error(`Error fetching species data for pokemon ${id}:`, error);
-          return null;
-        })
+        .catch(() => {return null;})
     ]);
-    
+
+    let speciesData = initialSpeciesData;
+
+    if (speciesData === null) {
+      const baseSpeciesData = await serverPokeApiRequest(`/pokemon-species/${pokeDetails.species.name}`);
+      speciesData = baseSpeciesData || undefined; // Si aucune donnée d'espèce n'est trouvée, on la met à undefined
+    }    
     // Fusionner les données
     return {
       ...pokeDetails,
@@ -146,7 +150,7 @@ function defaultPokemonData(fallback: any = {}): Pokemon {
  */
 export async function getPokemonByType(
   type: string,
-  limit: number = 5,
+  limit: number = 14,
   excludeIds: number[] = []
 ): Promise<Pokemon[]> {
   if (!type) return [];

@@ -13,6 +13,9 @@ import { toast } from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
 import { ClientStarRating } from '@/components/client/ui/ClientStarRating';
 import PokemonTypeTag from './PokemonTypeTag';
+import PokemonStatsSection from '../pokemon/detail/PokemonStatsSection';
+import PokemonInfoSection from '../pokemon/detail/PokemonInfoSection';
+import PokemonSpeciesSection from '../pokemon/detail/PokemonSpeciesSection';
 
 // Ajouter cette fonction utilitaire en début de fichier, après les imports
 function getRatingColor(rating: number) {
@@ -28,13 +31,15 @@ function getRatingColor(rating: number) {
 
 // Ajouter type pour la taille
 type CardSize = 'sm' | 'md' | 'lg';
+type ViewMode = 'grid' | 'list' | 'detail'; // Ajout du mode 'detail'
 
 interface PokemonCardProps {
   pokemon: Pokemon;
   showActions?: boolean;
   showRating?: boolean;
-  viewMode?: 'grid' | 'list';
-  size?: CardSize; // Nouvelle prop pour la taille
+  viewMode?: ViewMode; // Mise à jour du type
+  size?: CardSize;
+  onRatingUpdate?: (rating: number, votes: number) => void; // Pour mettre à jour les données parentes
 }
 
 export default function PokemonCard({
@@ -42,7 +47,8 @@ export default function PokemonCard({
   showActions = true,
   showRating = true,
   viewMode = 'grid',
-  size = 'md' // Taille moyenne par défaut
+  size = 'md',
+  onRatingUpdate
 }: PokemonCardProps) {
   const { status } = useSession();
   const { isFavorite, toggleFavorite, getRating, setRating, cachePokemon } = useGlobal();
@@ -120,8 +126,6 @@ export default function PokemonCard({
       // Utiliser la fonction setRating du GlobalProvider
       const result = await setRating(pokemon.id, rating);
 
-      console.log('Rating updated:', result);
-
       // Mettre à jour les états locaux avec les valeurs retournées par l'API
       if (result) {
         setLocalCommunityRating(result.pokemon.rating);
@@ -134,6 +138,11 @@ export default function PokemonCard({
           rating: result.pokemon.rating,
           numberOfVotes: result.pokemon.numberOfVotes
         });
+        
+        // Propager la mise à jour au parent si nécessaire
+        if (onRatingUpdate) {
+          onRatingUpdate(result.pokemon.rating, result.pokemon.numberOfVotes);
+        }
       }
 
       // Notification plus discrète
@@ -239,6 +248,156 @@ export default function PokemonCard({
       starSize: "lg"
     }
   };
+
+  // MODE DÉTAIL - Nouveau mode pour la page principale de détail d'un Pokémon
+  if (viewMode === 'detail') {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-gray-800 rounded-xl overflow-hidden shadow-xl"
+      >
+        <div className="md:flex">
+          {/* Section image du Pokémon */}
+          <div 
+            className="md:w-1/2 p-8 flex items-center justify-center relative overflow-hidden"
+            style={{ background: `linear-gradient(135deg, ${primaryColor}15, ${secondaryColor}40)` }}
+          >
+            <div className="absolute inset-0 opacity-20 bg-gradient-to-br"
+                style={{ background: `radial-gradient(circle at center, ${primaryColor}, ${secondaryColor} 80%)` }}></div>
+            
+            <motion.div
+              className="relative w-64 h-64 flex items-center justify-center z-10"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                type: "spring",
+                stiffness: 100,
+                damping: 15,
+                delay: 0.2
+              }}
+            >
+              <Image
+                src={pokemon.sprites.other?.['official-artwork']?.front_default || 
+                      pokemon.sprites.front_default || 
+                      '/images/pokeball.png'}
+                alt={pokemon.name}
+                fill
+                sizes="(max-width: 768px) 300px, 600px"
+                className="object-contain drop-shadow-2xl"
+                priority
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/images/pokeball.png";
+                }}
+              />
+            </motion.div>
+          </div>
+          
+          {/* Section d'information */}
+          <div className="md:w-1/2 p-6">
+            {/* En-tête avec nom, ID, types */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h1 className="text-3xl font-bold capitalize">
+                  {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1).replace(/-/g, ' ')}
+                </h1>
+                <span className="text-xl text-gray-400 font-mono">#{pokemon.id}</span>
+              </div>
+              
+              <div className="flex gap-2">
+                {pokemon.types?.map((typeObj, index) => (
+                  <PokemonTypeTag key={index} type={typeObj.type.name} className="px-3 py-1 text-sm" />
+                ))}
+              </div>
+            </div>
+            
+            {/* Section notation */}
+            <div className="mb-6 space-y-4">
+              {/* Note communautaire */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ delay: 0.3 }}
+              >
+                <h3 className="text-lg font-medium mb-2">Note communautaire</h3>
+                <div className="flex items-center">
+                  <div className="flex items-center bg-gray-700/80 px-3 py-2 rounded-md">
+                    <StarIcon className={`h-6 w-6 mr-2 ${getRatingColor(localCommunityRating)}`} />
+                    <span className={`font-bold text-xl ${getRatingColor(localCommunityRating)}`}>
+                      {localCommunityRating > 0 ? localCommunityRating.toFixed(1) : '0.0'}
+                      <span className="ml-2 font-normal opacity-70 text-base">
+                        ({localVoteCount} vote{localVoteCount !== 1 ? 's' : ''})
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+              
+              {/* Note utilisateur */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ delay: 0.4 }}
+                className="pt-4 border-t border-gray-700"
+              >
+                <h3 className="text-lg font-medium mb-2">Votre évaluation</h3>
+                <div>
+                  <ClientStarRating
+                    value={localUserRating}
+                    onChange={handleRatingChange}
+                    size="lg"
+                    disabled={isLoadingRating}
+                    useColors={true}
+                  />
+                  
+                  {status !== 'authenticated' && (
+                    <p className="text-sm text-gray-400 mt-2">
+                      <Link href="/login" className="text-blue-400 hover:underline">Connectez-vous</Link> pour noter ce Pokémon
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+            
+            {/* Actions utilisateur (favoris, partage) */}
+            <div className="flex flex-wrap gap-3">
+              {/* Bouton Favoris */}
+              <motion.button 
+                onClick={handleToggleFavorite} 
+                disabled={isLoadingFavorite || status !== 'authenticated'}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+                  isPokemonInFavorites 
+                    ? 'bg-red-600 hover:bg-red-700 text-white' 
+                    : 'bg-gray-700 hover:bg-gray-600 text-white'
+                }`}
+              >
+                <HeartIcon className="h-5 w-5" /> 
+                {isPokemonInFavorites ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              </motion.button>
+              
+              {/* Autres boutons d'action peuvent être ajoutés ici */}
+            </div>
+          </div>
+        </div>
+        
+        {/* Statistiques */}
+        <div className="border-t border-gray-700 p-6">
+          <PokemonStatsSection stats={pokemon.stats || []} />
+        </div>
+        
+        {/* Informations supplémentaires */}
+        <PokemonInfoSection pokemon={pokemon} />
+        
+        {/* Informations d'espèce */}
+        <PokemonSpeciesSection pokemon={pokemon} />
+      </motion.div>
+    );
+  }
 
   // Version liste avec taille ajustable
   if (viewMode === 'list') {
