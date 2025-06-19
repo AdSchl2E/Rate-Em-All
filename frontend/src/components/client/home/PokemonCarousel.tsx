@@ -69,9 +69,9 @@ export default function PokemonCarousel({ pokemons }: PokemonCarouselProps) {
       transition={{ delay: 0.3 }}
     >
       <div className="flex justify-between items-center mb-5">
-        <h2 className="text-2xl font-bold">Popular Pokémon</h2>
+        <h2 className="text-2xl font-bold">Pokémon populaires</h2>
         <a href="/top-rated" className="text-blue-400 hover:text-blue-300 transition text-sm">
-          See all →
+          Voir le classement →
         </a>
       </div>
       
@@ -102,6 +102,7 @@ export default function PokemonCarousel({ pokemons }: PokemonCarouselProps) {
                 <PokemonCard 
                   pokemon={updatedPokemon} 
                   showRating={true}
+                  size="sm"
                 />
               </div>
             );
