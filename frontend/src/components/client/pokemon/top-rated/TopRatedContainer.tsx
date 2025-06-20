@@ -2,18 +2,20 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useGlobal } from '@/providers/GlobalProvider';
-import { useSession } from 'next-auth/react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Pokemon } from '@/types/pokemon';
+import PokemonCard from '@/components/client/shared/PokemonCard';
 import clientApi from '@/lib/api/client';
+import { 
+  ArrowsUpDownIcon, 
+  ArrowUpIcon, 
+  ArrowDownIcon,
+  ChevronDownIcon,
+  ChevronUpIcon
+} from '@heroicons/react/24/outline';
 
-import PodiumSection from './PodiumSection';
-import RankingList from './RankingList';
-import SortingControls from './SortingControls';
-import FilterPanel from './FilterPanel';
-
-// Types pour les options de tri et filtrage
-export type SortCriteria = 'rating' | 'votes' | 'name';
+// Types pour les options de tri
+export type SortCriteria = 'rating' | 'votes';
 export type SortDirection = 'asc' | 'desc';
 
 interface TopRatedContainerProps {
@@ -21,200 +23,18 @@ interface TopRatedContainerProps {
 }
 
 export default function TopRatedContainer({ initialPokemons }: TopRatedContainerProps) {
+  // États pour le tri et le filtrage
   const [sortBy, setSortBy] = useState<SortCriteria>('rating');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [selectedGenerations, setSelectedGenerations] = useState<number[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [minRating, setMinRating] = useState<number | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
-  const { pokemonCache, userRatings, favorites } = useGlobal();
-  const { data: session } = useSession();
+  const [selectedGeneration, setSelectedGeneration] = useState<number | null>(null);
+  
+  // États pour les filtres dépliables
+  const [isTypesExpanded, setIsTypesExpanded] = useState(false);
+  const [isGenerationsExpanded, setIsGenerationsExpanded] = useState(false);
 
-  // État pour les Pokémon et leurs mises à jour
+  // État pour les Pokémon
   const [allPokemons, setAllPokemons] = useState<Pokemon[]>(initialPokemons);
-  const [lastRatingTimestamp, setLastRatingTimestamp] = useState<number>(0);
-
-  // Effet pour rafraîchir les données après une nouvelle notation
-  useEffect(() => {
-    const refreshTopRated = async () => {
-      if (lastRatingTimestamp > 0) {
-        try {
-          console.log('Refreshing top rated Pokémon after new rating');
-          const freshTopRated = await clientApi.pokemon.getTopRated(50);
-          console.log('Fetched fresh top rated Pokémon:', freshTopRated);
-          allPokemons.forEach(pokemon => {
-            const freshPokemon = freshTopRated.find(p => p.id === pokemon.id);
-            if (freshPokemon) {
-              pokemon.rating = freshPokemon.rating;
-              pokemon.numberOfVotes = freshPokemon.numberOfVotes;
-            }
-          }
-          );
-          setAllPokemons([...allPokemons]); // Trigger re-render
-        } catch (error) {
-          console.error('Failed to refresh top rated Pokémon:', error);
-        }
-      }
-    };
-
-    refreshTopRated();
-  }, [lastRatingTimestamp]);
-
-  // Observer les changements de notation utilisateur
-  useEffect(() => {
-    setLastRatingTimestamp(Date.now());
-  }, [userRatings]);
-
-  // Préparer les Pokémon avec les données du cache
-  const enhancedPokemons = useMemo(() => {
-    return allPokemons.map(pokemon => ({
-      ...pokemon,
-      rating: pokemonCache[pokemon.id]?.rating ?? pokemon.rating,
-      numberOfVotes: pokemonCache[pokemon.id]?.numberOfVotes ?? pokemon.numberOfVotes
-    }));
-  }, [allPokemons, pokemonCache]);
-
-  console.log('Enhanced Pokémons:', enhancedPokemons);
-
-  // Gestionnaire pour changer le tri
-  const handleSortChange = (criteria: SortCriteria) => {
-    if (sortBy === criteria) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(criteria);
-      // Par défaut: tri décroissant pour rating et votes, croissant pour name
-      setSortDirection(criteria === 'name' ? 'asc' : 'desc');
-    }
-  };
-
-  // Gestionnaires de filtres
-  const toggleType = (type: string) => {
-    setSelectedTypes(prev =>
-      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-    );
-  };
-
-  const toggleGeneration = (genIndex: number) => {
-    setSelectedGenerations(prev =>
-      prev.includes(genIndex) ? prev.filter(g => g !== genIndex) : [...prev, genIndex]
-    );
-  };
-
-  const toggleCategory = (category: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
-    );
-  };
-
-  const resetFilters = () => {
-    setSelectedTypes([]);
-    setSelectedGenerations([]);
-    setSelectedCategories([]);
-    setMinRating(null);
-    setSortBy('rating');
-    setSortDirection('desc');
-  };
-
-  // Logique de filtrage et tri
-  const displayedPokemons = useMemo(() => {
-    // Extraction des types uniques pour le filtre
-    const pokemonTypes = Array.from(
-      new Set(
-        allPokemons.flatMap(pokemon => 
-          pokemon.types?.map(typeObj => typeObj.type.name) || []
-        )
-      )
-    ).sort();
-    
-    // Filter logic...
-    let filtered = enhancedPokemons.filter(pokemon => {
-      // Type filter
-      if (selectedTypes.length > 0) {
-        const pokemonTypes = pokemon.types?.map(t => t.type.name) || [];
-        if (!selectedTypes.every(type => pokemonTypes.includes(type))) {
-          return false;
-        }
-      }
-
-      // Generation filter
-      if (selectedGenerations.length > 0) {
-        const genMatch = selectedGenerations.some(genIndex => {
-          const gen = GENERATIONS[genIndex];
-          return pokemon.id >= gen.range[0] && pokemon.id <= gen.range[1];
-        });
-        if (!genMatch) return false;
-      }
-
-      // Special categories filter (légendaire, starter, etc.)
-      if (selectedCategories.length > 0) {
-        // Maps des catégories spéciales de Pokémon par ID
-        const legendaryIds = [144, 145, 146, 150, 243, 244, 245, /* ... plus IDs ... */];
-        const mythicalIds = [151, 251, 385, 386, /* ... plus IDs ... */];
-        const starterIds = [1, 4, 7, 152, /* ... plus IDs ... */];
-
-        const isLegendary = legendaryIds.includes(pokemon.id);
-        const isMythical = mythicalIds.includes(pokemon.id);
-        const isStarter = starterIds.includes(pokemon.id);
-
-        const pokemonName = pokemon.name.toLowerCase();
-        const isMega = pokemonName.includes('mega');
-        const isGmax = pokemonName.includes('gmax') || pokemonName.includes('gigantamax');
-        const isAlolan = pokemonName.includes('-alola');
-        const isGalarian = pokemonName.includes('-galar');
-        const isHisuian = pokemonName.includes('-hisui');
-
-        const categoryMatches = {
-          legendary: isLegendary,
-          mythical: isMythical,
-          starter: isStarter,
-          mega: isMega,
-          gmax: isGmax,
-          alolan: isAlolan,
-          galarian: isGalarian,
-          hisuian: isHisuian
-        };
-
-        if (!selectedCategories.some(cat => categoryMatches[cat as keyof typeof categoryMatches])) {
-          return false;
-        }
-      }
-
-      // Rating filter
-      if (minRating !== null) {
-        const pokemonRating = pokemon.rating || 0;
-        if (pokemonRating < minRating) return false;
-      }
-
-      return true;
-    });
-
-    // Logique de tri
-    const directionFactor = sortDirection === 'asc' ? 1 : -1;
-    
-    return filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'rating':
-          return directionFactor * ((a.rating || 0) - (b.rating || 0));
-        case 'votes':
-          return directionFactor * ((a.numberOfVotes || 0) - (b.numberOfVotes || 0));
-        case 'name':
-          return directionFactor * a.name.localeCompare(b.name);
-        default:
-          return 0;
-      }
-    });
-  }, [enhancedPokemons, selectedTypes, selectedGenerations, selectedCategories, minRating, sortBy, sortDirection]);
-
-  // Top 10 et séparation podium/liste
-  const topTenPokemons = displayedPokemons.slice(0, 10);
-  const podiumPokemons = topTenPokemons.slice(0, 3);
-  const listPokemons = topTenPokemons.slice(3);
-
-  const isFiltering = selectedTypes.length > 0 ||
-    selectedGenerations.length > 0 ||
-    selectedCategories.length > 0 ||
-    minRating !== null;
 
   // Extraire tous les types uniques pour les filtres
   const pokemonTypes = useMemo(() => {
@@ -227,77 +47,446 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
     return Array.from(types).sort();
   }, [allPokemons]);
 
-  return (
-    <motion.div className="mt-12 animate-fade-in">
-      {/* Contrôles de tri et filtres */}
-      <SortingControls 
-        sortBy={sortBy}
-        sortDirection={sortDirection}
-        handleSortChange={handleSortChange}
-        showFilters={showFilters}
-        setShowFilters={setShowFilters}
-        isFiltering={isFiltering}
-        filterCount={selectedTypes.length + selectedGenerations.length + selectedCategories.length + (minRating !== null ? 1 : 0)}
-      />
+  // Effet pour rafraîchir les données après des mises à jour
+  useEffect(() => {
+    const refreshTopRated = async () => {
+      try {
+        const freshTopRated = await clientApi.pokemon.getTopRated(50);
+        setAllPokemons(freshTopRated);
+      } catch (error) {
+        console.error('Failed to refresh top rated Pokémon:', error);
+      }
+    };
+
+    // Rafraîchir les données toutes les 5 minutes
+    const intervalId = setInterval(refreshTopRated, 300000);
+    
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // Logique de filtrage et tri
+  const displayedPokemons = useMemo(() => {
+    // Appliquer les filtres
+    let filtered = allPokemons.filter(pokemon => {
+      // Filtre par type - modification pour correspondance exacte
+      if (selectedTypes.length > 0) {
+        const pokemonTypes = pokemon.types?.map(t => t.type.name) || [];
+        
+        // Vérifier la correspondance exacte
+        if (selectedTypes.length === 1) {
+          // Si un seul type est sélectionné, le Pokémon doit être uniquement de ce type
+          if (pokemonTypes.length !== 1 || !pokemonTypes.includes(selectedTypes[0])) {
+            return false;
+          }
+        } else if (selectedTypes.length === 2) {
+          // Si deux types sont sélectionnés, le Pokémon doit avoir exactement ces deux types
+          // (sans tenir compte de l'ordre)
+          if (pokemonTypes.length !== 2 || 
+              !selectedTypes.every(t => pokemonTypes.includes(t))) {
+            return false;
+          }
+        }
+      }
+
+      // Filtre par génération
+      if (selectedGeneration !== null) {
+        const gen = pokemon.species_info?.generation?.url.split('/')[6]; 
+        if (!gen || !gen.includes(`${selectedGeneration + 1}`)) {
+          return false;
+        } 
+      }
+
+      return true;
+    });
+
+    // Appliquer le tri
+    const directionFactor = sortDirection === 'asc' ? 1 : -1;
+    
+    return filtered.sort((a, b) => {
+      if (sortBy === 'rating') {
+        return directionFactor * ((a.rating || 0) - (b.rating || 0));
+      } else { // votes
+        return directionFactor * ((a.numberOfVotes || 0) - (b.numberOfVotes || 0));
+      }
+    });
+  }, [allPokemons, selectedTypes, selectedGeneration, sortBy, sortDirection]);
+
+  // Top 10 et séparation podium/liste
+  const topTenPokemons = displayedPokemons.slice(0, 10);
+  const podiumPokemons = topTenPokemons.slice(0, 3);
+  const listPokemons = topTenPokemons.slice(3, 10);
+
+  // Gestionnaire pour changer le tri
+  const handleSortChange = (criteria: SortCriteria) => {
+    if (sortBy === criteria) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(criteria);
+      setSortDirection('desc');
+    }
+  };
+
+  // Gestionnaire pour les filtres de type
+  const handleTypeToggle = (type: string) => {
+    setSelectedTypes(prev => {
+      // Si le type est déjà sélectionné, on le retire
+      if (prev.includes(type)) {
+        return prev.filter(t => t !== type);
+      }
       
-      {/* Panneau de filtres (affiché conditionnellement) */}
-      {showFilters && (
-        <FilterPanel 
-          pokemonTypes={pokemonTypes}
-          selectedTypes={selectedTypes}
-          selectedGenerations={selectedGenerations}
-          selectedCategories={selectedCategories}
-          minRating={minRating}
-          setMinRating={setMinRating}
-          toggleType={toggleType}
-          toggleGeneration={toggleGeneration}
-          toggleCategory={toggleCategory}
-          resetFilters={resetFilters}
-        />
-      )}
+      // Si on a déjà 2 types sélectionnés, on remplace le plus ancien (FIFO)
+      if (prev.length >= 2) {
+        return [...prev.slice(1), type]; // Retire le premier, ajoute le nouveau
+      }
+      
+      // Sinon on l'ajoute simplement
+      return [...prev, type];
+    });
+  };
 
-      {/* Podium des 3 premiers */}
-      {podiumPokemons.length > 0 && (
-        <PodiumSection 
-          podiumPokemons={podiumPokemons} 
-          userRatings={userRatings}
-          favorites={favorites}
-        />
-      )}
+  // Gestionnaire pour les filtres de génération
+  const handleGenerationChange = (genIndex: number | null) => {
+    setSelectedGeneration(genIndex);
+  };
 
-      {/* Liste des positions 4-10 */}
+  // Réinitialiser tous les filtres
+  const resetFilters = () => {
+    setSelectedTypes([]);
+    setSelectedGeneration(null);
+    setSortBy('rating');
+    setSortDirection('desc');
+  };
+
+  // Obtenir l'icône de tri pour un champ donné
+  const getSortIcon = (field: SortCriteria) => {
+    if (field !== sortBy) {
+      return <ArrowsUpDownIcon className="h-4 w-4 text-gray-500" />;
+    }
+    
+    return sortDirection === 'asc' ? 
+      <ArrowUpIcon className="h-4 w-4 text-blue-400" /> : 
+      <ArrowDownIcon className="h-4 w-4 text-blue-400" />;
+  };
+
+  const isFiltering = selectedTypes.length > 0 || selectedGeneration !== null;
+
+  return (
+    <div className="space-y-6">
+      {/* Section de filtres et tri - style uniforme avec ExplorerContainer */}
+      <div className="mb-6">
+        {/* Options de tri */}
+        <div className="mb-4 flex flex-wrap gap-2">
+          <button
+            onClick={() => handleSortChange('rating')}
+            className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-sm ${
+              sortBy === 'rating' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
+            }`}
+          >
+            Note {getSortIcon('rating')}
+          </button>
+          
+          <button
+            onClick={() => handleSortChange('votes')}
+            className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-sm ${
+              sortBy === 'votes' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
+            }`}
+          >
+            Nombre de votes {getSortIcon('votes')}
+          </button>
+        </div>
+        
+        {/* En-tête dépliable pour les types */}
+        <div className="mb-2">
+          <button
+            onClick={() => setIsTypesExpanded(!isTypesExpanded)} 
+            className="w-full flex items-center justify-between px-3 py-2 bg-gray-800 hover:bg-gray-750 rounded-md text-left transition-colors"
+          >
+            <div className="flex items-center">
+              <span className="text-sm font-medium text-gray-200">Types</span>
+              {selectedTypes.length > 0 && (
+                <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-blue-600 text-white">
+                  {selectedTypes.length}
+                </span>
+              )}
+            </div>
+            {isTypesExpanded ? 
+              <ChevronUpIcon className="h-4 w-4 text-gray-400" /> : 
+              <ChevronDownIcon className="h-4 w-4 text-gray-400" />
+            }
+          </button>
+        </div>
+        
+        {/* Contenu dépliable pour les types */}
+        <AnimatePresence>
+          {isTypesExpanded && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden mb-4"
+            >
+              <div className="pt-2 pb-1 px-1">
+                <div className="flex flex-wrap gap-2">
+                  {pokemonTypes.map(type => {
+                    const isSelected = selectedTypes.includes(type);
+                    const isDisabled = selectedTypes.length >= 2 && !isSelected;
+                    
+                    return (
+                      <button
+                        key={type}
+                        onClick={() => handleTypeToggle(type)}
+                        disabled={isDisabled}
+                        className={`px-3 py-1 rounded-full text-sm capitalize
+                          ${isSelected 
+                            ? 'bg-blue-600 text-white' 
+                            : isDisabled
+                              ? 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50'
+                              : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                          }`}
+                      >
+                        {type}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {/* En-tête dépliable pour les générations */}
+        <div className="mb-2">
+          <button
+            onClick={() => setIsGenerationsExpanded(!isGenerationsExpanded)}
+            className="w-full flex items-center justify-between px-3 py-2 bg-gray-800 hover:bg-gray-750 rounded-md text-left transition-colors"
+          >
+            <div className="flex items-center">
+              <span className="text-sm font-medium text-gray-200">Génération</span>
+              {selectedGeneration !== null && (
+                <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-blue-600 text-white">
+                  1
+                </span>
+              )}
+            </div>
+            {isGenerationsExpanded ? 
+              <ChevronUpIcon className="h-4 w-4 text-gray-400" /> : 
+              <ChevronDownIcon className="h-4 w-4 text-gray-400" />
+            }
+          </button>
+        </div>
+        
+        {/* Contenu dépliable pour les générations */}
+        <AnimatePresence>
+          {isGenerationsExpanded && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden mb-4"
+            >
+              <div className="pt-2 pb-1 px-1">
+                <div className="flex flex-wrap gap-2">
+                  {Array.from({ length: 9 }, (_, index) => ({
+                    name: `Génération ${index + 1}`,
+                    index
+                  })).map((gen, index) => (
+                    <button
+                      key={gen.name}
+                      onClick={() => handleGenerationChange(selectedGeneration === index ? null : index)}
+                      className={`px-3 py-1 rounded-full text-sm
+                        ${selectedGeneration === index 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-800 hover:bg-gray-700 text-gray-300'}`}
+                    >
+                      {gen.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {/* Résultats et bouton de réinitialisation */}
+        {isFiltering && (
+          <div className="flex items-center justify-between mt-4 pt-2 border-t border-gray-800">
+            <div className="text-sm text-gray-400">
+              {displayedPokemons.length} résultat{displayedPokemons.length > 1 ? 's' : ''}
+            </div>
+            <button
+              onClick={resetFilters}
+              className="text-sm text-blue-400 hover:text-blue-300 transition"
+            >
+              Réinitialiser les filtres
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Section du podium (Top 3) */}
+      <section>
+        <h2 className="text-2xl font-bold mb-6">Le podium</h2>
+        
+        {podiumPokemons.length === 0 ? (
+          <div className="text-center py-10 text-gray-400">
+            Aucun Pokémon correspondant aux filtres
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Position 2 (argent) */}
+            {podiumPokemons.length >= 2 && (
+              <RankedPokemonCard 
+                pokemon={podiumPokemons[1]} 
+                rank={2}
+              />
+            )}
+            
+            {/* Position 1 (or) */}
+            {podiumPokemons.length >= 1 && (
+              <RankedPokemonCard 
+                pokemon={podiumPokemons[0]} 
+                rank={1}
+              />
+            )}
+            
+            {/* Position 3 (bronze) */}
+            {podiumPokemons.length >= 3 && (
+              <RankedPokemonCard 
+                pokemon={podiumPokemons[2]} 
+                rank={3}
+              />
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* Section liste (Top 4-10) */}
       {listPokemons.length > 0 && (
-        <RankingList 
-          pokemons={listPokemons} 
-          startRank={4}
-          userRatings={userRatings}
-          favorites={favorites}
-        />
+        <section>
+          <h2 className="text-2xl font-bold mb-6">Classement 4-10</h2>
+          
+          <div className="space-y-4">
+            {listPokemons.map((pokemon, index) => (
+              <RankedPokemonCard 
+                key={pokemon.id}
+                pokemon={pokemon} 
+                rank={index + 4}
+              />
+            ))}
+          </div>
+        </section>
       )}
-    </motion.div>
+    </div>
   );
 }
 
-// Constants
-const GENERATIONS = [
-  { name: 'Génération I', range: [1, 151] },
-  { name: 'Génération II', range: [152, 251] },
-  { name: 'Génération III', range: [252, 386] },
-  { name: 'Génération IV', range: [387, 493] },
-  { name: 'Génération V', range: [494, 649] },
-  { name: 'Génération VI', range: [650, 721] },
-  { name: 'Génération VII', range: [722, 809] },
-  { name: 'Génération VIII', range: [810, 898] },
-  { name: 'Génération IX', range: [899, 1010] },
-];
+// Le composant RankedPokemonCard reste inchangé
+function RankedPokemonCard({ pokemon, rank }: { 
+  pokemon: Pokemon; 
+  rank: number;
+}) {
+  // Configurations spécifiques au rang
+  const rankConfig = {
+    1: {
+      colorClass: 'from-yellow-300 to-amber-500',
+      borderColor: 'border-yellow-500',
+      shadowColor: 'shadow-amber-500/30',
+      order: 'order-first md:order-none',
+    },
+    2: {
+      colorClass: 'from-gray-300 to-slate-400',
+      borderColor: 'border-gray-400',
+      shadowColor: 'shadow-slate-400/30',
+      order: 'order-none',
+      scale: ''
+    },
+    3: {
+      colorClass: 'from-amber-700 to-orange-800',
+      borderColor: 'border-amber-700',
+      shadowColor: 'shadow-amber-700/30',
+      order: 'order-none',
+      scale: ''
+    }
+  };
 
-export const SPECIAL_CATEGORIES = [
-  { id: 'legendary', name: 'Légendaire' },
-  { id: 'mythical', name: 'Mythique' },
-  { id: 'starter', name: 'Starter' },
-  { id: 'mega', name: 'Méga-Évolution' },
-  { id: 'gmax', name: 'Gigamax' },
-  { id: 'alolan', name: "Forme d'Alola" },
-  { id: 'galarian', name: 'Forme de Galar' },
-  { id: 'hisuian', name: 'Forme de Hisui' }
-];
+  // Pour les positions 1, 2, 3 (podium)
+  if (rank <= 3) {
+    const config = rankConfig[rank as 1|2|3];
+    
+    return (
+      <motion.div 
+        className={`${config.order} ${rank === 1 ? 'md:mt-0' : 'md:mt-8'} relative`}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: rank * 0.2, duration: 0.5 }}
+      >
+        
+        {/* Card avec bordure brillante et ombre */}
+        <div className={`relative transform transition-all duration-300`}>
+          {/* Effet de lueur derrière la carte */}
+          <div className={`absolute inset-0 bg-gradient-to-br ${config.colorClass} blur-lg opacity-25 rounded-xl`}></div>
+          
+          <motion.div 
+            className={`rounded-xl p-1.5 bg-gradient-to-br ${config.colorClass} shadow-xl ${config.shadowColor}`}
+            whileHover={{ 
+              boxShadow: `0 0 25px 2px rgba(255,255,255,0.2)`,
+              scale: 1.02
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="bg-gray-900 rounded-lg overflow-hidden">
+              <PokemonCard
+                pokemon={pokemon}
+                size="md"
+                viewMode="grid"
+                showActions={true}
+                showRating={true}
+              />
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+    );
+  }
+  
+  // Pour les positions 4-10 (liste)
+  // Calculer l'opacité en fonction de la position (plus bas = moins opaque)
+  const opacity = Math.max(0.6, 1 - (rank - 3) * 0.1).toFixed(1);
+  
+  return (
+    <motion.div 
+      className="relative bg-gray-800 rounded-xl overflow-hidden shadow-lg"
+      style={{ opacity }}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.2 + (rank - 4) * 0.1 }}
+      whileHover={{ 
+        backgroundColor: 'rgba(31, 41, 55, 0.9)',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+        scale: 1.01
+      }}
+    >
+      <div className="flex items-center">
+        {/* Indicateur de rang minimaliste */}
+        <div className="w-16 h-full bg-gray-800 flex-shrink-0 flex items-center justify-center">
+          <span className="text-base font-semibold text-gray-400">
+            #{rank}
+          </span>
+        </div>
+        
+        {/* Version liste du PokemonCard */}
+        <div className="flex-grow">
+          <PokemonCard
+            pokemon={pokemon}
+            viewMode="list"
+            size="md"
+            showActions={true}
+            showRating={true}
+          />
+        </div>
+      </div>
+    </motion.div>
+  );
+}

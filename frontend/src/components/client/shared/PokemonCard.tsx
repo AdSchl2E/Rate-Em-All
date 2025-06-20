@@ -437,7 +437,7 @@ export default function PokemonCard({
           <div className="flex-grow">
             <Link href={`/pokemon/${pokemon.id}`} className="block">
               <h3 className={`font-medium capitalize hover:text-blue-400 transition truncate ${listClasses.name}`}>
-                {pokemon.name.length > 16 ? `${pokemon.name.slice(0, 16).replace(/-/g, ' ')}...` : pokemon.name.replace(/-/g, ' ')}
+                {pokemon.name.replace(/-/g, ' ')}
               </h3>
             </Link>
 
@@ -564,9 +564,13 @@ export default function PokemonCard({
         <div className="flex items-center justify-between mb-2">
           <h3 className={`font-medium capitalize ${gridClasses.name}`}>
             <Link href={`/pokemon/${pokemon.id}`} className="hover:text-blue-400 transition">
-              {pokemon.name.length > 13
-                ? `${pokemon.name.slice(0, 12).replace(/-/g, ' ')}...`
-                : pokemon.name.replace(/-/g, ' ')}
+              {
+                size === 'sm' && pokemon.name.length > 10
+                  ? `${pokemon.name.slice(0, 8).replace(/-/g, ' ')}...`
+                : size === 'md' && pokemon.name.length > 11
+                  ? `${pokemon.name.slice(0, 9).replace(/-/g, ' ')}...`
+                : pokemon.name.replace(/-/g, ' ')
+              }
             </Link>
           </h3>
 
