@@ -17,9 +17,9 @@ interface RatedPokemonsSectionProps {
 }
 
 const SORT_OPTIONS = [
-  { id: 'userRating', label: 'Ma note', activeClass: 'bg-amber-600' },
-  { id: 'communityRating', label: 'Commu.', activeClass: 'bg-blue-600' },
-  { id: 'votes', label: 'Votes', activeClass: 'bg-purple-600' },
+  { id: 'userRating', label: 'Ma note' },
+  { id: 'communityRating', label: 'Commu.' },
+  { id: 'votes', label: 'Votes' },
 ];
 
 export default function RatedPokemonsSection({ 

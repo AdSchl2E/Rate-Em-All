@@ -11,7 +11,8 @@ import {
   ArrowUpIcon, 
   ArrowDownIcon,
   ChevronDownIcon,
-  ChevronUpIcon
+  ChevronUpIcon,
+  AdjustmentsHorizontalIcon
 } from '@heroicons/react/24/outline';
 
 // Types pour les options de tri
@@ -30,6 +31,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
   const [selectedGeneration, setSelectedGeneration] = useState<number | null>(null);
   
   // États pour les filtres dépliables
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const [isTypesExpanded, setIsTypesExpanded] = useState(false);
   const [isGenerationsExpanded, setIsGenerationsExpanded] = useState(false);
 
@@ -169,6 +171,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
   };
 
   const isFiltering = selectedTypes.length > 0 || selectedGeneration !== null;
+  const hasActiveFilters = selectedTypes.length > 0 || selectedGeneration !== null;
 
   return (
     <div className="space-y-6">
@@ -193,116 +196,146 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
           >
             Nombre de votes {getSortIcon('votes')}
           </button>
-        </div>
-        
-        {/* En-tête dépliable pour les types */}
-        <div className="mb-2">
+          
+          {/* Bouton pour afficher/masquer les filtres */}
           <button
-            onClick={() => setIsTypesExpanded(!isTypesExpanded)} 
-            className="w-full flex items-center justify-between px-3 py-2 bg-gray-800 hover:bg-gray-750 rounded-md text-left transition-colors"
+            onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+            className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-sm ml-auto
+              ${hasActiveFilters ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300'}`}
           >
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-200">Types</span>
-              {selectedTypes.length > 0 && (
-                <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-blue-600 text-white">
-                  {selectedTypes.length}
-                </span>
-              )}
-            </div>
-            {isTypesExpanded ? 
-              <ChevronUpIcon className="h-4 w-4 text-gray-400" /> : 
-              <ChevronDownIcon className="h-4 w-4 text-gray-400" />
-            }
+            <AdjustmentsHorizontalIcon className="h-4 w-4" />
+            Filtres
+            {hasActiveFilters && (
+              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-semibold rounded-full bg-white text-blue-600">
+                {(selectedTypes.length > 0 ? 1 : 0) + (selectedGeneration !== null ? 1 : 0)}
+              </span>
+            )}
           </button>
         </div>
         
-        {/* Contenu dépliable pour les types */}
+        {/* Section filtres dépliable */}
         <AnimatePresence>
-          {isTypesExpanded && (
-            <motion.div 
+          {isFiltersExpanded && (
+            <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="overflow-hidden mb-4"
             >
-              <div className="pt-2 pb-1 px-1">
-                <div className="flex flex-wrap gap-2">
-                  {pokemonTypes.map(type => {
-                    const isSelected = selectedTypes.includes(type);
-                    const isDisabled = selectedTypes.length >= 2 && !isSelected;
-                    
-                    return (
-                      <button
-                        key={type}
-                        onClick={() => handleTypeToggle(type)}
-                        disabled={isDisabled}
-                        className={`px-3 py-1 rounded-full text-sm capitalize
-                          ${isSelected 
-                            ? 'bg-blue-600 text-white' 
-                            : isDisabled
-                              ? 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50'
-                              : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-                          }`}
+              <div className="bg-gray-850 rounded-lg p-4 space-y-4">
+                {/* En-tête dépliable pour les types */}
+                <div>
+                  <button
+                    onClick={() => setIsTypesExpanded(!isTypesExpanded)} 
+                    className="w-full flex items-center justify-between px-3 py-2 bg-gray-800 hover:bg-gray-750 rounded-md text-left transition-colors"
+                  >
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium text-gray-200">Types</span>
+                      {selectedTypes.length > 0 && (
+                        <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-blue-600 text-white">
+                          {selectedTypes.length}
+                        </span>
+                      )}
+                    </div>
+                    {isTypesExpanded ? 
+                      <ChevronUpIcon className="h-4 w-4 text-gray-400" /> : 
+                      <ChevronDownIcon className="h-4 w-4 text-gray-400" />
+                    }
+                  </button>
+                  
+                  {/* Contenu dépliable pour les types */}
+                  <AnimatePresence>
+                    {isTypesExpanded && (
+                      <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden mt-2"
                       >
-                        {type}
-                      </button>
-                    );
-                  })}
+                        <div className="pt-2 pb-1 px-1">
+                          <div className="flex flex-wrap gap-2">
+                            {pokemonTypes.map(type => {
+                              const isSelected = selectedTypes.includes(type);
+                              const isDisabled = selectedTypes.length >= 2 && !isSelected;
+                              
+                              return (
+                                <button
+                                  key={type}
+                                  onClick={() => handleTypeToggle(type)}
+                                  disabled={isDisabled}
+                                  className={`px-3 py-1 rounded-md text-sm capitalize
+                                    ${isSelected 
+                                      ? 'bg-blue-600 text-white' 
+                                      : isDisabled
+                                        ? 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50'
+                                        : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                                    }`}
+                                >
+                                  {type}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* En-tête dépliable pour les générations */}
-        <div className="mb-2">
-          <button
-            onClick={() => setIsGenerationsExpanded(!isGenerationsExpanded)}
-            className="w-full flex items-center justify-between px-3 py-2 bg-gray-800 hover:bg-gray-750 rounded-md text-left transition-colors"
-          >
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-200">Génération</span>
-              {selectedGeneration !== null && (
-                <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-blue-600 text-white">
-                  1
-                </span>
-              )}
-            </div>
-            {isGenerationsExpanded ? 
-              <ChevronUpIcon className="h-4 w-4 text-gray-400" /> : 
-              <ChevronDownIcon className="h-4 w-4 text-gray-400" />
-            }
-          </button>
-        </div>
-        
-        {/* Contenu dépliable pour les générations */}
-        <AnimatePresence>
-          {isGenerationsExpanded && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden mb-4"
-            >
-              <div className="pt-2 pb-1 px-1">
-                <div className="flex flex-wrap gap-2">
-                  {Array.from({ length: 9 }, (_, index) => ({
-                    name: `Génération ${index + 1}`,
-                    index
-                  })).map((gen, index) => (
-                    <button
-                      key={gen.name}
-                      onClick={() => handleGenerationChange(selectedGeneration === index ? null : index)}
-                      className={`px-3 py-1 rounded-full text-sm
-                        ${selectedGeneration === index 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-gray-800 hover:bg-gray-700 text-gray-300'}`}
-                    >
-                      {gen.name}
-                    </button>
-                  ))}
+                
+                {/* En-tête dépliable pour les générations */}
+                <div>
+                  <button
+                    onClick={() => setIsGenerationsExpanded(!isGenerationsExpanded)}
+                    className="w-full flex items-center justify-between px-3 py-2 bg-gray-800 hover:bg-gray-750 rounded-md text-left transition-colors"
+                  >
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium text-gray-200">Génération</span>
+                      {selectedGeneration !== null && (
+                        <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-blue-600 text-white">
+                          1
+                        </span>
+                      )}
+                    </div>
+                    {isGenerationsExpanded ? 
+                      <ChevronUpIcon className="h-4 w-4 text-gray-400" /> : 
+                      <ChevronDownIcon className="h-4 w-4 text-gray-400" />
+                    }
+                  </button>
+                  
+                  {/* Contenu dépliable pour les générations */}
+                  <AnimatePresence>
+                    {isGenerationsExpanded && (
+                      <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden mt-2"
+                      >
+                        <div className="pt-2 pb-1 px-1">
+                          <div className="flex flex-wrap gap-2">
+                            {Array.from({ length: 9 }, (_, index) => ({
+                              name: `Génération ${index + 1}`,
+                              index
+                            })).map((gen, index) => (
+                              <button
+                                key={gen.name}
+                                onClick={() => handleGenerationChange(selectedGeneration === index ? null : index)}
+                                className={`px-3 py-1 rounded-md text-sm
+                                  ${selectedGeneration === index 
+                                    ? 'bg-blue-600 text-white' 
+                                    : 'bg-gray-800 hover:bg-gray-700 text-gray-300'}`}
+                              >
+                                {gen.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </motion.div>
@@ -325,7 +358,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
         )}
       </div>
 
-      {/* Section du podium (Top 3) */}
+      {/* Section du podium (Top 3) - reste inchangée */}
       <section>
         <h2 className="text-2xl font-bold mb-6">Le podium</h2>
         
@@ -362,7 +395,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
         )}
       </section>
 
-      {/* Section liste (Top 4-10) */}
+      {/* Section liste (Top 4-10) - reste inchangée */}
       {listPokemons.length > 0 && (
         <section>
           <h2 className="text-2xl font-bold mb-6">Classement 4-10</h2>

@@ -4,7 +4,13 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Pokemon } from '@/types/pokemon';
 import PokemonCard from '../../shared/PokemonCard';
-import { BarsArrowDownIcon, Squares2X2Icon, ListBulletIcon } from '@heroicons/react/24/outline';
+import { 
+  ArrowsUpDownIcon, 
+  ArrowUpIcon, 
+  ArrowDownIcon,
+  Squares2X2Icon, 
+  ListBulletIcon 
+} from '@heroicons/react/24/outline';
 
 interface FavoritesListProps {
   pokemons: Pokemon[];
@@ -51,49 +57,67 @@ export default function FavoritesList({ pokemons }: FavoritesListProps) {
     }
   };
 
+  // Obtenir l'icône de tri pour un champ donné
+  const getSortIcon = (field: SortMode) => {
+    if (field !== sortMode) {
+      return <ArrowsUpDownIcon className="h-4 w-4 text-gray-500" />;
+    }
+    
+    return field === 'rating' ? 
+      <ArrowDownIcon className="h-4 w-4 text-blue-400" /> : 
+      <ArrowUpIcon className="h-4 w-4 text-blue-400" />;
+  };
+
   return (
     <div>
       {/* Controls */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <div>
           <p className="text-gray-400">{pokemons.length} Pokémon favoris</p>
         </div>
         
-        <div className="flex space-x-3">
+        <div className="flex gap-2 flex-wrap">
           {/* Sort Controls */}
-          <div className="flex border border-gray-700 rounded-lg overflow-hidden">
+          <div className="flex gap-2">
             <button 
               onClick={() => setSortMode('id')}
-              className={`px-3 py-1.5 text-sm flex items-center ${sortMode === 'id' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
+              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-sm ${
+                sortMode === 'id' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
+              }`}
             >
-              #ID
+              #ID {getSortIcon('id')}
             </button>
             <button 
               onClick={() => setSortMode('name')}
-              className={`px-3 py-1.5 text-sm flex items-center ${sortMode === 'name' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
+              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-sm ${
+                sortMode === 'name' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
+              }`}
             >
-              A-Z
+              A-Z {getSortIcon('name')}
             </button>
             <button 
               onClick={() => setSortMode('rating')}
-              className={`px-3 py-1.5 text-sm flex items-center ${sortMode === 'rating' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
+              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-sm ${
+                sortMode === 'rating' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
+              }`}
             >
-              <BarsArrowDownIcon className="h-4 w-4 mr-1" />
-              Note
+              Note {getSortIcon('rating')}
             </button>
           </div>
           
-          {/* View Mode Controls */}
-          <div className="flex border border-gray-700 rounded-lg overflow-hidden">
-            <button 
+          {/* View Mode Controls - Style identique à ExplorerContainer */}
+          <div className="bg-gray-800 rounded-lg p-1 inline-flex">
+            <button
+              className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
               onClick={() => setViewMode('grid')}
-              className={`px-3 py-1.5 flex items-center ${viewMode === 'grid' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
+              title="Affichage en grille"
             >
               <Squares2X2Icon className="h-5 w-5" />
             </button>
-            <button 
+            <button
+              className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
               onClick={() => setViewMode('list')}
-              className={`px-3 py-1.5 flex items-center ${viewMode === 'list' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
+              title="Affichage en liste"
             >
               <ListBulletIcon className="h-5 w-5" />
             </button>
