@@ -13,6 +13,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any) {
     if (!payload) throw new UnauthorizedException();
-    return payload; // L'utilisateur sera accessible via request.user
+    return payload; // User will be available via request.user
   }
 }

@@ -23,7 +23,7 @@ export default function ProfileSettings() {
   // Init form with current user data
   useEffect(() => {
     if (session?.user) {
-      const currentUsername = session.user.name || '';
+      const currentUsername = session.user.pseudo || '';
       setUsername(currentUsername);
       setOriginalUsername(currentUsername);
     }
@@ -36,32 +36,32 @@ export default function ProfileSettings() {
     
     setLoading(true);
     try {
-      // Récupérer l'ID utilisateur de la session
+      // Get user ID from session
       const userId = session?.user?.id;
       if (!userId) {
         throw new Error('User ID not found in session');
       }
       
-      // Mettre à jour le profil via l'API client
+      // Update profile via client API
       await clientUser.updateProfile(username);
       
-      // Mettre à jour la session NextAuth
+      // Update NextAuth session
       await update({
         ...session,
         user: {
           ...session?.user,
-          name: username
+          pseudo: username
         }
       });
       
-      // Mettre à jour l'état local
+      // Update local state
       setOriginalUsername(username);
       
-      toast.success('Profil mis à jour avec succès!');
+      toast.success('Profile updated successfully!');
       router.refresh();
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error("Une erreur s'est produite lors de la mise à jour de votre profil");
+      toast.error("An error occurred while updating your profile");
     } finally {
       setLoading(false);
     }
@@ -76,7 +76,7 @@ export default function ProfileSettings() {
               src={session.user.image}
               width={64}
               height={64}
-              alt="Photo de profil"
+              alt="Profile picture"
               className="object-cover w-full h-full"
             />
           ) : (
@@ -86,8 +86,8 @@ export default function ProfileSettings() {
           )}
         </div>
         <div>
-          <h2 className="text-xl font-semibold">Informations de profil</h2>
-          <p className="text-gray-400">Gérez vos informations personnelles</p>
+          <h2 className="text-xl font-semibold">Profile Information</h2>
+          <p className="text-gray-400">Manage your personal information</p>
         </div>
       </div>
       
@@ -101,22 +101,6 @@ export default function ProfileSettings() {
           />
         </div>
         
-        <div className="mb-6">
-          <label htmlFor="email" className="block text-sm font-medium mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={session?.user?.email || ''}
-            disabled
-            className="w-full p-2 bg-gray-700 rounded-lg border border-gray-600 opacity-70"
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            L'adresse email ne peut pas être modifiée
-          </p>
-        </div>
-        
         <button
           type="submit"
           disabled={loading || !usernameAvailable || username === originalUsername || !username}
@@ -126,7 +110,7 @@ export default function ProfileSettings() {
               : 'bg-blue-600 hover:bg-blue-700'
           } text-white`}
         >
-          {loading ? <LoadingSpinner size="sm" /> : 'Enregistrer les modifications'}
+          {loading ? <LoadingSpinner size="sm" /> : 'Save changes'}
         </button>
       </form>
     </SettingsSection>

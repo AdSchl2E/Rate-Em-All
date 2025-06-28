@@ -39,7 +39,7 @@ export default async function Navbar() {
             {/* User menu */}
             <UserMenuButton
               initialSession={session}
-              username={session?.user?.name || undefined}
+              username={session?.user?.pseudo || undefined}
               userImage={session?.user?.image || undefined}
             />
           </div>

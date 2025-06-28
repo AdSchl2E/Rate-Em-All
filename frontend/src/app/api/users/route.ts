@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   
   try {
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching user profile:", error);
     return NextResponse.json(
-      { error: "Impossible de récupérer le profil utilisateur" },
+      { error: "Could not retrieve user profile" },
       { status: 500 }
     );
   }
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   
   const action = request.nextUrl.searchParams.get('action');
@@ -46,12 +46,12 @@ export async function POST(request: NextRequest) {
       
       // Validate username
       if (!username || username.trim() === '') {
-        return NextResponse.json({ error: 'Le pseudo est requis' }, { status: 400 });
+        return NextResponse.json({ error: 'Username is required' }, { status: 400 });
       }
       
       const response = await serverApiRequest(`/user/${session.user.id}`, {
         method: 'PATCH',
-        body: { name: username },
+        body: { pseudo: username },
         headers: {
           'Authorization': `Bearer ${session.accessToken}`
         }
@@ -70,19 +70,19 @@ export async function POST(request: NextRequest) {
       
       // Validate passwords
       if (!currentPassword || !newPassword) {
-        return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 });
+        return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
       }
       
       if (newPassword.length < 8) {
         return NextResponse.json({ 
-          error: 'Le nouveau mot de passe doit contenir au moins 8 caractères' 
+          error: 'New password must be at least 8 characters long' 
         }, { status: 400 });
       }
       
       const userId = session.user.id ? parseInt(session.user.id) : null;
       
       if (!userId) {
-        return NextResponse.json({ error: 'ID utilisateur invalide' }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
       }
       
       const response = await serverApiRequest(`/user/${userId}/change-password`, {
@@ -104,13 +104,13 @@ export async function POST(request: NextRequest) {
       const username = request.nextUrl.searchParams.get('username');
       
       if (!username) {
-        return NextResponse.json({ error: 'Le pseudo est requis' }, { status: 400 });
+        return NextResponse.json({ error: 'Username is required' }, { status: 400 });
       }
       
       const userId = session.user.id ? parseInt(session.user.id) : null;
       
       if (!userId) {
-        return NextResponse.json({ error: 'ID utilisateur invalide' }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
       }
       
       const response = await serverApiRequest(`/user/check-username`, {
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     }
     
     default:
-      return NextResponse.json({ error: 'Action non valide' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   }
 }
 
@@ -138,7 +138,7 @@ export async function DELETE(request: NextRequest) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   
   const response = await serverApiRequest(`/user/${session.user.id}`, {

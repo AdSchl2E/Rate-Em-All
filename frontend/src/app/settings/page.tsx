@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import { UserSettingsPage } from '@/components/server/settings/UserSettingsPage';
 
 export const metadata: Metadata = {
-  title: 'Paramètres utilisateur | Rate-Em-All',
-  description: 'Gérez vos paramètres de compte et vos préférences'
+  title: 'User Settings | Rate \'em All',
+  description: 'Manage your account settings and preferences'
 };
 
 export default function Page() {

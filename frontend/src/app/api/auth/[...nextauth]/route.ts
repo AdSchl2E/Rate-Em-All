@@ -2,14 +2,14 @@ import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { API_CONFIG } from "@/lib/api/shared/config";
 
-// Extraire la configuration dans une constante exportable
+// Extract config into an exportable constant
 export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "user@example.com" },
+        pseudo: { label: "Username", type: "text", placeholder: "username" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
@@ -32,8 +32,6 @@ export const authOptions: AuthOptions = {
           if (user.accessToken) {
             return { 
               id: user.id, 
-              name: user.name,
-              email: user.email, 
               pseudo: user.pseudo, 
               createdAt: user.createdAt,
               updatedAt: user.updatedAt,
@@ -61,8 +59,6 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.name = user.name;
-        token.email = user.email;
         token.pseudo = user.pseudo;
         token.createdAt = user.createdAt;
         token.updatedAt = user.updatedAt;
@@ -75,8 +71,6 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       session.user = {
         id: token.id as string,
-        name: token.name as string,
-        email: token.email as string,
         pseudo: token.pseudo as string,
         createdAt: token.createdAt as string,
         updatedAt: token.updatedAt as string,
@@ -89,7 +83,7 @@ export const authOptions: AuthOptions = {
   }
 };
 
-// Utiliser la configuration exportée pour créer le handler
+// Use exported config to create handler
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

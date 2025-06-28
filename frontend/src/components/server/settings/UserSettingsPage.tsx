@@ -4,10 +4,10 @@ import { authOptions as auth } from '@/app/api/auth/[...nextauth]/route';
 import SettingsContainer from '@/components/client/settings/SettingsContainer';
 
 export async function UserSettingsPage() {
-  // Vérification de l'authentification côté serveur
+  // Server-side authentication check
   const session = await getServerSession(auth);
   
-  // Redirection si l'utilisateur n'est pas connecté
+  // Redirect if user is not logged in
   if (!session) {
     redirect('/login?callbackUrl=/settings');
   }

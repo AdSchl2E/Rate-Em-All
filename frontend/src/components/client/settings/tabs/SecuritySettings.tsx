@@ -19,30 +19,30 @@ export default function SecuritySettings() {
     
     // Validate passwords
     if (newPassword !== confirmPassword) {
-      toast.error('Les nouveaux mots de passe ne correspondent pas');
+      toast.error('New passwords do not match');
       return;
     }
     
     if (newPassword.length < 8) {
-      toast.error('Le mot de passe doit contenir au moins 8 caractères');
+      toast.error('Password must be at least 8 characters');
       return;
     }
     
     setLoading(true);
     try {
-      // Utiliser notre nouvel API client
+      // Use our client API
       await clientApi.user.changePassword(currentPassword, newPassword);
       
-      toast.success('Mot de passe changé avec succès!');
+      toast.success('Password changed successfully!');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error: any) {
       console.error('Error changing password:', error);
       if (error.message?.includes('incorrect password')) {
-        toast.error('Le mot de passe actuel est incorrect');
+        toast.error('Current password is incorrect');
       } else {
-        toast.error("Une erreur s'est produite lors du changement de votre mot de passe");
+        toast.error("An error occurred while changing your password");
       }
     } finally {
       setLoading(false);
@@ -56,15 +56,15 @@ export default function SecuritySettings() {
           <ShieldCheckIcon className="h-6 w-6 text-white" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold">Sécurité</h2>
-          <p className="text-gray-400">Gérez votre mot de passe</p>
+          <h2 className="text-xl font-semibold">Security</h2>
+          <p className="text-gray-400">Manage your password</p>
         </div>
       </div>
       
       <form onSubmit={changePassword}>
         <div className="mb-4">
           <label htmlFor="currentPassword" className="block text-sm font-medium mb-1">
-            Mot de passe actuel
+            Current Password
           </label>
           <input
             type="password"
@@ -78,7 +78,7 @@ export default function SecuritySettings() {
         
         <div className="mb-4">
           <label htmlFor="newPassword" className="block text-sm font-medium mb-1">
-            Nouveau mot de passe
+            New Password
           </label>
           <input
             type="password"
@@ -90,13 +90,13 @@ export default function SecuritySettings() {
             minLength={8}
           />
           <p className="text-xs text-gray-400 mt-1">
-            Le mot de passe doit contenir au moins 8 caractères
+            Password must be at least 8 characters
           </p>
         </div>
         
         <div className="mb-6">
           <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
-            Confirmer le nouveau mot de passe
+            Confirm New Password
           </label>
           <input
             type="password"
@@ -113,7 +113,7 @@ export default function SecuritySettings() {
           
           {confirmPassword && newPassword !== confirmPassword && (
             <p className="text-red-500 text-sm mt-1">
-              Les mots de passe ne correspondent pas
+              Passwords do not match
             </p>
           )}
         </div>
@@ -133,7 +133,7 @@ export default function SecuritySettings() {
               : 'bg-blue-600 hover:bg-blue-700'
           } text-white`}
         >
-          {loading ? <LoadingSpinner size="sm" /> : 'Changer le mot de passe'}
+          {loading ? <LoadingSpinner size="sm" /> : 'Change Password'}
         </button>
       </form>
     </SettingsSection>

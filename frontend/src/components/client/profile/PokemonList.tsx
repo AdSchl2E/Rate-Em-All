@@ -100,7 +100,7 @@ export default function PokemonList({
               {/* User rating */}
               <div className="flex flex-col items-center">
                 <div className="flex items-center mb-1">
-                  <ClientStarRating value={userRatings[pokemon.id] || 0} fixed={true} size="sm" useColors={true} />
+                  <ClientStarRating value={userRatings[pokemon.id] || 0} size="sm" useColors={true} />
                 </div>
               </div>
 

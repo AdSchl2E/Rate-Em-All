@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     console.log("Request body:", body);
 
-    // Utiliser API_CONFIG pour l'URL de base
+    // Use API_CONFIG for base URL
     const response = await fetch(`${API_CONFIG.baseUrl}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

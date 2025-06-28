@@ -21,9 +21,7 @@ export default function ProfileHeader({
   ratedCount, 
   averageRating 
 }: ProfileHeaderProps) {
-  const { username } = useGlobal();
-  
-  const userName = username || session?.user?.name || "Utilisateur";
+  const userName = session?.user?.pseudo || "User";
   const userImage = session?.user?.image;
   
   return (
@@ -60,7 +58,6 @@ export default function ProfileHeader({
         <div className="flex-grow flex flex-col sm:flex-row items-center sm:items-start sm:justify-between w-full">
           <div className="text-center sm:text-left mb-4 sm:mb-0">
             <h1 className="text-3xl font-bold">{userName}</h1>
-            <p className="text-gray-400">{session?.user?.email}</p>
           </div>
 
           {/* User stats */}
@@ -69,19 +66,19 @@ export default function ProfileHeader({
             <div className="flex gap-6 sm:gap-8">
               <StatBlock 
                 value={favoritesCount} 
-                label="Favoris" 
+                label="Favorites" 
                 color="text-red-400" 
                 delay={0.3}
               />
               <StatBlock 
                 value={ratedCount} 
-                label="Notés" 
+                label="Rated" 
                 color="text-amber-400" 
                 delay={0.4}
               />
               <StatBlock 
                 value={averageRating.toFixed(1)} 
-                label="Note moyenne" 
+                label="Average rating" 
                 icon={<StarIcon className="h-4 w-4 text-amber-400 ml-1" />} 
                 delay={0.5}
               />
@@ -98,7 +95,7 @@ export default function ProfileHeader({
                 className="flex items-center bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition-colors"
               >
                 <CogIcon className="h-5 w-5 mr-2" />
-                <span>Paramètres</span>
+                <span>Settings</span>
               </Link>
             </motion.div>
           </div>

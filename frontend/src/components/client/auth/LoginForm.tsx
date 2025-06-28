@@ -9,15 +9,15 @@ import clientApi from '@/lib/api/client';
 
 export default function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [pseudo, setPseudo] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast.error('Veuillez remplir tous les champs');
+    if (!pseudo || !password) {
+      toast.error('Please fill in all fields');
       return;
     }
     
@@ -25,23 +25,23 @@ export default function LoginForm() {
     
     try {
       const result = await signIn('credentials', {
-        email,
+        pseudo,
         password,
         redirect: false,
       });
       
       if (result?.error) {
-        // Message d'erreur plus précis
+        // More precise error message
         if (result.error === 'CredentialsSignin') {
-          toast.error('Email ou mot de passe incorrect');
+          toast.error('Username or password incorrect');
         } else {
-          toast.error(`Erreur: ${result.error}`);
+          toast.error(`Error: ${result.error}`);
         }
       } else {
-        toast.success('Connexion réussie!');
+        toast.success('Login successful!');
         
         try {
-          // Utiliser notre nouvelle API client pour récupérer le profil
+          // Use our new client API to get profile
           await clientApi.auth.getProfile();
         } catch (profileError) {
           console.error('Error fetching profile:', profileError);
@@ -49,11 +49,11 @@ export default function LoginForm() {
         }
         
         router.push('/');
-        router.refresh(); // Rafraîchir l'état de session
+        router.refresh(); // Refresh session state
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('Une erreur est survenue lors de la connexion');
+      toast.error('An error occurred during login');
     } finally {
       setIsLoading(false);
     }
@@ -62,28 +62,28 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-1" htmlFor="email">
-          Email
+        <label className="block text-sm font-medium mb-1" htmlFor="pseudo">
+          Username
         </label>
         <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          id="pseudo"
+          type="text"
+          value={pseudo}
+          onChange={(e) => setPseudo(e.target.value)}
           className="w-full px-3 py-2 border border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
-          placeholder="votre@email.com"
+          placeholder="your_username"
           required
-          autoComplete="email"
+          autoComplete="username"
         />
       </div>
       
       <div>
         <div className="flex justify-between items-center mb-1">
           <label className="block text-sm font-medium" htmlFor="password">
-            Mot de passe
+            Password
           </label>
           <Link href="/forgot-password" className="text-xs text-blue-400 hover:text-blue-300">
-            Mot de passe oublié?
+            Forgot password?
           </Link>
         </div>
         <input
@@ -110,18 +110,18 @@ export default function LoginForm() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            Connexion en cours...
+            Logging in...
           </>
-        ) : 'Se connecter'}
+        ) : 'Login'}
       </button>
       
       <div className="text-center mt-4">
-        <p>Pas encore de compte?{' '}
+        <p>Don't have an account yet?{' '}
           <Link 
             href="/signup" 
             className="text-blue-500 hover:text-blue-400 transition-colors duration-200 font-medium"
           >
-            Créer un compte
+            Create account
           </Link>
         </p>
       </div>

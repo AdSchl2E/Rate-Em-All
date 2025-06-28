@@ -19,7 +19,7 @@ export default function SettingsContainer() {
   const { favorites, userRatings } = useGlobal();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
 
-  // Stats utilisateur pour l'affichage
+  // User stats for display
   const userStats = {
     createdAt: session?.user?.createdAt
       ? new Date(session.user.createdAt)
@@ -45,25 +45,25 @@ export default function SettingsContainer() {
     <AuthenticationGuard
       fallback={
         <div className="text-center py-12">
-          <h1 className="text-2xl font-bold mb-4">Paramètres utilisateur</h1>
-          <p className="mb-6">Veuillez vous connecter pour accéder à vos paramètres</p>
+          <h1 className="text-2xl font-bold mb-4">User Settings</h1>
+          <p className="mb-6">Please log in to access your settings</p>
           <Link 
             href="/login?callbackUrl=/settings" 
             className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-lg inline-block transition"
           >
-            Se connecter
+            Login
           </Link>
         </div>
       }
     >
       <div className="animate-fade-in max-w-4xl mx-auto">
-        {/* En-tête et statistiques */}
+        {/* Header and stats */}
         <SettingsHeader stats={userStats} />
         
-        {/* Navigation par onglets */}
+        {/* Tab navigation */}
         <SettingsTabs activeTab={activeTab} onTabChange={setActiveTab} />
         
-        {/* Contenu de l'onglet actif */}
+        {/* Active tab content */}
         {renderTabContent()}
       </div>
     </AuthenticationGuard>

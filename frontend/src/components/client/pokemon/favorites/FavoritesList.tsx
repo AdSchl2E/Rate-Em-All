@@ -85,7 +85,7 @@ export default function FavoritesList({ pokemons }: FavoritesListProps) {
                 sortMode === 'id' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
               }`}
             >
-              #ID {getSortIcon('id')}
+              ID {getSortIcon('id')}
             </button>
             <button 
               onClick={() => setSortMode('name')}
@@ -93,7 +93,7 @@ export default function FavoritesList({ pokemons }: FavoritesListProps) {
                 sortMode === 'name' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
               }`}
             >
-              A-Z {getSortIcon('name')}
+              Name {getSortIcon('name')}
             </button>
             <button 
               onClick={() => setSortMode('rating')}

@@ -106,7 +106,6 @@ export default function PokemonGrid({
                   <div className={`flex items-center ${getRatingColor(userRatings[pokemon.id] || 0)}`}>
                     <ClientStarRating
                       value={userRatings[pokemon.id] || 0}
-                      fixed={true}
                       size="sm"
                       useColors={true}
                     />

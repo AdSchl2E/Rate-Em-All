@@ -8,7 +8,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // Placez d'abord toutes les routes spécifiques
+  // Place specific routes first
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
@@ -31,7 +31,7 @@ export class UserController {
     @Query('userId') userIdParam: string
   ) {
     if (!username) {
-      throw new BadRequestException('Le pseudo est requis');
+      throw new BadRequestException('Username is required');
     }
     
     let userId: number | null = null;
@@ -39,21 +39,16 @@ export class UserController {
     if (userIdParam) {
       userId = parseInt(userIdParam);
       if (isNaN(userId)) {
-        console.warn(`ID utilisateur invalide reçu: ${userIdParam}`);
+        console.warn(`Invalid user ID received: ${userIdParam}`);
         userId = null;
       }
     }
     
-    console.log(`Vérification de la disponibilité du pseudo: ${username}, ID utilisateur: ${userId}`);
+    console.log(`Checking username availability: ${username}, User ID: ${userId}`);
     const existingUser = await this.userService.findByUsername(username);
     const available = !existingUser || (userId !== null && existingUser.id === userId);
     
     return { available };
-  }
-
-  @Get('email/:email')
-  findByEmail(@Param('email') email: string) {
-    return this.userService.findByEmail(email);
   }
 
   @Get('pseudo/:pseudo')
@@ -61,10 +56,10 @@ export class UserController {
     return this.userService.findByPseudo(pseudo);
   }
 
-  // Placez ensuite les routes avec paramètres dynamiques
+  // Then place routes with dynamic parameters
   @Get(':id')
   findOne(@Param('id') id: string) {
-    console.log(`Recherche de l'utilisateur avec l'ID: ${id}`);
+    console.log(`Finding user with ID: ${id}`);
     return this.userService.findOne(+id);
   }
 
@@ -91,9 +86,9 @@ export class UserController {
     @Param('pokedexId') pokedexId: string,
     @Body() body: { rating: number }
   ) {
-    // Vérifie que l'utilisateur authentifié ne peut noter que pour lui-même.
+    // Verify that authenticated user can only rate for themselves
     if (+userId !== req.user.id) {
-      throw new UnauthorizedException("Vous ne pouvez pas noter pour un autre utilisateur");
+      throw new UnauthorizedException("You cannot rate for another user");
     }
     return this.userService.ratePokemon(+userId, +pokedexId, body.rating);
   }
@@ -104,41 +99,39 @@ export class UserController {
     const pokemonData = await this.userService.setFavoritePokemon(+userId, +pokedexId);
     return { 
       isFavorite: pokemonData.isFavorite,
-      pokemonName: pokemonData.pokemonName // Ajout du nom pour les notifications
+      pokemonName: pokemonData.pokemonName // Add name for notifications
     };
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':userId/favorite-pokemon')
   async getUserFavoritePokemons(@Req() req, @Param('userId') userId: string) {
-    // Vérifier que l'utilisateur ne peut accéder qu'à ses propres données
+    // Verify that user can only access their own data
     if (+userId !== req.user.id) {
-      throw new UnauthorizedException("Vous ne pouvez pas accéder aux favoris d'un autre utilisateur");
+      throw new UnauthorizedException("You cannot access another user's favorites");
     }
     
     const favorites = await this.userService.getUserFavoritePokemons(+userId);
     return { favorites: Array.isArray(favorites) ? favorites : [] };
   }
 
-  // Ajouter cet endpoint au UserController
   @UseGuards(JwtAuthGuard)
   @Get(':userId/ratings')
   async getUserRatings(@Req() req, @Param('userId') userId: string) {
-    // Vérifier que l'utilisateur ne peut accéder qu'à ses propres données
+    // Verify that user can only access their own data
     if (+userId !== req.user.id) {
-      throw new UnauthorizedException("Vous ne pouvez pas accéder aux notes d'un autre utilisateur");
+      throw new UnauthorizedException("You cannot access another user's ratings");
     }
     const ratings = await this.userService.getUserRatings(+userId);
     return { ratings };
   }
 
-  // Ajouter cet endpoint au UserController
   @UseGuards(JwtAuthGuard)
   @Get(':userId/favorite-pokemon/:pokedexId')
   async checkIsFavorite(@Req() req, @Param('userId') userId: string, @Param('pokedexId') pokedexId: string) {
-    // Vérifier que l'utilisateur ne peut accéder qu'à ses propres données
+    // Verify that user can only access their own data
     if (+userId !== req.user.id) {
-      throw new UnauthorizedException("Vous ne pouvez pas accéder aux favoris d'un autre utilisateur");
+      throw new UnauthorizedException("You cannot access another user's favorites");
     }
     
     const isFavorite = await this.userService.checkIsFavorite(+userId, +pokedexId);
@@ -167,15 +160,15 @@ export class UserController {
     @Param('userId') userIdParam: string,
     @Body() body: { currentPassword: string; newPassword: string }
   ) {
-    // Conversion sécurisée de l'ID utilisateur
+    // Safe conversion of user ID
     const userId = parseInt(userIdParam);
     if (isNaN(userId)) {
-      throw new BadRequestException('ID utilisateur invalide');
+      throw new BadRequestException('Invalid user ID');
     }
     
-    // Vérifier que l'utilisateur ne peut changer que son propre mot de passe
+    // Verify that user can only change their own password
     if (userId !== req.user.id) {
-      throw new UnauthorizedException("Vous ne pouvez pas changer le mot de passe d'un autre utilisateur");
+      throw new UnauthorizedException("You cannot change another user's password");
     }
     
     try {
@@ -184,8 +177,8 @@ export class UserController {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      console.error('Erreur lors du changement de mot de passe:', error);
-      throw new InternalServerErrorException('Erreur lors du changement de mot de passe');
+      console.error('Error changing password:', error);
+      throw new InternalServerErrorException('Error changing password');
     }
   }
 }
