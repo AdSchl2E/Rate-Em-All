@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { FavoritesPage } from '@/components/server/pokemon/FavoritesPage';
 
 export const metadata: Metadata = {
-  title: 'Mes Favoris | Rate-Em-All',
+  title: "Mes Favoris | Rate 'em All",
   description: 'Gérez vos Pokémon favoris',
 };
 

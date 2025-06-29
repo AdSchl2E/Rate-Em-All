@@ -32,17 +32,13 @@ export interface UserRatingsResponse {
 }
 
 export interface RegisterUserData {
-  name: string;
-  email: string;
+  pseudo: string;
   password: string;
-  pseudo?: string;
 }
 
 export interface AuthResponse {
   user: {
     id: number;
-    name: string;
-    email: string;
     pseudo: string;
   };
   accessToken: string;

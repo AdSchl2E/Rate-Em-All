@@ -18,14 +18,14 @@ export default async function Navbar() {
             <div className="relative w-8 h-8 overflow-hidden">
               <Image
                 src="/images/logo.webp"
-                alt="Rate-Em-All Logo"
+                alt="Rate 'em All Logo"
                 width={30}
                 height={30}
                 className="object-contain group-hover:scale-110 transition-transform"
               />
             </div>
             <span className="text-lg font-bold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
-              Rate-Em-All
+              Rate 'em All
             </span>
           </Link>
           

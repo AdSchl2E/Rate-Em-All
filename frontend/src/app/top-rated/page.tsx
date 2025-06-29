@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { TopRatedPage } from '@/components/server/pokemon/TopRatedPage';
 
 export const metadata: Metadata = {
-  title: 'Top Pokémon | Rate-Em-All',
+  title: "Top Pokémon | Rate 'em All",
   description: 'Découvrez les Pokémon les mieux notés par la communauté',
 };
 

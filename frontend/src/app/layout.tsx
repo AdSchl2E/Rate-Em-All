@@ -5,7 +5,7 @@ import "@/styles/globals.css";
 
 // Métadonnées générées côté serveur
 export const metadata: Metadata = {
-  title: 'Rate-Em-All',
+  title: "Rate 'em All",
   description: 'Explore and rate your favorite Pokémon',
   icons: {
     icon: [

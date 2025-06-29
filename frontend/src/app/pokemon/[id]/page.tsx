@@ -10,8 +10,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     const pokemon = await serverPokemon.getDetails(id);
     
     return {
-      title: `${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)} | Rate-Em-All`,
-      description: `Notez et découvrez ${pokemon.name} sur Rate-Em-All.`,
+      title: `${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)} | Rate 'em All`,
+      description: `Notez et découvrez ${pokemon.name} sur Rate 'em All.`,
       openGraph: {
         images: [
           {
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     };
   } catch (error) {
     return {
-      title: 'Pokémon | Rate-Em-All'
+      title: "Pokémon | Rate 'em All"
     };
   }
 }

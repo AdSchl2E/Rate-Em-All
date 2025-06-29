@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { PokemonExplorerPage } from '@/components/server/explorer/PokemonExplorerPage';
 
 export const metadata: Metadata = {
-  title: 'Explorer les Pokémon | Rate-Em-All',
+  title: "Explorer les Pokémon | Rate 'em All",
   description: 'Découvrez et notez tous les Pokémon',
 };
 

@@ -7,10 +7,10 @@ export default function Footer() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
-              Rate-Em-All
+              Rate 'em All
             </h3>
             <p className="text-sm text-gray-500 mt-1">
-              © {currentYear} Rate-Em-All. All rights reserved.
+              © {currentYear} Rate 'em All. All rights reserved.
             </p>
           </div>
           

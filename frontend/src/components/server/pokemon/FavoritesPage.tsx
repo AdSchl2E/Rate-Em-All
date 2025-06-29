@@ -10,7 +10,6 @@ export async function FavoritesPage() {
       <PageHeader
         title="Mes Pokémon Favoris"
         description="Retrouvez tous vos Pokémon préférés au même endroit"
-        icon="heart"
       />
       
       {/* Composant client pour la partie interactive */}
