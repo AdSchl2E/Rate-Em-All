@@ -3,7 +3,7 @@ import ClientProviders from "@/providers/ClientProviders";
 import RootLayout from '@/components/server/layout/RootLayout';
 import "@/styles/globals.css";
 
-// Métadonnées générées côté serveur
+// Server-side generated metadata
 export const metadata: Metadata = {
   title: "Rate 'em All",
   description: 'Explore and rate your favorite Pokémon',
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   }
 };
 
-// Déplacement de themeColor des métadonnées vers le viewport
+// Move themeColor from metadata to viewport
 export const viewport: Viewport = {
   themeColor: '#0F172A',
 };

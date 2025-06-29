@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { serverPokemon } from '@/lib/api/server';
 import { PokemonDetailPage } from '@/components/server/pokemon/PokemonDetailPage';
 
-// Génération dynamique de métadonnées
+// Dynamic metadata generation
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   try {
     const id = parseInt(params.id);
@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     
     return {
       title: `${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)} | Rate 'em All`,
-      description: `Notez et découvrez ${pokemon.name} sur Rate 'em All.`,
+      description: `Rate and discover ${pokemon.name} on Rate 'em All.`,
       openGraph: {
         images: [
           {
@@ -36,7 +36,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     
     return <PokemonDetailPage id={id} />;
   } catch (error) {
-    console.error("Erreur lors du chargement des détails du Pokémon:", error);
+    console.error("Error loading Pokémon details:", error);
     notFound();
   }
 }

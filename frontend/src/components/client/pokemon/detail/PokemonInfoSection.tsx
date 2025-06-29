@@ -7,8 +7,19 @@ interface PokemonInfoSectionProps {
   pokemon: Pokemon;
 }
 
+/**
+ * PokemonInfoSection component
+ * Displays basic information about a Pokémon such as height, weight, etc.
+ * 
+ * @param {Object} props - Component props
+ * @param {Pokemon} props.pokemon - Pokémon data to display
+ */
 export default function PokemonInfoSection({ pokemon }: PokemonInfoSectionProps) {
-  // Formater les noms des capacités
+  /**
+   * Format ability names for better readability
+   * @param {string} name - Raw ability name
+   * @returns {string} Formatted ability name
+   */
   const formatAbilityName = (name: string) => {
     return name
       .split('-')
@@ -16,7 +27,7 @@ export default function PokemonInfoSection({ pokemon }: PokemonInfoSectionProps)
       .join(' ');
   };
   
-  // Variants d'animation pour Framer Motion
+  // Animation variants for Framer Motion
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -41,28 +52,28 @@ export default function PokemonInfoSection({ pokemon }: PokemonInfoSectionProps)
       animate="visible"
     >
       <motion.div variants={itemVariants}>
-        <div className="text-gray-400 text-sm">Taille</div>
+        <div className="text-gray-400 text-sm">Height</div>
         <div className="font-medium">{(pokemon.height / 10).toFixed(1)} m</div>
       </motion.div>
       
       <motion.div variants={itemVariants}>
-        <div className="text-gray-400 text-sm">Poids</div>
+        <div className="text-gray-400 text-sm">Weight</div>
         <div className="font-medium">{(pokemon.weight / 10).toFixed(1)} kg</div>
       </motion.div>
       
       <motion.div variants={itemVariants}>
-        <div className="text-gray-400 text-sm">Expérience de base</div>
+        <div className="text-gray-400 text-sm">Base Experience</div>
         <div className="font-medium">{pokemon.base_experience || '?'}</div>
       </motion.div>
       
       <motion.div variants={itemVariants}>
-        <div className="text-gray-400 text-sm">Capacités</div>
+        <div className="text-gray-400 text-sm">Abilities</div>
         <div className="font-medium">
           {pokemon.abilities?.map(a => formatAbilityName(a.ability.name)).join(', ')}
         </div>
       </motion.div>
       
-      {/* Autres informations comme la génération, habitat, etc. pourraient être ajoutées ici */}
+      {/* Additional information like generation, habitat, etc. could be added here */}
     </motion.div>
   );
 }

@@ -2,11 +2,11 @@ import { Metadata } from 'next';
 import { FavoritesPage } from '@/components/server/pokemon/FavoritesPage';
 
 export const metadata: Metadata = {
-  title: "Mes Favoris | Rate 'em All",
-  description: 'Gérez vos Pokémon favoris',
+  title: "My Favorites | Rate 'em All",
+  description: 'Manage your favorite Pokémon',
 };
 
-// Cette fonction est automatiquement un composant serveur dans Next.js App Router
+// This function is automatically a server component in Next.js App Router
 export default function Page() {
   return <FavoritesPage />;
 }

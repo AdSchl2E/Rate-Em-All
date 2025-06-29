@@ -7,18 +7,25 @@ interface PokemonStatsSectionProps {
   stats: Pokemon['stats'];
 }
 
+/**
+ * PokemonStatsSection component
+ * Displays a Pokémon's base stats with animated progress bars
+ * 
+ * @param {Object} props - Component props
+ * @param {Pokemon['stats']} props.stats - Array of Pokémon stats
+ */
 export default function PokemonStatsSection({ stats }: PokemonStatsSectionProps) {
-  // Map des noms de stats pour traduction/reformatage
+  // Map of stat names for translation/formatting
   const statNames: Record<string, string> = {
-    'hp': 'Points de Vie',
-    'attack': 'Attaque',
-    'defense': 'Défense',
-    'special-attack': 'Attaque Spéciale',
-    'special-defense': 'Défense Spéciale',
-    'speed': 'Vitesse'
+    'hp': 'HP',
+    'attack': 'Attack',
+    'defense': 'Defense',
+    'special-attack': 'Special Attack',
+    'special-defense': 'Special Defense',
+    'speed': 'Speed'
   };
   
-  // Couleurs pour les différentes stats
+  // Colors for different stats
   const statColors: Record<string, string> = {
     'hp': '#FF5959',
     'attack': '#F5AC78',
@@ -30,16 +37,16 @@ export default function PokemonStatsSection({ stats }: PokemonStatsSectionProps)
   
   return (
     <>
-      <h3 className="text-lg font-medium mb-4">Statistiques de base</h3>
+      <h3 className="text-lg font-medium mb-4">Base Stats</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {stats.map((stat, index) => {
-          // Formater le nom de la stat
+          // Format stat name
           const statName = statNames[stat.stat.name] || stat.stat.name.replace(/-/g, ' ');
-          // Valeur maximum théorique pour les stats (255 est le maximum)
+          // Theoretical maximum value for stats (255 is the maximum)
           const maxStatValue = 255;
-          // Pourcentage pour la barre de progression
+          // Percentage for the progress bar
           const percentage = Math.min(100, (stat.base_stat / maxStatValue) * 100);
-          // Couleur de la stat
+          // Stat color
           const statColor = statColors[stat.stat.name] || '#6890F0';
             
           return (

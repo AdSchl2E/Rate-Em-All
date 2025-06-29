@@ -7,12 +7,20 @@ import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import clientApi from '@/lib/api/client';
 
+/**
+ * Login form component
+ * Handles user authentication with credentials
+ */
 export default function LoginForm() {
   const router = useRouter();
   const [pseudo, setPseudo] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  /**
+   * Handle form submission for login
+   * @param {React.FormEvent} e - Form event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     

@@ -5,10 +5,18 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
+/**
+ * HeroSection component
+ * Main landing page hero section with search functionality
+ */
 export default function HeroSection() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   
+  /**
+   * Handle search form submission
+   * @param {React.FormEvent} e - Form event
+   */
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -32,17 +40,17 @@ export default function HeroSection() {
         <div className="flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-8 md:mb-0">
             <h1 className="text-3xl md:text-5xl font-bold mb-4">
-              Découvrez et notez <span className="text-yellow-300">tous les Pokémon</span>
+              Discover and rate <span className="text-yellow-300">all Pokémon</span>
             </h1>
             <p className="text-lg md:text-xl mb-6 text-blue-100">
-              Explorez la base de données complète des Pokémon, partagez vos évaluations et découvrez les favoris de la communauté.
+              Explore the complete Pokémon database, share your ratings, and discover community favorites.
             </p>
             
             <form onSubmit={handleSearch} className="flex w-full max-w-md">
               <div className="relative flex-grow">
                 <input 
                   type="text"
-                  placeholder="Rechercher un Pokémon..."
+                  placeholder="Search for a Pokémon..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full px-4 py-3 pr-10 rounded-l-lg bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder-blue-100 focus:outline-none focus:ring-2 focus:ring-white/40"
@@ -58,7 +66,7 @@ export default function HeroSection() {
                 type="submit"
                 className="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-medium rounded-r-lg transition-colors"
               >
-                Rechercher
+                Search
               </button>
             </form>
           </div>

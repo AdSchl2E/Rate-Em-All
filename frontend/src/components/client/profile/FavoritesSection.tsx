@@ -17,11 +17,22 @@ interface FavoritesSectionProps {
 }
 
 const SORT_OPTIONS = [
-  { id: 'userRating', label: 'Ma note', activeClass: 'bg-amber-600' },
-  { id: 'communityRating', label: 'Commu.', activeClass: 'bg-blue-600' },
+  { id: 'userRating', label: 'My rating', activeClass: 'bg-amber-600' },
+  { id: 'communityRating', label: 'Community', activeClass: 'bg-blue-600' },
   { id: 'votes', label: 'Votes', activeClass: 'bg-purple-600' },
 ];
 
+/**
+ * FavoritesSection component
+ * Displays user's favorite Pokémon with sorting and view options
+ * 
+ * @param {Object} props - Component props
+ * @param {Pokemon[]} props.pokemonList - List of favorite Pokémon
+ * @param {Object} props.userRatings - Map of user's ratings by Pokémon ID
+ * @param {Object} props.pokemonCache - Cache of community ratings/votes by Pokémon ID
+ * @param {number[]} props.favorites - Array of user's favorite Pokémon IDs
+ * @returns {JSX.Element} Section with favorite Pokémon and controls
+ */
 export default function FavoritesSection({ 
   pokemonList, 
   userRatings, 
@@ -33,7 +44,7 @@ export default function FavoritesSection({
   const [showAll, setShowAll] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  // Méthode de tri pour les favoris
+  // Sorting method for favorites
   const sortedPokemons = useMemo(() => {
     return [...pokemonList].sort((a, b) => {
       const dirFactor = sortDir === 'asc' ? 1 : -1;
@@ -55,10 +66,10 @@ export default function FavoritesSection({
     });
   }, [pokemonList, sortBy, sortDir, userRatings, pokemonCache]);
   
-  // Limiter les favoris affichés
+  // Limit displayed favorites
   const displayedPokemons = showAll ? sortedPokemons : sortedPokemons.slice(0, viewMode === 'grid' ? 15 : 10);
   
-  // Gérer le changement de tri
+  // Handle sort change
   const handleSortChange = (option: string, direction: 'asc' | 'desc') => {
     setSortBy(option as any);
     setSortDir(direction);
@@ -73,7 +84,7 @@ export default function FavoritesSection({
       <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <h2 className="text-2xl font-bold flex items-center">
           <HeartIcon className="h-6 w-6 mr-2 text-red-500" />
-          Vos Favoris ({pokemonList.length})
+          Your Favorites ({pokemonList.length})
         </h2>
 
         {pokemonList.length > 0 && (
@@ -110,9 +121,9 @@ export default function FavoritesSection({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <p className="text-gray-400 mb-4">Vous n'avez pas encore ajouté de Pokémon à vos favoris.</p>
+          <p className="text-gray-400 mb-4">You haven't added any Pokémon to your favorites yet.</p>
           <Link href="/explorer" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg inline-block transition">
-            Explorer les Pokémon
+            Explore Pokémon
           </Link>
         </motion.div>
       )}

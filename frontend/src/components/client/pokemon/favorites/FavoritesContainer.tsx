@@ -11,6 +11,11 @@ import AuthenticationGuard from '../../shared/AuthenticationGuard';
 import EmptyState from './EmptyState';
 import FavoritesList from './FavoritesList';
 
+/**
+ * FavoritesContainer component
+ * Container for user's favorite Pokémon with authentication check
+ * Loads and displays favorite Pokémon data from API
+ */
 export default function FavoritesContainer() {
   const { favorites, loading: globalLoading } = useGlobal();
   
@@ -18,13 +23,13 @@ export default function FavoritesContainer() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Effet pour charger les données des Pokémon favoris
+  // Effect to load favorite Pokémon data
   useEffect(() => {
     const fetchPokemonsDetails = async () => {
-      // Attendre que les données globales soient chargées
+      // Wait for global data to load
       if (globalLoading) return;
       
-      // Si pas de favoris, ne pas faire d'appel API
+      // Don't make API call if no favorites
       if (!favorites.length) {
         setFavoritePokemons([]);
         setLoading(false);
@@ -35,12 +40,12 @@ export default function FavoritesContainer() {
         setLoading(true);
         setError(null);
         
-        // Utiliser notre nouvelle API client
+        // Use our client API
         const pokemons = await clientApi.pokemon.getByIds(favorites);
         setFavoritePokemons(pokemons);
       } catch (error) {
         console.error('Error fetching favorite Pokémon details:', error);
-        setError('Erreur lors du chargement des Pokémon favoris');
+        setError('Error loading favorite Pokémon');
       } finally {
         setLoading(false);
       }
@@ -49,13 +54,13 @@ export default function FavoritesContainer() {
     fetchPokemonsDetails();
   }, [favorites, globalLoading]);
 
-  // Protection par authentification
+  // Authentication protection
   return (
     <AuthenticationGuard
       fallback={
         <EmptyState 
-          message="Veuillez vous connecter pour voir vos favoris."
-          actionText="Se connecter"
+          message="Please log in to see your favorites."
+          actionText="Log in"
           actionHref="/login"
         />
       }
@@ -63,7 +68,7 @@ export default function FavoritesContainer() {
       {loading || globalLoading ? (
         <div className="flex flex-col items-center justify-center py-10">
           <LoadingSpinner size="lg" />
-          <p className="mt-4 text-gray-400">Chargement de vos favoris...</p>
+          <p className="mt-4 text-gray-400">Loading your favorites...</p>
         </div>
       ) : error ? (
         <div className="bg-red-900/30 rounded-lg p-6 text-center">
@@ -72,13 +77,13 @@ export default function FavoritesContainer() {
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition"
           >
-            Réessayer
+            Try again
           </button>
         </div>
       ) : favoritePokemons.length === 0 ? (
         <EmptyState 
-          message="Vous n'avez pas encore de Pokémon favoris."
-          actionText="Explorer les Pokémon"
+          message="You don't have any favorite Pokémon yet."
+          actionText="Explore Pokémon"
           actionHref="/explorer"
         />
       ) : (

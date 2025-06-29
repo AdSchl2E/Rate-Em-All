@@ -8,15 +8,29 @@ import { ExclamationCircleIcon, CheckCircleIcon } from '@heroicons/react/24/soli
 interface UsernameInputProps {
   value: string;
   onChange: (value: string) => void;
-  originalUsername: string;
-  onAvailabilityChange: (available: boolean) => void;
+  originalUsername?: string;
+  onAvailabilityChange?: (available: boolean) => void;
+  disabled?: boolean;
 }
 
+/**
+ * UsernameInput component
+ * Input field for username with availability checking
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.value - Current username value
+ * @param {Function} props.onChange - Callback for username changes
+ * @param {string} [props.originalUsername=''] - Original username for comparison
+ * @param {Function} [props.onAvailabilityChange] - Callback when availability changes
+ * @param {boolean} [props.disabled=false] - Whether the input is disabled
+ * @returns {JSX.Element} Username input with validation feedback
+ */
 export default function UsernameInput({ 
   value, 
   onChange, 
-  originalUsername,
-  onAvailabilityChange 
+  originalUsername = '',
+  onAvailabilityChange = () => {},
+  disabled = false
 }: UsernameInputProps) {
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState(true);
@@ -51,7 +65,7 @@ export default function UsernameInput({
   return (
     <div>
       <label htmlFor="username" className="block text-sm font-medium mb-1">
-        Pseudo
+        Username
       </label>
       <div className="relative">
         <input
@@ -59,7 +73,8 @@ export default function UsernameInput({
           id="username"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full p-2 bg-gray-700 rounded-lg border ${
+          disabled={disabled}
+          className={`w-full p-2 ${disabled ? 'bg-gray-700/50 cursor-not-allowed' : 'bg-gray-700'} rounded-lg border ${
             !available && value !== originalUsername
               ? 'border-red-500'
               : 'border-gray-600'
@@ -84,7 +99,7 @@ export default function UsernameInput({
       
       {!checking && !available && value !== originalUsername && (
         <p className="text-red-500 text-sm mt-1">
-          Ce pseudo est déjà utilisé
+          This username is already taken
         </p>
       )}
     </div>

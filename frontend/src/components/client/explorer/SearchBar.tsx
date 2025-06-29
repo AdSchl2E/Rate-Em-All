@@ -11,6 +11,16 @@ interface SearchBarProps {
   loading?: boolean;
 }
 
+/**
+ * SearchBar component
+ * A search input field with loading state and clear button
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.value - Current search value
+ * @param {Function} props.onChange - Callback when search value changes
+ * @param {boolean} [props.loading=false] - Loading state for search results
+ * @returns {JSX.Element} Animated search input with loading indicator
+ */
 export default function SearchBar({ value, onChange, loading = false }: SearchBarProps) {
   const [isFocused, setIsFocused] = useState(false);
   
@@ -31,7 +41,7 @@ export default function SearchBar({ value, onChange, loading = false }: SearchBa
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Rechercher un Pokémon par nom ou numéro..."
+        placeholder="Search Pokémon by name or number..."
         className="flex-grow px-3 py-3 bg-transparent outline-none"
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}

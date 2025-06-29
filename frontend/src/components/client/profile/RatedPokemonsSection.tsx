@@ -17,11 +17,22 @@ interface RatedPokemonsSectionProps {
 }
 
 const SORT_OPTIONS = [
-  { id: 'userRating', label: 'Ma note' },
-  { id: 'communityRating', label: 'Commu.' },
+  { id: 'userRating', label: 'My rating' },
+  { id: 'communityRating', label: 'Community' },
   { id: 'votes', label: 'Votes' },
 ];
 
+/**
+ * RatedPokemonsSection component
+ * Displays Pokémon rated by user with sorting and view options
+ * 
+ * @param {Object} props - Component props
+ * @param {Pokemon[]} props.pokemonList - List of rated Pokémon
+ * @param {Object} props.userRatings - Map of user's ratings by Pokémon ID
+ * @param {Object} props.pokemonCache - Cache of community ratings/votes by Pokémon ID
+ * @param {number[]} props.favorites - Array of user's favorite Pokémon IDs
+ * @returns {JSX.Element} Section with rated Pokémon and controls
+ */
 export default function RatedPokemonsSection({ 
   pokemonList, 
   userRatings, 
@@ -33,7 +44,7 @@ export default function RatedPokemonsSection({
   const [showAll, setShowAll] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   
-  // Méthode de tri
+  // Sorting method
   const sortedPokemons = useMemo(() => {
     return [...pokemonList].sort((a, b) => {
       const dirFactor = sortDir === 'asc' ? 1 : -1;
@@ -55,10 +66,10 @@ export default function RatedPokemonsSection({
     });
   }, [pokemonList, sortBy, sortDir, userRatings, pokemonCache]);
   
-  // Limiter les Pokémon affichés
+  // Limit displayed Pokémon
   const displayedPokemons = showAll ? sortedPokemons : sortedPokemons.slice(0, viewMode === 'grid' ? 20 : 15);
   
-  // Gérer le changement de tri
+  // Handle sort change
   const handleSortChange = (option: string, direction: 'asc' | 'desc') => {
     setSortBy(option as any);
     setSortDir(direction);
@@ -73,7 +84,7 @@ export default function RatedPokemonsSection({
       <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <h2 className="text-2xl font-bold flex items-center">
           <StarIcon className="h-6 w-6 mr-2 text-amber-500" />
-          Vos Notes ({pokemonList.length})
+          Your Ratings ({pokemonList.length})
         </h2>
 
         {pokemonList.length > 0 && (
@@ -110,9 +121,9 @@ export default function RatedPokemonsSection({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <p className="text-gray-400 mb-4">Vous n'avez pas encore noté de Pokémon.</p>
+          <p className="text-gray-400 mb-4">You haven't rated any Pokémon yet.</p>
           <Link href="/explorer" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg inline-block transition">
-            Noter des Pokémon
+            Rate Pokémon
           </Link>
         </motion.div>
       )}

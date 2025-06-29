@@ -19,6 +19,14 @@ interface FavoritesListProps {
 type ViewMode = 'grid' | 'list';
 type SortMode = 'id' | 'name' | 'rating';
 
+/**
+ * FavoritesList component
+ * Displays and organizes favorite Pokémon with sorting and view mode options
+ * 
+ * @param {Object} props - Component props
+ * @param {Pokemon[]} props.pokemons - Array of favorite Pokémon to display
+ * @returns {JSX.Element} Pokémon list with sorting and view controls
+ */
 export default function FavoritesList({ pokemons }: FavoritesListProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortMode, setSortMode] = useState<SortMode>('id');
@@ -57,7 +65,11 @@ export default function FavoritesList({ pokemons }: FavoritesListProps) {
     }
   };
 
-  // Obtenir l'icône de tri pour un champ donné
+  /**
+   * Get appropriate sort icon for a sorting field
+   * @param {SortMode} field - Sorting field to check
+   * @returns {JSX.Element} Icon component for current sort state
+   */
   const getSortIcon = (field: SortMode) => {
     if (field !== sortMode) {
       return <ArrowsUpDownIcon className="h-4 w-4 text-gray-500" />;
@@ -73,7 +85,7 @@ export default function FavoritesList({ pokemons }: FavoritesListProps) {
       {/* Controls */}
       <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <div>
-          <p className="text-gray-400">{pokemons.length} Pokémon favoris</p>
+          <p className="text-gray-400">{pokemons.length} favorite Pokémon</p>
         </div>
         
         <div className="flex gap-2 flex-wrap">
@@ -101,23 +113,23 @@ export default function FavoritesList({ pokemons }: FavoritesListProps) {
                 sortMode === 'rating' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
               }`}
             >
-              Note {getSortIcon('rating')}
+              Rating {getSortIcon('rating')}
             </button>
           </div>
           
-          {/* View Mode Controls - Style identique à ExplorerContainer */}
+          {/* View Mode Controls - Same style as ExplorerContainer */}
           <div className="bg-gray-800 rounded-lg p-1 inline-flex">
             <button
               className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
               onClick={() => setViewMode('grid')}
-              title="Affichage en grille"
+              title="Grid view"
             >
               <Squares2X2Icon className="h-5 w-5" />
             </button>
             <button
               className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
               onClick={() => setViewMode('list')}
-              title="Affichage en liste"
+              title="List view"
             >
               <ListBulletIcon className="h-5 w-5" />
             </button>

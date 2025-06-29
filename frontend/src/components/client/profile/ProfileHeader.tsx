@@ -15,6 +15,17 @@ interface ProfileHeaderProps {
   averageRating: number;
 }
 
+/**
+ * ProfileHeader component
+ * Displays user profile information and statistics at the top of profile page
+ * 
+ * @param {Object} props - Component props
+ * @param {Session|null} props.session - User session data
+ * @param {number} props.favoritesCount - Count of user's favorite Pokémon
+ * @param {number} props.ratedCount - Count of Pokémon rated by user
+ * @param {number} props.averageRating - User's average rating value
+ * @returns {JSX.Element} Profile header with user info and stats
+ */
 export default function ProfileHeader({ 
   session, 
   favoritesCount, 
@@ -113,6 +124,18 @@ interface StatBlockProps {
   delay?: number;
 }
 
+/**
+ * StatBlock component
+ * Displays a single stat value with label
+ * 
+ * @param {Object} props - Component props
+ * @param {number|string} props.value - Stat value to display
+ * @param {string} props.label - Stat label text
+ * @param {string} [props.color] - Optional CSS color class
+ * @param {React.ReactNode} [props.icon] - Optional icon to display with value
+ * @param {number} [props.delay] - Animation delay value
+ * @returns {JSX.Element} Animated stat block
+ */
 function StatBlock({ value, label, color = "", icon = null, delay = 0 }: StatBlockProps) {
   return (
     <motion.div 

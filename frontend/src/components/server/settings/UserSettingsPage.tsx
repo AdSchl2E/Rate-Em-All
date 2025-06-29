@@ -14,7 +14,7 @@ export async function UserSettingsPage() {
   
   return (
     <div className="container mx-auto px-4 py-6">
-      <SettingsContainer />
+      <SettingsContainer session={session} />
     </div>
   );
 }

@@ -10,6 +10,16 @@ interface EmptyStateProps {
   actionHref?: string;
 }
 
+/**
+ * EmptyState component
+ * Displays when a section has no content with customizable message and action
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.message - Primary message to display
+ * @param {string} [props.actionText] - Optional text for action button
+ * @param {string} [props.actionHref] - Optional URL for action button
+ * @returns {JSX.Element} Empty state UI with optional action button
+ */
 export default function EmptyState({ message, actionText, actionHref }: EmptyStateProps) {
   return (
     <motion.div 

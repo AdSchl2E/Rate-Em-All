@@ -15,22 +15,32 @@ interface UserMenuButtonProps {
   userImage?: string;
 }
 
+/**
+ * UserMenuButton component
+ * Dropdown menu for user actions with authentication state handling
+ * 
+ * @param {Object} props - Component props
+ * @param {Session|null} props.initialSession - Initial session state from server
+ * @param {string} [props.username] - Username to display
+ * @param {string} [props.userImage] - User avatar image URL
+ */
 export default function UserMenuButton({ 
   initialSession,
   username: initialUsername,
   userImage: initialUserImage 
 }: UserMenuButtonProps) {
   const { data: session, status } = useSession();
-  const { username: globalUsername } = useGlobal();
+  const globalContext = useGlobal();
   
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   
-  // Utiliser la session client si disponible, sinon utiliser la session initiale
+  // Use client session if available, otherwise use initial session
   const currentSession = session || initialSession;
-  const displayUsername = globalUsername || currentSession?.user?.name || initialUsername;
+  const displayUsername = currentSession?.user?.name || initialUsername;
   const displayImage = currentSession?.user?.image || initialUserImage;
   
+  // Handle clicks outside the menu to close it
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -44,18 +54,23 @@ export default function UserMenuButton({
     };
   }, []);
 
+  /**
+   * Handle sign out action
+   * @param {React.MouseEvent} e - Click event
+   */
   const handleSignOut = async (e: React.MouseEvent) => {
     e.preventDefault();
     await signOut({ callbackUrl: '/' });
   };
 
+  // Show loading state while session is being resolved
   if (status === "loading") {
     return (
       <div className="ml-4 h-10 w-10 rounded-full bg-slate-800 animate-pulse"></div>
     );
   }
 
-  // Si l'utilisateur n'est pas connecté, afficher les boutons de connexion/inscription
+  // If user is not logged in, show login/signup buttons
   if (status === "unauthenticated" && !initialSession) {
     return (
       <div className="flex space-x-2 ml-4">
@@ -63,13 +78,13 @@ export default function UserMenuButton({
           href="/login"
           className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg transition text-sm font-medium"
         >
-          Connexion
+          Login
         </Link>
         <Link 
           href="/signup"
           className="px-4 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition text-sm font-medium hidden sm:inline-block"
         >
-          Inscription
+          Sign up
         </Link>
       </div>
     );
@@ -80,7 +95,7 @@ export default function UserMenuButton({
       <button 
         className="flex items-center space-x-2 group"
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Menu utilisateur"
+        aria-label="User menu"
         aria-expanded={isOpen}
       >
         <div className="h-10 w-10 rounded-full overflow-hidden bg-slate-800 ring-2 ring-slate-700 group-hover:ring-blue-500 transition-all">
@@ -89,7 +104,7 @@ export default function UserMenuButton({
               src={displayImage} 
               width={40} 
               height={40} 
-              alt={`Avatar de ${displayUsername || 'utilisateur'}`}
+              alt={`Avatar of ${displayUsername || 'user'}`}
               className="object-cover"
             />
           ) : (
@@ -99,7 +114,7 @@ export default function UserMenuButton({
           )}
         </div>
         <span className="hidden md:inline-block text-sm font-medium group-hover:text-blue-400 transition-colors">
-          {displayUsername || 'Utilisateur'}
+          {displayUsername || 'User'}
         </span>
       </button>
       
@@ -124,7 +139,7 @@ export default function UserMenuButton({
                 onClick={() => setIsOpen(false)}
               >
                 <UserIcon className="mr-3 h-5 w-5 text-slate-400" />
-                Mon profil
+                My profile
               </Link>
               
               <Link 
@@ -133,7 +148,7 @@ export default function UserMenuButton({
                 onClick={() => setIsOpen(false)}
               >
                 <Cog6ToothIcon className="mr-3 h-5 w-5 text-slate-400" />
-                Paramètres
+                Settings
               </Link>
             </div>
             
@@ -143,7 +158,7 @@ export default function UserMenuButton({
                 className="flex items-center w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-slate-700 transition-colors"
               >
                 <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5" />
-                Se déconnecter
+                Log out
               </button>
             </div>
           </motion.div>

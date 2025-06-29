@@ -3,15 +3,19 @@
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
+/**
+ * Call-to-action component for authentication
+ * Displays a prompt for users to sign up when not logged in
+ */
 export function AuthCTA() {
   const { data: session, status } = useSession();
   
-  // N'afficher rien si l'utilisateur est connecté ou si la session est en cours de chargement
+  // Don't display anything if the user is logged in or if the session is loading
   if (status === 'loading' || session) {
     return null;
   }
   
-  // Afficher le CTA seulement si l'utilisateur n'est PAS connecté
+  // Only show the CTA if the user is NOT logged in
   return (
     <section className="bg-gradient-to-r from-blue-600 to-violet-600 rounded-xl p-8 text-center">
       <h2 className="text-2xl font-bold mb-4">Ready to join Rate 'em All?</h2>

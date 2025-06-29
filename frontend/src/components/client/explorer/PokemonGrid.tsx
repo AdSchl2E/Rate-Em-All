@@ -12,8 +12,18 @@ interface PokemonGridProps {
   viewMode: ViewMode;
 }
 
+/**
+ * PokemonGrid component
+ * Renders a grid or list of Pokémon cards with animations
+ * 
+ * @param {Object} props - Component props
+ * @param {Pokemon[]} props.pokemons - Array of Pokémon to display
+ * @param {boolean} [props.loading] - Loading state flag
+ * @param {Function} props.lastPokemonRef - Ref callback for the last element (infinite scroll)
+ * @param {ViewMode} props.viewMode - Display mode ('grid' or 'list')
+ */
 export default function PokemonGrid({ pokemons, loading, lastPokemonRef, viewMode }: PokemonGridProps) {
-  // S'assurer que pokemons est toujours un tableau
+  // Ensure pokemons is always an array
   const pokemonArray: Pokemon[] = Array.isArray(pokemons) ? pokemons : [];
   
   const containerVariants = {
@@ -40,7 +50,7 @@ export default function PokemonGrid({ pokemons, loading, lastPokemonRef, viewMod
   };
   
   if (pokemonArray.length === 0 && !loading) {
-    return <div className="text-center py-8 text-gray-400">Aucun Pokémon ne correspond à vos critères</div>;
+    return <div className="text-center py-8 text-gray-400">No Pokémon match your criteria</div>;
   }
 
   console.log(`Rendering PokemonGrid in ${viewMode} mode with ${pokemonArray.length} Pokémon`);
@@ -56,14 +66,14 @@ export default function PokemonGrid({ pokemons, loading, lastPokemonRef, viewMod
       animate="visible"
     >
       {pokemonArray.map((pokemon: Pokemon, index: number) => {
-        // Référence pour le dernier élément (infinite scroll)
+        // Reference for the last item (infinite scroll)
         const isLastItem: boolean = index === pokemonArray.length - 1;
         
         return (
           <motion.div 
             key={pokemon.id}
             variants={itemVariants}
-            // Référence pour l'infinite scroll
+            // Reference for infinite scroll
             ref={isLastItem ? node => {
               console.log("Setting ref on last Pokémon:", pokemon.id);
               lastPokemonRef(node);
@@ -74,7 +84,7 @@ export default function PokemonGrid({ pokemons, loading, lastPokemonRef, viewMod
               showActions={true} 
               showRating={true} 
               viewMode={viewMode}
-              size={viewMode === 'list' ? 'sm' : 'md'} // Taille 'sm' pour le mode liste dans l'explorateur
+              size={viewMode === 'list' ? 'sm' : 'md'} // Small size for list mode in explorer
             />
           </motion.div>
         );

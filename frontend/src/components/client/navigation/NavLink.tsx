@@ -10,6 +10,16 @@ interface NavLinkProps {
   icon?: React.ReactNode;
 }
 
+/**
+ * NavLink component
+ * Navigation link with active state styling
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.href - Target URL for the link
+ * @param {React.ReactNode} props.children - Link content/label
+ * @param {string} [props.className] - Additional CSS classes
+ * @param {React.ReactNode} [props.icon] - Optional icon to display before text
+ */
 export function NavLink({ href, children, icon, className = '' }: NavLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href || pathname.startsWith(`${href}/`);

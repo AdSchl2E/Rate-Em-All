@@ -2,12 +2,12 @@ import { Metadata } from 'next';
 import { SignupPage } from '@/components/server/auth/SignupPage';
 
 export const metadata: Metadata = {
-  title: "Inscription | Rate 'em All",
-  description: "Créez votre compte Rate 'em All pour noter et sauvegarder vos Pokémon préférés",
+  title: "Sign Up | Rate 'em All",
+  description: "Create your Rate 'em All account to rate and save your favorite Pokémon",
 };
 
-// Cette fonction est automatiquement un composant serveur dans Next.js App Router
+// This function is automatically a server component in Next.js App Router
 export default function Page() {
-  // Utilise le composant serveur qui à son tour injecte le composant client où nécessaire
+  // Uses server component which injects client component where needed
   return <SignupPage />;
 }

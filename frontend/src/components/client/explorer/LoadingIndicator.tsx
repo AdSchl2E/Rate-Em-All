@@ -7,7 +7,14 @@ interface LoadingIndicatorProps {
   message?: string;
 }
 
-export default function LoadingIndicator({ message = 'Chargement...' }: LoadingIndicatorProps) {
+/**
+ * LoadingIndicator component
+ * Displays an animated loading indicator with optional message
+ * 
+ * @param {Object} props - Component props
+ * @param {string} [props.message='Loading...'] - Message to display below spinner
+ */
+export default function LoadingIndicator({ message = 'Loading...' }: LoadingIndicatorProps) {
   return (
     <motion.div 
       className="flex flex-col items-center justify-center py-10"

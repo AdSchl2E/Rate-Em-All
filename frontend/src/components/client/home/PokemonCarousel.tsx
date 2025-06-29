@@ -10,25 +10,32 @@ interface PokemonCarouselProps {
   pokemons: Pokemon[];
 }
 
+/**
+ * PokemonCarousel component
+ * Horizontal auto-scrolling carousel of Pokémon cards
+ * 
+ * @param {Object} props - Component props
+ * @param {Pokemon[]} props.pokemons - Array of Pokémon to display in the carousel
+ */
 export default function PokemonCarousel({ pokemons }: PokemonCarouselProps) {
   const { pokemonCache } = useGlobal();
   const [shuffledPokemons, setShuffledPokemons] = useState<Pokemon[]>([]);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
   
-  // Mélanger et filtrer les Pokémon au chargement
+  // Shuffle and filter Pokémon on load
   useEffect(() => {
-    // Filtrer pour n'avoir que les Pokémon avec des notes
+    // Filter to only have Pokémon with ratings
     const ratedPokemons = pokemons.filter(p => p.rating !== undefined && p.rating > 0);
     
-    // Mélanger aléatoirement
+    // Random shuffle
     const shuffled = [...ratedPokemons].sort(() => 0.5 - Math.random());
     
-    // Dupliquer les Pokémon pour un défilement infini
+    // Duplicate Pokémon for infinite scrolling
     setShuffledPokemons([...shuffled, ...shuffled]);
   }, [pokemons]);
   
-  // Animation du carrousel
+  // Carousel animation
   useEffect(() => {
     if (!carouselRef.current || shuffledPokemons.length === 0) return;
     
@@ -38,10 +45,10 @@ export default function PokemonCarousel({ pokemons }: PokemonCarouselProps) {
     const animate = () => {
       if (!carouselRef.current || isHovering) return;
       
-      position -= 0.5; // Vitesse de défilement
+      position -= 0.5; // Scroll speed
       
-      // Réinitialiser la position quand le premier ensemble est passé
-      const itemWidth = 220; // Largeur approximative de chaque élément + marge
+      // Reset position when the first set is passed
+      const itemWidth = 220; // Approximate width of each item + margin
       const resetPoint = -((shuffledPokemons.length / 2) * itemWidth);
       
       if (position < resetPoint) {
@@ -59,7 +66,7 @@ export default function PokemonCarousel({ pokemons }: PokemonCarouselProps) {
     };
   }, [shuffledPokemons, isHovering]);
 
-  // Pas de contenu si aucun Pokémon
+  // No content if no Pokémon
   if (shuffledPokemons.length === 0) return null;
 
   return (
@@ -69,9 +76,9 @@ export default function PokemonCarousel({ pokemons }: PokemonCarouselProps) {
       transition={{ delay: 0.3 }}
     >
       <div className="flex justify-between items-center mb-5">
-        <h2 className="text-2xl font-bold">Pokémon populaires</h2>
+        <h2 className="text-2xl font-bold">Popular Pokémon</h2>
         <a href="/top-rated" className="text-blue-400 hover:text-blue-300 transition text-sm">
-          Voir le classement →
+          View rankings →
         </a>
       </div>
       
@@ -86,11 +93,11 @@ export default function PokemonCarousel({ pokemons }: PokemonCarouselProps) {
           style={{ willChange: 'transform' }}
         >
           {shuffledPokemons.map((pokemon, index) => {
-            // Utiliser les données du cache si disponibles
+            // Use cache data if available
             const rating = pokemonCache[pokemon.id]?.rating ?? pokemon.rating;
             const votes = pokemonCache[pokemon.id]?.numberOfVotes ?? pokemon.numberOfVotes;
             
-            // Mettre à jour les données avec celles du cache
+            // Update data with cache
             const updatedPokemon = {
               ...pokemon,
               rating,

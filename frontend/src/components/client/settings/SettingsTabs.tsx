@@ -1,57 +1,83 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { UserIcon, KeyIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { SettingsTab } from './SettingsContainer';
+import { useState } from 'react';
+import { Session } from 'next-auth';
+import { UserIcon, LockClosedIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ProfileSettings } from './tabs/ProfileSettings';
+import { SecuritySettings } from './tabs/SecuritySettings';
+import { DeleteAccountSettings } from './tabs/DeleteAccountSettings';
 
 interface SettingsTabsProps {
-  activeTab: SettingsTab;
-  onTabChange: (tab: SettingsTab) => void;
+  session: Session | null;
 }
 
-export default function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
-  const tabs = [
-    {
-      id: 'profile' as SettingsTab,
-      label: 'Profil',
-      icon: UserIcon,
-      activeClass: 'bg-blue-600',
-    },
-    {
-      id: 'security' as SettingsTab,
-      label: 'Sécurité',
-      icon: KeyIcon,
-      activeClass: 'bg-blue-600',
-    },
-    {
-      id: 'delete' as SettingsTab,
-      label: 'Supprimer',
-      icon: TrashIcon,
-      activeClass: 'bg-red-600',
-    },
-  ];
+type TabId = 'profile' | 'security' | 'delete-account';
 
+/**
+ * SettingsTabs component
+ * Tabbed interface for user settings sections
+ * 
+ * @param {Object} props - Component props
+ * @param {Session|null} props.session - User session data
+ * @returns {JSX.Element} Settings tabs with tab-specific content
+ */
+export default function SettingsTabs({ session }: SettingsTabsProps) {
+  const [activeTab, setActiveTab] = useState<TabId>('profile');
+  
+  /**
+   * Get CSS classes for tab button based on active state
+   * @param {TabId} tabId - ID of the tab to check
+   * @returns {string} CSS classes for the tab
+   */
+  const getTabClasses = (tabId: TabId) => {
+    return activeTab === tabId
+      ? 'bg-blue-500 text-white'
+      : 'hover:bg-gray-700 text-gray-300';
+  };
+  
   return (
-    <motion.div 
-      className="flex mb-6 bg-gray-800 rounded-lg overflow-hidden"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-    >
-      {tabs.map(tab => (
+    <div>
+      {/* Tabs navigation */}
+      <div className="flex overflow-x-auto space-x-2 border-b border-gray-700 mb-6 pb-2">
         <button
-          key={tab.id}
-          onClick={() => onTabChange(tab.id)}
-          className={`flex-1 py-3 px-4 transition-colors ${
-            activeTab === tab.id ? tab.activeClass : 'hover:bg-gray-700'
-          }`}
+          onClick={() => setActiveTab('profile')}
+          className={`px-4 py-2 rounded-md flex items-center transition ${getTabClasses('profile')}`}
         >
-          <div className="flex items-center justify-center">
-            <tab.icon className="h-5 w-5 mr-2" />
-            <span>{tab.label}</span>
-          </div>
+          <UserIcon className="h-5 w-5 mr-2" />
+          <span>Profile</span>
         </button>
-      ))}
-    </motion.div>
+        
+        <button
+          onClick={() => setActiveTab('security')}
+          className={`px-4 py-2 rounded-md flex items-center transition ${getTabClasses('security')}`}
+        >
+          <LockClosedIcon className="h-5 w-5 mr-2" />
+          <span>Security</span>
+        </button>
+        
+        <button
+          onClick={() => setActiveTab('delete-account')}
+          className={`px-4 py-2 rounded-md flex items-center transition ${getTabClasses('delete-account')}`}
+        >
+          <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
+          <span>Delete Account</span>
+        </button>
+      </div>
+      
+      {/* Tab content */}
+      <div className="space-y-6">
+        {activeTab === 'profile' && (
+          <ProfileSettings session={session} />
+        )}
+        
+        {activeTab === 'security' && (
+          <SecuritySettings />
+        )}
+        
+        {activeTab === 'delete-account' && (
+          <DeleteAccountSettings />
+        )}
+      </div>
+    </div>
   );
 }

@@ -9,6 +9,14 @@ interface NavigationLinksProps {
   userRole?: string;
 }
 
+/**
+ * NavigationLinks component
+ * Responsive navigation menu with mobile support
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} [props.isAuthenticated=false] - Whether the user is authenticated
+ * @param {string} [props.userRole='user'] - User role for conditional rendering
+ */
 export default function NavigationLinks({ isAuthenticated = false, userRole = 'user' }: NavigationLinksProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   
@@ -33,11 +41,11 @@ export default function NavigationLinks({ isAuthenticated = false, userRole = 'u
           : 'hidden md:flex items-center space-x-2'
         }
       `}>
-        <NavLink href="/explorer" icon={<MapIcon className="h-5 w-5" />}>Explorer</NavLink>
+        <NavLink href="/explorer" icon={<MapIcon className="h-5 w-5" />}>Explore</NavLink>
         <NavLink href="/top-rated" icon={<FireIcon className="h-5 w-5" />}>Top Pokémon</NavLink>
         
         {isAuthenticated && (
-          <NavLink href="/favorites" icon={<HeartIcon className="h-5 w-5" />}>Favoris</NavLink>
+          <NavLink href="/favorites" icon={<HeartIcon className="h-5 w-5" />}>Favorites</NavLink>
         )}
         
         {userRole === 'admin' && (

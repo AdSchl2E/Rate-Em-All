@@ -3,10 +3,10 @@ import { TopRatedPage } from '@/components/server/pokemon/TopRatedPage';
 
 export const metadata: Metadata = {
   title: "Top Pokémon | Rate 'em All",
-  description: 'Découvrez les Pokémon les mieux notés par la communauté',
+  description: 'Discover the highest rated Pokémon by the community',
 };
 
 export default function Page() {
-  // Ce composant est automatiquement un Server Component
+  // This component is automatically a Server Component
   return <TopRatedPage />;
 }

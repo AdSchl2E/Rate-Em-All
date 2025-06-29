@@ -7,6 +7,10 @@ import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import clientApi from '@/lib/api/client';
 
+/**
+ * SignupForm component
+ * Handles user registration and automatic login after successful signup
+ */
 export default function SignupForm() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -17,6 +21,10 @@ export default function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  /**
+   * Handle input field changes
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Change event from input
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -27,6 +35,10 @@ export default function SignupForm() {
     }
   };
 
+  /**
+   * Validate form fields before submission
+   * @returns {boolean} - True if validation passes, false otherwise
+   */
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
@@ -48,6 +60,10 @@ export default function SignupForm() {
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * Handle form submission for signup
+   * @param {React.FormEvent} e - Form event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
