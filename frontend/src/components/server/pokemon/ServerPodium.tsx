@@ -3,23 +3,36 @@ import Link from 'next/link';
 import { Pokemon } from '../../../types/pokemon';
 import { ServerStarRating } from '../display/ServerStarRating';
 
+/**
+ * ServerPodium props interface
+ */
 interface ServerPodiumProps {
+  /** List of top-rated Pokemon to display on the podium */
   pokemons: Pokemon[];
 }
 
+/**
+ * ServerPodium component
+ * 
+ * Displays a visual podium with the top three Pokemon.
+ * The first place is centered, second on the left, and third on the right.
+ * 
+ * @param props - Component props
+ * @returns React server component
+ */
 export function ServerPodium({ pokemons }: ServerPodiumProps) {
-  // S'assurer qu'on a au plus 3 Pokémon
+  // Ensure we have at most 3 Pokemon
   const topThree = pokemons.slice(0, 3);
   
-  // Si moins de 3 Pokémon, compléter avec des placeholders
+  // If less than 3 Pokemon, fill with placeholders
   while (topThree.length < 3) {
     topThree.push({} as Pokemon);
   }
   
-  // Réorganiser pour avoir le 1er au milieu, 2e à gauche, 3e à droite
+  // Rearrange to have 1st in the middle, 2nd on the left, 3rd on the right
   const [secondPlace, firstPlace, thirdPlace] = topThree;
   
-  // Hauteurs relatives pour chaque position du podium
+  // Relative heights for each podium position
   const heights = {
     first: 'h-64',
     second: 'h-52',
@@ -28,18 +41,18 @@ export function ServerPodium({ pokemons }: ServerPodiumProps) {
   
   return (
     <section className="my-12">
-      <h2 className="text-2xl font-bold text-center mb-8">Podium des meilleurs Pokémon</h2>
+      <h2 className="text-2xl font-bold text-center mb-8">Top Pokémon Podium</h2>
       
       <div className="flex flex-col items-center">
         <div className="flex items-end justify-center w-full max-w-3xl">
-          {/* Deuxième place */}
+          {/* Second place */}
           <PodiumPlace 
             pokemon={secondPlace} 
             place={2} 
             height={heights.second}
           />
           
-          {/* Première place */}
+          {/* First place */}
           <PodiumPlace 
             pokemon={firstPlace} 
             place={1} 
@@ -47,7 +60,7 @@ export function ServerPodium({ pokemons }: ServerPodiumProps) {
             isCenter={true}
           />
           
-          {/* Troisième place */}
+          {/* Third place */}
           <PodiumPlace 
             pokemon={thirdPlace} 
             place={3} 
@@ -59,24 +72,39 @@ export function ServerPodium({ pokemons }: ServerPodiumProps) {
   );
 }
 
+/**
+ * PodiumPlace props interface
+ */
 interface PodiumPlaceProps {
+  /** Pokemon to display on this podium position */
   pokemon: Pokemon;
+  /** Placement position (1, 2, or 3) */
   place: number;
+  /** CSS height class for the podium */
   height: string;
+  /** Whether this is the center position */
   isCenter?: boolean;
 }
 
+/**
+ * PodiumPlace component
+ * 
+ * Displays a single position on the podium with the Pokemon and its ranking.
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 function PodiumPlace({ pokemon, place, height, isCenter = false }: PodiumPlaceProps) {
   const isEmpty = !pokemon.id;
   
-  // Couleurs pour les différentes positions
+  // Colors for different positions
   const colors = {
     1: 'from-yellow-500 to-amber-600 border-yellow-400',
     2: 'from-gray-300 to-gray-400 border-gray-200', 
     3: 'from-amber-600 to-amber-800 border-amber-500'
   };
   
-  // Tailles pour les différentes positions
+  // Sizes for different positions
   const sizes = {
     center: 'w-1/3 md:w-1/3',
     sides: 'w-1/3 md:w-1/4',
@@ -89,7 +117,7 @@ function PodiumPlace({ pokemon, place, height, isCenter = false }: PodiumPlacePr
           href={`/pokemon/${pokemon.id}`}
           className="group w-full flex flex-col items-center"
         >
-          {/* Pokémon image avec cercle et numéro */}
+          {/* Pokemon image with circle and number */}
           <div className="relative mb-2">
             <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center border-2 border-gray-700">
               <span className={`font-bold text-lg ${place === 1 ? 'text-yellow-400' : place === 2 ? 'text-gray-300' : 'text-amber-600'}`}>
@@ -106,7 +134,7 @@ function PodiumPlace({ pokemon, place, height, isCenter = false }: PodiumPlacePr
             </div>
           </div>
           
-          {/* Pokémon name */}
+          {/* Pokemon name */}
           <h3 className="font-bold text-center group-hover:text-blue-400 transition">
             {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
           </h3>
@@ -127,7 +155,7 @@ function PodiumPlace({ pokemon, place, height, isCenter = false }: PodiumPlacePr
             </div>
           </div>
           <h3 className="font-bold text-center text-gray-600">
-            À découvrir
+            Yet to discover
           </h3>
         </div>
       )}

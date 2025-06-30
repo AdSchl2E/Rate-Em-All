@@ -1,21 +1,39 @@
 import Link from 'next/link';
 import { ArrowLeftIcon, HeartIcon, StarIcon, MagnifyingGlassIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
+/**
+ * PageHeader component props interface
+ */
 interface PageHeaderProps {
+  /** Main title text */
   title?: string;
+  /** Subtitle or description text */
   description?: string;
+  /** Whether to show a back navigation button */
   showBackButton?: boolean;
+  /** URL the back button links to */
   backUrl?: string;
+  /** Text label for the back button */
   backLabel?: string;
+  /** Optional icon to display */
   icon?: 'heart' | 'star' | 'search' | 'chart' | null;
 }
 
+/**
+ * PageHeader component
+ * 
+ * Renders a consistent page header with optional title, description,
+ * back navigation button, and decorative icon.
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 export default function PageHeader({
   title,
   description,
   showBackButton = false,
   backUrl = '/',
-  backLabel = 'Retour',
+  backLabel = 'Back',
   icon = null
 }: PageHeaderProps) {
   const IconComponent = icon === 'heart' ? HeartIcon : 

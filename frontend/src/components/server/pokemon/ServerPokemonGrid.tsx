@@ -4,15 +4,28 @@ import { Pokemon } from '../../../types/pokemon';
 import { typeColors } from '../../../lib/utils/pokemonTypes';
 import { ServerStarRating } from '../display/ServerStarRating';
 
+/**
+ * ServerPokemonGrid props interface
+ */
 interface ServerPokemonGridProps {
+  /** List of Pokemon to display in the grid */
   pokemons: Pokemon[];
 }
 
+/**
+ * ServerPokemonGrid component
+ * 
+ * Server-rendered grid of Pokemon cards.
+ * Displays Pokemon in a responsive grid layout with their images, names, types, and ratings.
+ * 
+ * @param props - Component props
+ * @returns React server component
+ */
 export function ServerPokemonGrid({ pokemons }: ServerPokemonGridProps) {
   if (!pokemons || pokemons.length === 0) {
     return (
       <div className="bg-gray-800 rounded-lg p-6 text-center">
-        <p>Aucun Pokémon à afficher</p>
+        <p>No Pokémon to display</p>
       </div>
     );
   }

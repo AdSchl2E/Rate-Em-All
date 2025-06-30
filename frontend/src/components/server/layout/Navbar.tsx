@@ -5,15 +5,23 @@ import { authOptions as auth } from '@/app/api/auth/[...nextauth]/route';
 import NavigationLinks from '@/components/client/navigation/NavigationLinks';
 import UserMenuButton from '@/components/client/navigation/UserMenuButton';
 
+/**
+ * Navbar component
+ * 
+ * Server component that renders the application's navigation bar.
+ * Gets the user's session server-side for initial render optimization.
+ * 
+ * @returns React server component
+ */
 export default async function Navbar() {
-  // Récupération de la session côté serveur pour l'optimisation initiale
+  // Get session server-side for initial optimization
   const session = await getServerSession(auth);
   
   return (
     <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-40">
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-16">
-          {/* Logo et titre */}
+          {/* Logo and title */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="relative w-8 h-8 overflow-hidden">
               <Image

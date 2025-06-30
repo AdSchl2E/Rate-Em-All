@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { Session } from 'next-auth';
-import { UserIcon, LockClosedIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { ProfileSettings } from './tabs/ProfileSettings';
+import { LockClosedIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { SecuritySettings } from './tabs/SecuritySettings';
 import { DeleteAccountSettings } from './tabs/DeleteAccountSettings';
 
@@ -11,7 +10,7 @@ interface SettingsTabsProps {
   session: Session | null;
 }
 
-type TabId = 'profile' | 'security' | 'delete-account';
+type TabId = 'security' | 'delete-account';
 
 /**
  * SettingsTabs component
@@ -22,7 +21,7 @@ type TabId = 'profile' | 'security' | 'delete-account';
  * @returns {JSX.Element} Settings tabs with tab-specific content
  */
 export default function SettingsTabs({ session }: SettingsTabsProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('profile');
+  const [activeTab, setActiveTab] = useState<TabId>('security');
   
   /**
    * Get CSS classes for tab button based on active state
@@ -39,13 +38,6 @@ export default function SettingsTabs({ session }: SettingsTabsProps) {
     <div>
       {/* Tabs navigation */}
       <div className="flex overflow-x-auto space-x-2 border-b border-gray-700 mb-6 pb-2">
-        <button
-          onClick={() => setActiveTab('profile')}
-          className={`px-4 py-2 rounded-md flex items-center transition ${getTabClasses('profile')}`}
-        >
-          <UserIcon className="h-5 w-5 mr-2" />
-          <span>Profile</span>
-        </button>
         
         <button
           onClick={() => setActiveTab('security')}
@@ -66,9 +58,6 @@ export default function SettingsTabs({ session }: SettingsTabsProps) {
       
       {/* Tab content */}
       <div className="space-y-6">
-        {activeTab === 'profile' && (
-          <ProfileSettings session={session} />
-        )}
         
         {activeTab === 'security' && (
           <SecuritySettings />

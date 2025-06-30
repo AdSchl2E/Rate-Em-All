@@ -9,13 +9,29 @@ import { typeColors } from '@/lib/utils/pokemonTypes';
 import { ClientStarRating } from '@/components/client/ui/ClientStarRating';
 import { CommunityRating } from '@/components/client/ui/CommunityRating';
 
+/**
+ * Props for the PokemonList component
+ */
 interface PokemonListProps {
+  /** List of Pokemon to display */
   pokemons: Pokemon[];
+  /** User's ratings for Pokemon (keyed by Pokemon ID) */
   userRatings: Record<number, number>;
+  /** Cached community ratings data (keyed by Pokemon ID) */
   pokemonCache: Record<number, { rating: number; numberOfVotes: number }>;
+  /** List of the user's favorite Pokemon IDs */
   favorites: number[];
 }
 
+/**
+ * PokemonList component
+ * 
+ * Displays a list of Pokemon in a compact list view format.
+ * Shows Pokemon information, types, user ratings, and community ratings.
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 export default function PokemonList({ 
   pokemons, 
   userRatings, 

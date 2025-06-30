@@ -1,10 +1,23 @@
 'use client';
 
+/**
+ * Props for the LoadingSpinner component
+ */
 interface LoadingSpinnerProps {
+  /** Size variant of the spinner */
   size?: 'sm' | 'md' | 'lg';
+  /** Color of the spinner */
   color?: string;
 }
 
+/**
+ * LoadingSpinner component
+ * 
+ * Displays an animated loading spinner with configurable size and color.
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 export function LoadingSpinner({ size = 'md', color = 'blue' }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'h-4 w-4 border-2',

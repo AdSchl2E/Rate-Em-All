@@ -6,11 +6,19 @@ import PokemonCarousel from '@/components/client/home/PokemonCarousel';
 import RandomPokemonShowcase from '@/components/client/home/RandomPokemonShowcase';
 import { AuthCTA } from '@/components/client/auth/AuthCTA';
 
+/**
+ * HomePage component
+ * 
+ * Server component that renders the main landing page.
+ * Fetches initial Pokemon data for display in carousels and showcases.
+ * 
+ * @returns React server component
+ */
 export async function HomePage() {
-  // Récupération des données Pokémon côté serveur
+  // Fetch Pokemon data server-side
   const { pokemons: allPokemons } = await serverPokemon.getAll(0, 100);
   
-  // Récupérer les Pokémon avec les meilleures notes pour le second carrousel
+  // Get the top rated Pokemon for the second carousel
   const topRatedPokemons = await serverPokemon.getTopRated(20);
   
   return (
@@ -18,21 +26,21 @@ export async function HomePage() {
       {/* Hero section */}
       <HeroSection />
       
-      {/* Carrousel de Pokémon populaires */}
+      {/* Popular Pokemon carousel */}
       <Suspense fallback={<LoadingSpinner size="lg" />}>
         <div className="container mx-auto px-4">
           <PokemonCarousel pokemons={allPokemons} />
         </div>
       </Suspense>
       
-      {/* Carrousel de Pokémon mieux notés en mode aléatoire */}
+      {/* Top rated Pokemon carousel in random mode */}
       <Suspense fallback={<LoadingSpinner size="lg" />}>
         <div className="container mx-auto px-4">
           <RandomPokemonShowcase pokemons={topRatedPokemons} />
         </div>
       </Suspense>
       
-      {/* CTA d'authentification */}
+      {/* Authentication CTA */}
       <AuthCTA />
     </div>
   );

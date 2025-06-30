@@ -1,11 +1,25 @@
 import { Pokemon } from '@/types/pokemon';
 import PokemonCard from '@/components/client/shared/PokemonCard';
 
+/**
+ * RelatedPokemonSection props interface
+ */
 interface RelatedPokemonSectionProps {
+  /** List of related Pokemon to display */
   pokemonList: Pokemon[];
+  /** Section title */
   title: string;
 }
 
+/**
+ * RelatedPokemonSection component
+ * 
+ * Displays a grid of related Pokemon cards with a title.
+ * Used for showing similar or related Pokemon on detail pages.
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 export default function RelatedPokemonSection({ 
   pokemonList, 
   title 

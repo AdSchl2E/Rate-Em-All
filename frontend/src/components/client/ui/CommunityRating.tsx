@@ -4,20 +4,39 @@ import { StarIcon } from '@heroicons/react/24/solid';
 import { ClientStarRating } from './ClientStarRating';
 import { getRatingColor } from '../../../lib/utils/ratingColors';
 
+/**
+ * Props for the CommunityRating component
+ */
 interface CommunityRatingProps {
+  /** Average rating value (0-5) */
   rating: number;
+  /** Number of votes/ratings submitted */
   votes: number;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';  // Ajout d'une taille XL
+  /** Size variant of the rating display */
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';  // Added XL size
+  /** Whether to show the star rating visualization */
   showStars?: boolean;
+  /** Whether to show the vote count */
   showVotes?: boolean;
+  /** Additional CSS classes */
   className?: string;
-  prominent?: boolean;  // Nouvelle prop pour un affichage plus visible
+  /** Whether to use a more prominent visual style */
+  prominent?: boolean;  // New prop for more visible display
 }
 
+/**
+ * CommunityRating component
+ * 
+ * Displays the average community rating for an item with optional stars visualization.
+ * Can be configured with different sizes and display options.
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 export function CommunityRating({ 
   rating = 0, 
   votes = 0, 
-  size = 'md',  // Taille par défaut passée à md
+  size = 'md',  // Default size changed to md
   showStars = true,
   showVotes = true,
   className = '',
@@ -36,12 +55,12 @@ export function CommunityRating({
   const iconSizes = {
     xs: 'h-3 w-3',
     sm: 'h-4 w-4',
-    md: 'h-6 w-6',  // Agrandi
-    lg: 'h-7 w-7',  // Agrandi
-    xl: 'h-9 w-9'   // Très grand
+    md: 'h-6 w-6',  // Enlarged
+    lg: 'h-7 w-7',  // Enlarged
+    xl: 'h-9 w-9'   // Very large
   };
   
-  // Si prominent est activé, on prend une taille au-dessus
+  // If prominent is enabled, use one size larger
   const displaySize = prominent ? (
     size === 'xs' ? 'sm' : 
     size === 'sm' ? 'md' : 
@@ -66,7 +85,7 @@ export function CommunityRating({
       
       {showStars && (
         <div className="ml-2">
-          <ClientStarRating value={rating} fixed={true} size={displaySize === 'xl' ? 'lg' : displaySize === 'xs' ? 'xs' : 'md'} useColors={true} />
+          <ClientStarRating value={rating} interactive={false} size={displaySize === 'xl' ? 'lg' : displaySize === 'xs' ? 'xs' : 'md'} useColors={true} />
         </div>
       )}
     </div>

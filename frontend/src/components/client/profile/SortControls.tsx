@@ -2,19 +2,40 @@
 
 import { ArrowsUpDownIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
 
+/**
+ * Sort option configuration
+ */
 type SortOption = {
+  /** Unique identifier for the option */
   id: string;
+  /** Display label */
   label: string;
+  /** Optional icon */
   icon?: React.ReactNode;
 };
 
+/**
+ * Props for the SortControls component
+ */
 interface SortControlsProps {
+  /** Currently selected sort field */
   sortBy: string;
+  /** Current sort direction */
   sortDir: 'asc' | 'desc';
+  /** Available sorting options */
   options: SortOption[];
+  /** Callback when sort option changes */
   onSortChange: (option: string, direction: 'asc' | 'desc') => void;
 }
 
+/**
+ * SortControls component
+ * 
+ * Provides UI controls for sorting data by different fields and directions.
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 export default function SortControls({ 
   sortBy, 
   sortDir, 
@@ -25,7 +46,7 @@ export default function SortControls({
     return current === 'asc' ? 'desc' : 'asc';
   };
 
-  // Obtenir l'icône de tri pour un champ donné
+  // Get the sort icon for a given field
   const getSortIcon = (field: string) => {
     if (field !== sortBy) {
       return <ArrowsUpDownIcon className="h-4 w-4 text-gray-500" />;
@@ -38,7 +59,7 @@ export default function SortControls({
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-sm text-gray-400">Trier par:</span>
+      <span className="text-sm text-gray-400">Sort by:</span>
       <div className="flex gap-2 flex-wrap">
         {options.map(option => (
           <button

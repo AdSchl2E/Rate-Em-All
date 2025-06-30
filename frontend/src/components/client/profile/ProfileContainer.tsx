@@ -11,6 +11,14 @@ import ProfileHeader from './ProfileHeader';
 import FavoritesSection from './FavoritesSection';
 import RatedPokemonSection from './RatedPokemonsSection';
 
+/**
+ * ProfileContainer component
+ * 
+ * Main container for the user profile page.
+ * Fetches and displays user's favorite and rated Pokémon.
+ * 
+ * @returns React component
+ */
 export default function ProfileContainer() {
   const { data: session } = useSession();
   const { 
@@ -24,14 +32,14 @@ export default function ProfileContainer() {
   const [ratedPokemons, setRatedPokemons] = useState<Pokemon[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Charger les détails des Pokémon favoris et notés
+  // Load details of favorite and rated Pokémon
   useEffect(() => {
     async function loadUserPokemon() {
       if (globalLoading || !session?.user) return;
 
       setLoading(true);
       try {
-        // Charger les favoris
+        // Load favorites
         if (favorites.length > 0) {
           const favPokemon = await clientApi.pokemon.getByIds(favorites);
           setFavoritePokemons(favPokemon);
@@ -39,7 +47,7 @@ export default function ProfileContainer() {
           setFavoritePokemons([]);
         }
 
-        // Charger les Pokémon notés
+        // Load rated Pokémon
         if (Object.keys(userRatings).length > 0) {
           const ratedIds = Object.keys(userRatings).map(Number);
           const ratedPokemon = await clientApi.pokemon.getByIds(ratedIds);
@@ -68,10 +76,10 @@ export default function ProfileContainer() {
     <AuthenticationGuard
       fallback={
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Profil utilisateur</h2>
-          <p className="mb-4">Connectez-vous pour accéder à votre profil</p>
+          <h2 className="text-2xl font-bold mb-4">User Profile</h2>
+          <p className="mb-4">Please sign in to access your profile</p>
           <a href="/login?callbackUrl=/profile" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition">
-            Se connecter
+            Sign in
           </a>
         </div>
       }
@@ -79,7 +87,7 @@ export default function ProfileContainer() {
       {loading || globalLoading ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <LoadingSpinner size="lg" />
-          <p className="mt-4 text-gray-400">Chargement de votre profil...</p>
+          <p className="mt-4 text-gray-400">Loading your profile...</p>
         </div>
       ) : (
         <div className="space-y-10 animate-fade-in">

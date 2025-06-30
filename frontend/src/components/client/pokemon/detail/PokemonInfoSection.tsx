@@ -73,7 +73,6 @@ export default function PokemonInfoSection({ pokemon }: PokemonInfoSectionProps)
         </div>
       </motion.div>
       
-      {/* Additional information like generation, habitat, etc. could be added here */}
     </motion.div>
   );
 }

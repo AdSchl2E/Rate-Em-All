@@ -15,30 +15,45 @@ import {
   AdjustmentsHorizontalIcon
 } from '@heroicons/react/24/outline';
 
-// Types pour les options de tri
+/**
+ * Types for sorting options
+ */
 export type SortCriteria = 'rating' | 'votes';
 export type SortDirection = 'asc' | 'desc';
 
+/**
+ * Props for the TopRatedContainer component
+ */
 interface TopRatedContainerProps {
+  /** Initial list of top-rated Pokemon */
   initialPokemons: Pokemon[];
 }
 
+/**
+ * TopRatedContainer component
+ * 
+ * Displays a list of top-rated Pokemon with filtering and sorting options.
+ * Shows a podium for the top 3 Pokemon and a list for the rest.
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 export default function TopRatedContainer({ initialPokemons }: TopRatedContainerProps) {
-  // États pour le tri et le filtrage
+  // States for sorting and filtering
   const [sortBy, setSortBy] = useState<SortCriteria>('rating');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedGeneration, setSelectedGeneration] = useState<number | null>(null);
   
-  // États pour les filtres dépliables
+  // States for expandable filters
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const [isTypesExpanded, setIsTypesExpanded] = useState(false);
   const [isGenerationsExpanded, setIsGenerationsExpanded] = useState(false);
 
-  // État pour les Pokémon
+  // State for Pokemon
   const [allPokemons, setAllPokemons] = useState<Pokemon[]>(initialPokemons);
 
-  // Extraire tous les types uniques pour les filtres
+  // Extract all unique types for filters
   const pokemonTypes = useMemo(() => {
     const types = new Set<string>();
     allPokemons.forEach(pokemon => {
@@ -49,7 +64,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
     return Array.from(types).sort();
   }, [allPokemons]);
 
-  // Effet pour rafraîchir les données après des mises à jour
+  // Effect to refresh data after updates
   useEffect(() => {
     const refreshTopRated = async () => {
       try {
@@ -60,29 +75,29 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
       }
     };
 
-    // Rafraîchir les données toutes les 5 minutes
+    // Refresh data every 5 minutes
     const intervalId = setInterval(refreshTopRated, 300000);
     
     return () => clearInterval(intervalId);
   }, []);
 
-  // Logique de filtrage et tri
+  // Filtering and sorting logic
   const displayedPokemons = useMemo(() => {
-    // Appliquer les filtres
+    // Apply filters
     let filtered = allPokemons.filter(pokemon => {
-      // Filtre par type - modification pour correspondance exacte
+      // Filter by type - modified for exact match
       if (selectedTypes.length > 0) {
         const pokemonTypes = pokemon.types?.map(t => t.type.name) || [];
         
-        // Vérifier la correspondance exacte
+        // Check for exact match
         if (selectedTypes.length === 1) {
-          // Si un seul type est sélectionné, le Pokémon doit être uniquement de ce type
+          // If only one type is selected, the Pokemon must have only this type
           if (pokemonTypes.length !== 1 || !pokemonTypes.includes(selectedTypes[0])) {
             return false;
           }
         } else if (selectedTypes.length === 2) {
-          // Si deux types sont sélectionnés, le Pokémon doit avoir exactement ces deux types
-          // (sans tenir compte de l'ordre)
+          // If two types are selected, the Pokemon must have exactly these two types
+          // (regardless of order)
           if (pokemonTypes.length !== 2 || 
               !selectedTypes.every(t => pokemonTypes.includes(t))) {
             return false;
@@ -90,7 +105,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
         }
       }
 
-      // Filtre par génération
+      // Filter by generation
       if (selectedGeneration !== null) {
         const gen = pokemon.species_info?.generation?.url.split('/')[6]; 
         if (!gen || !gen.includes(`${selectedGeneration + 1}`)) {
@@ -101,7 +116,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
       return true;
     });
 
-    // Appliquer le tri
+    // Apply sorting
     const directionFactor = sortDirection === 'asc' ? 1 : -1;
     
     return filtered.sort((a, b) => {
@@ -113,12 +128,12 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
     });
   }, [allPokemons, selectedTypes, selectedGeneration, sortBy, sortDirection]);
 
-  // Top 10 et séparation podium/liste
+  // Top 10 and podium/list separation
   const topTenPokemons = displayedPokemons.slice(0, 10);
   const podiumPokemons = topTenPokemons.slice(0, 3);
   const listPokemons = topTenPokemons.slice(3, 10);
 
-  // Gestionnaire pour changer le tri
+  // Handler for changing sorting
   const handleSortChange = (criteria: SortCriteria) => {
     if (sortBy === criteria) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -128,30 +143,30 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
     }
   };
 
-  // Gestionnaire pour les filtres de type
+  // Handler for type filters
   const handleTypeToggle = (type: string) => {
     setSelectedTypes(prev => {
-      // Si le type est déjà sélectionné, on le retire
+      // If the type is already selected, remove it
       if (prev.includes(type)) {
         return prev.filter(t => t !== type);
       }
       
-      // Si on a déjà 2 types sélectionnés, on remplace le plus ancien (FIFO)
+      // If two types are already selected, replace the oldest one (FIFO)
       if (prev.length >= 2) {
-        return [...prev.slice(1), type]; // Retire le premier, ajoute le nouveau
+        return [...prev.slice(1), type]; // Remove the first, add the new one
       }
       
-      // Sinon on l'ajoute simplement
+      // Otherwise simply add it
       return [...prev, type];
     });
   };
 
-  // Gestionnaire pour les filtres de génération
+  // Handler for generation filters
   const handleGenerationChange = (genIndex: number | null) => {
     setSelectedGeneration(genIndex);
   };
 
-  // Réinitialiser tous les filtres
+  // Reset all filters
   const resetFilters = () => {
     setSelectedTypes([]);
     setSelectedGeneration(null);
@@ -159,7 +174,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
     setSortDirection('desc');
   };
 
-  // Obtenir l'icône de tri pour un champ donné
+  // Get the sort icon for a field
   const getSortIcon = (field: SortCriteria) => {
     if (field !== sortBy) {
       return <ArrowsUpDownIcon className="h-4 w-4 text-gray-500" />;
@@ -175,9 +190,9 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
 
   return (
     <div className="space-y-6">
-      {/* Section de filtres et tri - style uniforme avec ExplorerContainer */}
+      {/* Filtering and sorting section - uniform style with ExplorerContainer */}
       <div className="mb-6">
-        {/* Options de tri */}
+        {/* Sorting options */}
         <div className="mb-4 flex flex-wrap gap-2">
           <button
             onClick={() => handleSortChange('rating')}
@@ -185,7 +200,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
               sortBy === 'rating' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
             }`}
           >
-            Note {getSortIcon('rating')}
+            Rating {getSortIcon('rating')}
           </button>
           
           <button
@@ -194,17 +209,17 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
               sortBy === 'votes' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
             }`}
           >
-            Nombre de votes {getSortIcon('votes')}
+            Number of votes {getSortIcon('votes')}
           </button>
           
-          {/* Bouton pour afficher/masquer les filtres */}
+          {/* Button to show/hide filters */}
           <button
             onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
             className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-sm ml-auto
               ${hasActiveFilters ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300'}`}
           >
             <AdjustmentsHorizontalIcon className="h-4 w-4" />
-            Filtres
+            Filters
             {hasActiveFilters && (
               <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-semibold rounded-full bg-white text-blue-600">
                 {(selectedTypes.length > 0 ? 1 : 0) + (selectedGeneration !== null ? 1 : 0)}
@@ -213,7 +228,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
           </button>
         </div>
         
-        {/* Section filtres dépliable */}
+        {/* Expandable filters section */}
         <AnimatePresence>
           {isFiltersExpanded && (
             <motion.div
@@ -224,7 +239,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
               className="overflow-hidden mb-4"
             >
               <div className="bg-gray-850 rounded-lg p-4 space-y-4">
-                {/* En-tête dépliable pour les types */}
+                {/* Expandable header for types */}
                 <div>
                   <button
                     onClick={() => setIsTypesExpanded(!isTypesExpanded)} 
@@ -244,7 +259,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
                     }
                   </button>
                   
-                  {/* Contenu dépliable pour les types */}
+                  {/* Expandable content for types */}
                   <AnimatePresence>
                     {isTypesExpanded && (
                       <motion.div 
@@ -284,14 +299,14 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
                   </AnimatePresence>
                 </div>
                 
-                {/* En-tête dépliable pour les générations */}
+                {/* Expandable header for generations */}
                 <div>
                   <button
                     onClick={() => setIsGenerationsExpanded(!isGenerationsExpanded)}
                     className="w-full flex items-center justify-between px-3 py-2 bg-gray-800 hover:bg-gray-750 rounded-md text-left transition-colors"
                   >
                     <div className="flex items-center">
-                      <span className="text-sm font-medium text-gray-200">Génération</span>
+                      <span className="text-sm font-medium text-gray-200">Generation</span>
                       {selectedGeneration !== null && (
                         <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-blue-600 text-white">
                           1
@@ -304,7 +319,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
                     }
                   </button>
                   
-                  {/* Contenu dépliable pour les générations */}
+                  {/* Expandable content for generations */}
                   <AnimatePresence>
                     {isGenerationsExpanded && (
                       <motion.div 
@@ -317,7 +332,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
                         <div className="pt-2 pb-1 px-1">
                           <div className="flex flex-wrap gap-2">
                             {Array.from({ length: 9 }, (_, index) => ({
-                              name: `Génération ${index + 1}`,
+                              name: `Generation ${index + 1}`,
                               index
                             })).map((gen, index) => (
                               <button
@@ -342,33 +357,33 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
           )}
         </AnimatePresence>
         
-        {/* Résultats et bouton de réinitialisation */}
+        {/* Results and reset button */}
         {isFiltering && (
           <div className="flex items-center justify-between mt-4 pt-2 border-t border-gray-800">
             <div className="text-sm text-gray-400">
-              {displayedPokemons.length} résultat{displayedPokemons.length > 1 ? 's' : ''}
+              {displayedPokemons.length} result{displayedPokemons.length > 1 ? 's' : ''}
             </div>
             <button
               onClick={resetFilters}
               className="text-sm text-blue-400 hover:text-blue-300 transition"
             >
-              Réinitialiser les filtres
+              Reset filters
             </button>
           </div>
         )}
       </div>
 
-      {/* Section du podium (Top 3) - reste inchangée */}
+      {/* Podium section (Top 3) - unchanged */}
       <section>
-        <h2 className="text-2xl font-bold mb-6">Le podium</h2>
+        <h2 className="text-2xl font-bold mb-6">The podium</h2>
         
         {podiumPokemons.length === 0 ? (
           <div className="text-center py-10 text-gray-400">
-            Aucun Pokémon correspondant aux filtres
+            No Pokémon match the filters
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Position 2 (argent) */}
+            {/* Position 2 (silver) */}
             {podiumPokemons.length >= 2 && (
               <RankedPokemonCard 
                 pokemon={podiumPokemons[1]} 
@@ -376,7 +391,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
               />
             )}
             
-            {/* Position 1 (or) */}
+            {/* Position 1 (gold) */}
             {podiumPokemons.length >= 1 && (
               <RankedPokemonCard 
                 pokemon={podiumPokemons[0]} 
@@ -395,10 +410,10 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
         )}
       </section>
 
-      {/* Section liste (Top 4-10) - reste inchangée */}
+      {/* List section (Top 4-10) */}
       {listPokemons.length > 0 && (
         <section>
-          <h2 className="text-2xl font-bold mb-6">Classement 4-10</h2>
+          <h2 className="text-2xl font-bold mb-6">Ranking 4-10</h2>
           
           <div className="space-y-4">
             {listPokemons.map((pokemon, index) => (
@@ -415,12 +430,27 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
   );
 }
 
-// Le composant RankedPokemonCard reste inchangé
-function RankedPokemonCard({ pokemon, rank }: { 
-  pokemon: Pokemon; 
+/**
+ * Props for the RankedPokemonCard component
+ */
+interface RankedPokemonCardProps {
+  /** Pokemon to display */
+  pokemon: Pokemon;
+  /** Ranking position (1-10) */
   rank: number;
-}) {
-  // Configurations spécifiques au rang
+}
+
+/**
+ * RankedPokemonCard component
+ * 
+ * Displays a Pokemon card with ranking information.
+ * Different styles are applied based on the ranking position.
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
+function RankedPokemonCard({ pokemon, rank }: RankedPokemonCardProps) {
+  // Rank-specific configurations
   const rankConfig = {
     1: {
       colorClass: 'from-yellow-300 to-amber-500',
@@ -444,7 +474,7 @@ function RankedPokemonCard({ pokemon, rank }: {
     }
   };
 
-  // Pour les positions 1, 2, 3 (podium)
+  // For positions 1, 2, 3 (podium)
   if (rank <= 3) {
     const config = rankConfig[rank as 1|2|3];
     
@@ -456,9 +486,9 @@ function RankedPokemonCard({ pokemon, rank }: {
         transition={{ delay: rank * 0.2, duration: 0.5 }}
       >
         
-        {/* Card avec bordure brillante et ombre */}
+        {/* Card with shiny border and shadow */}
         <div className={`relative transform transition-all duration-300`}>
-          {/* Effet de lueur derrière la carte */}
+          {/* Glow effect behind the card */}
           <div className={`absolute inset-0 bg-gradient-to-br ${config.colorClass} blur-lg opacity-25 rounded-xl`}></div>
           
           <motion.div 
@@ -484,8 +514,8 @@ function RankedPokemonCard({ pokemon, rank }: {
     );
   }
   
-  // Pour les positions 4-10 (liste)
-  // Calculer l'opacité en fonction de la position (plus bas = moins opaque)
+  // For positions 4-10 (list)
+  // Calculate opacity based on position (lower = less opaque)
   const opacity = Math.max(0.6, 1 - (rank - 3) * 0.1).toFixed(1);
   
   return (
@@ -502,14 +532,14 @@ function RankedPokemonCard({ pokemon, rank }: {
       }}
     >
       <div className="flex items-center">
-        {/* Indicateur de rang minimaliste */}
+        {/* Minimalist rank indicator */}
         <div className="w-16 h-full bg-gray-800 flex-shrink-0 flex items-center justify-center">
           <span className="text-base font-semibold text-gray-400">
             #{rank}
           </span>
         </div>
         
-        {/* Version liste du PokemonCard */}
+        {/* List version of PokemonCard */}
         <div className="flex-grow">
           <PokemonCard
             pokemon={pokemon}

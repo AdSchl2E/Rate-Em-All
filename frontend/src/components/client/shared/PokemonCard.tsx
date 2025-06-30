@@ -17,7 +17,12 @@ import PokemonStatsSection from '../pokemon/detail/PokemonStatsSection';
 import PokemonInfoSection from '../pokemon/detail/PokemonInfoSection';
 import PokemonSpeciesSection from '../pokemon/detail/PokemonSpeciesSection';
 
-// Ajouter cette fonction utilitaire en début de fichier, après les imports
+/**
+ * Gets the color class for a rating value
+ * 
+ * @param rating - Rating value (0-5)
+ * @returns CSS class for the rating color
+ */
 function getRatingColor(rating: number) {
   if (rating < 1) return 'text-gray-400';
   if (rating < 2) return 'text-yellow-400';
@@ -26,22 +31,46 @@ function getRatingColor(rating: number) {
   if (rating < 4) return 'text-amber-600';
   if (rating < 4.5) return 'text-orange-500';
   if (rating < 5) return 'text-orange-600';
-  return 'text-red-500'; // Pour 5 exactement
+  return 'text-red-500'; // For exactly 5
 }
 
-// Ajouter type pour la taille
+/**
+ * Card size variants
+ */
 type CardSize = 'sm' | 'md' | 'lg';
-type ViewMode = 'grid' | 'list' | 'detail'; // Ajout du mode 'detail'
 
+/**
+ * View mode options for the card
+ */
+type ViewMode = 'grid' | 'list' | 'detail';
+
+/**
+ * Props for the PokemonCard component
+ */
 interface PokemonCardProps {
+  /** Pokemon data to display */
   pokemon: Pokemon;
+  /** Whether to show action buttons (favorite, rate) */
   showActions?: boolean;
+  /** Whether to show rating information */
   showRating?: boolean;
-  viewMode?: ViewMode; // Mise à jour du type
+  /** Display mode for the card */
+  viewMode?: ViewMode;
+  /** Size variant of the card */
   size?: CardSize;
-  onRatingUpdate?: (rating: number, votes: number) => void; // Pour mettre à jour les données parentes
+  /** Callback for when rating is updated */
+  onRatingUpdate?: (rating: number, votes: number) => void;
 }
 
+/**
+ * PokemonCard component
+ * 
+ * Versatile card component for displaying Pokemon information.
+ * Supports different view modes, sizes, and interactive features.
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 export default function PokemonCard({
   pokemon,
   showActions = true,
@@ -57,22 +86,22 @@ export default function PokemonCard({
   const [isLoadingRating, setIsLoadingRating] = useState(false);
   const [localUserRating, setLocalUserRating] = useState(0);
 
-  // États locaux pour les notes communautaires et nombre de votes
+  // Local states for community ratings and vote count
   const [localCommunityRating, setLocalCommunityRating] = useState(pokemon.rating || 0);
   const [localVoteCount, setLocalVoteCount] = useState(pokemon.numberOfVotes || 0);
 
-  // Utiliser les fonctions du nouveau GlobalProvider
+  // Use functions from the new GlobalProvider
   const isPokemonInFavorites = isFavorite(pokemon.id);
   const userRating = getRating(pokemon.id);
 
-  // Initialiser les états locaux avec les valeurs du Pokémon
+  // Initialize local states with Pokemon values
   useEffect(() => {
     setLocalUserRating(userRating);
     setLocalCommunityRating(pokemon.rating || 0);
     setLocalVoteCount(pokemon.numberOfVotes || 0);
   }, [userRating, pokemon.rating, pokemon.numberOfVotes]);
 
-  // Déplacer l'appel de cachePokemon dans un useEffect
+  // Move cachePokemon call to useEffect
   useEffect(() => {
     if (pokemon) {
       cachePokemon(pokemon);
@@ -88,25 +117,25 @@ export default function PokemonCard({
     e.stopPropagation();
 
     if (status !== 'authenticated') {
-      toast.error('Connectez-vous pour ajouter des favoris');
+      toast.error('Please sign in to add favorites');
       return;
     }
 
     try {
       setIsLoadingFavorite(true);
 
-      // Utilise la fonction toggleFavorite du GlobalProvider qui inclut une mise à jour optimiste
+      // Use the toggleFavorite function from GlobalProvider that includes optimistic update
       const isFavoriteNow = await toggleFavorite(pokemon.id);
 
-      // Notification plus discrète pour éviter de surcharger l'utilisateur
+      // More subtle notification to avoid overwhelming the user
       toast.success(isFavoriteNow
-        ? `${pokemon.name} ajouté aux favoris`
-        : `${pokemon.name} retiré des favoris`,
+        ? `${pokemon.name} added to favorites`
+        : `${pokemon.name} removed from favorites`,
         { duration: 2000 }
       );
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      toast.error('Erreur lors de la modification des favoris');
+      toast.error('Error modifying favorites');
     } finally {
       setIsLoadingFavorite(false);
     }
@@ -115,7 +144,7 @@ export default function PokemonCard({
   // Handle rating change
   const handleRatingChange = async (rating: number) => {
     if (status !== 'authenticated') {
-      toast.error('Connectez-vous pour noter des Pokémon');
+      toast.error('Please sign in to rate Pokemon');
       return;
     }
 
@@ -123,42 +152,51 @@ export default function PokemonCard({
       setIsLoadingRating(true);
       setLocalUserRating(rating);
 
-      // Utiliser la fonction setRating du GlobalProvider
+      // Use the setRating function from GlobalProvider
       const result = await setRating(pokemon.id, rating);
 
-      // Mettre à jour les états locaux avec les valeurs retournées par l'API
+      // Update local states with values returned by the API
       if (result) {
-        setLocalCommunityRating(result.pokemon.rating);
-        setLocalVoteCount(result.pokemon.numberOfVotes);
+        // Check if result has the expected shape
+        const updatedRating = typeof result.updatedRating === 'number' ? 
+          result.updatedRating : 
+          (result.pokemon?.rating || localCommunityRating);
+          
+        const updatedVotes = typeof result.numberOfVotes === 'number' ? 
+          result.numberOfVotes : 
+          (result.pokemon?.numberOfVotes || localVoteCount);
 
-        // Mettre à jour le Pokémon dans le cache
+        setLocalCommunityRating(updatedRating);
+        setLocalVoteCount(updatedVotes);
+
+        // Update the Pokemon in the cache
         cachePokemon({
           ...pokemon,
           userRating: rating,
-          rating: result.pokemon.rating,
-          numberOfVotes: result.pokemon.numberOfVotes
+          rating: updatedRating,
+          numberOfVotes: updatedVotes
         });
         
-        // Propager la mise à jour au parent si nécessaire
+        // Propagate the update to the parent if necessary
         if (onRatingUpdate) {
-          onRatingUpdate(result.pokemon.rating, result.pokemon.numberOfVotes);
+          onRatingUpdate(updatedRating, updatedVotes);
         }
       }
 
-      // Notification plus discrète
-      toast.success(`Vous avez noté ${pokemon.name} ${rating}/5`, {
+      // More subtle notification
+      toast.success(`You rated ${pokemon.name} ${rating}/5`, {
         duration: 2000
       });
     } catch (error) {
       console.error('Error rating pokemon:', error);
-      toast.error('Erreur lors de l\'enregistrement de la note');
+      toast.error('Error saving the rating');
       setLocalUserRating(userRating);
     } finally {
       setIsLoadingRating(false);
     }
   };
 
-  // Définir les classes et dimensions en fonction de la taille
+  // Define classes and dimensions based on size
   const listSizeClasses = {
     sm: {
       container: "p-1.5",
@@ -249,7 +287,7 @@ export default function PokemonCard({
     }
   };
 
-  // MODE DÉTAIL - Nouveau mode pour la page principale de détail d'un Pokémon
+  // DETAIL MODE - New mode for the main detail page of a Pokemon
   if (viewMode === 'detail') {
     return (
       <motion.div 
@@ -259,7 +297,7 @@ export default function PokemonCard({
         className="bg-gray-800 rounded-xl overflow-hidden shadow-xl"
       >
         <div className="md:flex">
-          {/* Section image du Pokémon */}
+          {/* Pokemon image section */}
           <div 
             className="md:w-1/2 p-8 flex items-center justify-center relative overflow-hidden"
             style={{ background: `linear-gradient(135deg, ${primaryColor}15, ${secondaryColor}40)` }}
@@ -281,7 +319,8 @@ export default function PokemonCard({
               <Image
                 src={pokemon.sprites.other?.['official-artwork']?.front_default || 
                       pokemon.sprites.front_default || 
-                      '/images/pokeball.png'}
+                      '/images/pokeball.png'
+                }
                 alt={pokemon.name}
                 fill
                 sizes="(max-width: 768px) 300px, 600px"
@@ -295,9 +334,9 @@ export default function PokemonCard({
             </motion.div>
           </div>
           
-          {/* Section d'information */}
+          {/* Information section */}
           <div className="md:w-1/2 p-6">
-            {/* En-tête avec nom, ID, types */}
+            {/* Header with name, ID, types */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <h1 className="text-3xl font-bold capitalize">
@@ -313,15 +352,15 @@ export default function PokemonCard({
               </div>
             </div>
             
-            {/* Section notation */}
+            {/* Rating section */}
             <div className="mb-6 space-y-4">
-              {/* Note communautaire */}
+              {/* Community rating */}
               <motion.div 
                 initial={{ opacity: 0, y: 10 }} 
                 animate={{ opacity: 1, y: 0 }} 
                 transition={{ delay: 0.3 }}
               >
-                <h3 className="text-lg font-medium mb-2">Note communautaire</h3>
+                <h3 className="text-lg font-medium mb-2">Community rating</h3>
                 <div className="flex items-center">
                   <div className="flex items-center bg-gray-700/80 px-3 py-2 rounded-md">
                     <StarIcon className={`h-6 w-6 mr-2 ${getRatingColor(localCommunityRating)}`} />
@@ -335,14 +374,14 @@ export default function PokemonCard({
                 </div>
               </motion.div>
               
-              {/* Note utilisateur */}
+              {/* User rating */}
               <motion.div 
                 initial={{ opacity: 0, y: 10 }} 
                 animate={{ opacity: 1, y: 0 }} 
                 transition={{ delay: 0.4 }}
                 className="pt-4 border-t border-gray-700"
               >
-                <h3 className="text-lg font-medium mb-2">Votre évaluation</h3>
+                <h3 className="text-lg font-medium mb-2">Your rating</h3>
                 <div>
                   <ClientStarRating
                     value={localUserRating}
@@ -354,16 +393,16 @@ export default function PokemonCard({
                   
                   {status !== 'authenticated' && (
                     <p className="text-sm text-gray-400 mt-2">
-                      <Link href="/login" className="text-blue-400 hover:underline">Connectez-vous</Link> pour noter ce Pokémon
+                      <Link href="/login" className="text-blue-400 hover:underline">Sign in</Link> to rate this Pokémon
                     </p>
                   )}
                 </div>
               </motion.div>
             </div>
             
-            {/* Actions utilisateur (favoris, partage) */}
+            {/* User actions (favorites, share) */}
             <div className="flex flex-wrap gap-3">
-              {/* Bouton Favoris */}
+              {/* Favorites button */}
               <motion.button 
                 onClick={handleToggleFavorite} 
                 disabled={isLoadingFavorite || status !== 'authenticated'}
@@ -377,36 +416,36 @@ export default function PokemonCard({
                 }`}
               >
                 <HeartIcon className="h-5 w-5" /> 
-                {isPokemonInFavorites ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                {isPokemonInFavorites ? 'Remove from favorites' : 'Add to favorites'}
               </motion.button>
               
-              {/* Autres boutons d'action peuvent être ajoutés ici */}
+              {/* Other action buttons can be added here */}
             </div>
           </div>
         </div>
         
-        {/* Statistiques */}
+        {/* Statistics */}
         <div className="border-t border-gray-700 p-6">
           <PokemonStatsSection stats={pokemon.stats || []} />
         </div>
         
-        {/* Informations supplémentaires */}
+        {/* Additional information */}
         <PokemonInfoSection pokemon={pokemon} />
         
-        {/* Informations d'espèce */}
+        {/* Species information */}
         <PokemonSpeciesSection pokemon={pokemon} />
       </motion.div>
     );
   }
 
-  // Version liste avec taille ajustable
+  // List version with adjustable size
   if (viewMode === 'list') {
     const listClasses = listSizeClasses[size];
 
     return (
       <div className="bg-gray-800/40 hover:bg-gray-800/60 rounded-lg transition-all duration-200 shadow-sm">
         <div className={`flex items-center ${listClasses.container}`}>
-          {/* Image avec fond coloré (à gauche) */}
+          {/* Image with colored background (left) */}
           <div className="relative mr-3 flex-shrink-0">
             <div
               className={`${listClasses.image} rounded-lg flex items-center justify-center`}
@@ -433,7 +472,7 @@ export default function PokemonCard({
             </div>
           </div>
 
-          {/* Nom et types (au centre) */}
+          {/* Name and types (center) */}
           <div className="flex-grow">
             <Link href={`/pokemon/${pokemon.id}`} className="block">
               <h3 className={`font-medium capitalize hover:text-blue-400 transition truncate ${listClasses.name}`}>
@@ -452,9 +491,9 @@ export default function PokemonCard({
             </div>
           </div>
 
-          {/* Actions (à droite): Bouton favoris, note utilisateur, note communauté */}
+          {/* Actions (right): Favorite button, user rating, community rating */}
           <div className={`flex items-center ${listClasses.gap} ml-2`}>
-            {/* Bouton favoris */}
+            {/* Favorite button */}
             {showActions && (
               <button
                 onClick={handleToggleFavorite}
@@ -462,13 +501,13 @@ export default function PokemonCard({
                   ${isPokemonInFavorites ? 'bg-red-500/90 text-white' : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700'}
                   transition-all duration-200 hover:scale-110`}
                 disabled={isLoadingFavorite}
-                title={isPokemonInFavorites ? "Retirer des favoris" : "Ajouter aux favoris"}
+                title={isPokemonInFavorites ? "Remove from favorites" : "Add to favorites"}
               >
                 <HeartIcon className={listClasses.heartIcon} />
               </button>
             )}
 
-            {/* Note utilisateur */}
+            {/* User rating */}
             {showActions && showRating && (
               <div className="flex flex-col items-center">
                 <ClientStarRating
@@ -481,7 +520,7 @@ export default function PokemonCard({
               </div>
             )}
 
-            {/* Note communauté - UTILISE LES VALEURS LOCALES MISES À JOUR */}
+            {/* Community rating - USES UPDATED LOCAL VALUES */}
             {showRating && (
               <div className="flex flex-col items-center">
                 <motion.div
@@ -507,7 +546,7 @@ export default function PokemonCard({
     );
   }
 
-  // Mode grille
+  // Grid mode
   const gridClasses = gridSizeClasses[size];
 
   return (
@@ -515,9 +554,9 @@ export default function PokemonCard({
       className="bg-gray-800 rounded-lg overflow-hidden shadow-lg relative group"
       whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
     >
-      {/* Section image avec fond de couleur subtil */}
+      {/* Image section with subtle colored background */}
       <div className={`flex items-center justify-center bg-gray-850 relative ${gridClasses.imageHeight}`}>
-        {/* Fond subtil avec couleur de type */}
+        {/* Subtle background with type color */}
         <div
           className="absolute inset-0 backdrop-filter backdrop-blur-sm"
           style={{
@@ -543,7 +582,7 @@ export default function PokemonCard({
           #{pokemon.id}
         </div>
 
-        {/* Bouton favoris flottant */}
+        {/* Floating favorite button */}
         {showActions && (
           <button
             onClick={handleToggleFavorite}
@@ -553,7 +592,7 @@ export default function PokemonCard({
                 : 'bg-gray-800/80 text-gray-300 hover:bg-gray-700'
               } backdrop-blur-sm transition-all`}
             disabled={isLoadingFavorite}
-            title={isPokemonInFavorites ? "Retirer des favoris" : "Ajouter aux favoris"}
+            title={isPokemonInFavorites ? "Remove from favorites" : "Add to favorites"}
           >
             <HeartIcon className="h-4 w-4" />
           </button>
@@ -574,7 +613,7 @@ export default function PokemonCard({
             </Link>
           </h3>
 
-          {/* Note communautaire - UTILISE LES VALEURS LOCALES MISES À JOUR */}
+          {/* Community rating - USES UPDATED LOCAL VALUES */}
           {showRating && (
             <motion.div
               className={`flex items-center bg-gray-700/60 rounded-md ${gridClasses.commRating.container}`}
@@ -604,7 +643,7 @@ export default function PokemonCard({
           ))}
         </div>
 
-        {/* Section de notation utilisateur */}
+        {/* User rating section */}
         {showRating && (
           <div className="mt-3 border-t border-gray-700 pt-3">
             <div className="flex items-center justify-center">
@@ -619,8 +658,8 @@ export default function PokemonCard({
             {status !== 'authenticated' && (
               <p className="text-xs text-gray-500 mt-1 text-center">
                 <Link href="/login" className="text-blue-400 hover:underline">
-                  Connectez-vous
-                </Link> pour noter
+                  Sign in
+                </Link> to rate
               </p>
             )}
           </div>

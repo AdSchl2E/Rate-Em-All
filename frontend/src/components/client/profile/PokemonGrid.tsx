@@ -9,13 +9,30 @@ import { CommunityRating } from '@/components/client/ui/CommunityRating';
 import { getRatingColor } from '@/lib/utils/ratingColors';
 import { motion } from 'framer-motion';
 
+/**
+ * Props for the PokemonGrid component
+ */
 interface PokemonGridProps {
+  /** List of Pokemon to display */
   pokemons: Pokemon[];
+  /** User's ratings for Pokemon (keyed by Pokemon ID) */
   userRatings: Record<number, number>;
+  /** Cached community ratings data (keyed by Pokemon ID) */
   pokemonCache: Record<number, { rating: number; numberOfVotes: number }>;
+  /** List of the user's favorite Pokemon IDs */
   favorites: number[];
 }
 
+/**
+ * PokemonGrid component
+ * 
+ * Displays Pokemon in a responsive grid layout.
+ * Shows Pokemon image, name, types, user rating, and community rating.
+ * Includes animation effects.
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 export default function PokemonGrid({ 
   pokemons, 
   userRatings, 

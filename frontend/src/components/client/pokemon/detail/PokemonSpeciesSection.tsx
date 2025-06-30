@@ -86,7 +86,7 @@ export default function PokemonSpeciesSection({ pokemon }: PokemonSpeciesSection
       {/* Pokémon description */}
       <div className="bg-gray-750 p-4 rounded-lg">
         <p className="italic text-gray-300">{getDescription()}</p>
-        {getGenus() && <p className="mt-2 text-sm text-gray-400">The {getGenus()} Pokémon</p>}
+        {getGenus() && <p className="mt-2 text-sm text-gray-400">The {getGenus()}</p>}
       </div>
       
       {/* General information */}

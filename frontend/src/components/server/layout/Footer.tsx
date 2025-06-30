@@ -1,3 +1,11 @@
+/**
+ * Footer component
+ * 
+ * Renders the application footer with copyright information,
+ * branding, and navigation links.
+ * 
+ * @returns React server component
+ */
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 

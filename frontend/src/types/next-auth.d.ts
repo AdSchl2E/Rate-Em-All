@@ -5,8 +5,6 @@ declare module "next-auth" {
     accessToken?: string;
     user: {
       id: string;
-      name: string;
-      email: string;
       pseudo: string;
       createdAt: string;
       updatedAt: string;
@@ -18,8 +16,6 @@ declare module "next-auth" {
 
   interface User {
     id: string;
-    name: string;
-    email: string;
     pseudo: string;
     createdAt: string;
     updatedAt: string;

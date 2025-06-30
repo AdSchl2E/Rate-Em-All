@@ -45,8 +45,8 @@ export function SecuritySettings() {
       return;
     }
     
-    if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters long');
+    if (newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters long');
       return;
     }
     
@@ -121,7 +121,7 @@ export function SecuritySettings() {
             autoComplete="new-password"
           />
           <p className="text-xs text-gray-500 mt-1">
-            Password must be at least 6 characters long.
+            Password must be at least 8 characters long.
           </p>
         </div>
         

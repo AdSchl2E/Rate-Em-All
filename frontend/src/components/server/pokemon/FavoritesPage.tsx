@@ -1,18 +1,26 @@
 import PageHeader from '@/components/server/shared/PageHeader';
 import FavoritesContainer from '@/components/client/pokemon/favorites/FavoritesContainer';
 
+/**
+ * FavoritesPage component
+ * 
+ * Server component that renders the user's favorite Pokémon page.
+ * Handles server-side authentication checks and data pre-loading.
+ * 
+ * @returns React server component
+ */
 export async function FavoritesPage() {
-  // Le composant serveur peut vérifier l'authentification et pré-charger des données
-  // si nécessaire, avec une gestion SSR optimale
+  // Server component can check authentication and pre-load data
+  // if needed, with optimal SSR handling
   
   return (
     <div className="container mx-auto px-4 py-8">
       <PageHeader
-        title="Mes Pokémon Favoris"
-        description="Retrouvez tous vos Pokémon préférés au même endroit"
+        title="My Favorite Pokémon"
+        description="Find all your favorite Pokémon in one place"
       />
       
-      {/* Composant client pour la partie interactive */}
+      {/* Client component for interactive features */}
       <FavoritesContainer />
     </div>
   );
