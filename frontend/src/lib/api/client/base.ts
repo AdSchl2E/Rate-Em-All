@@ -3,6 +3,12 @@ import type { ApiOptions } from '../shared/types';
 
 /**
  * Client-side API request function - use in Client Components only ('use client')
+ * 
+ * @template T - The expected response data type
+ * @param path - API endpoint path to request
+ * @param options - Request configuration options
+ * @returns Promise with the response data of type T
+ * @throws Error if the request fails
  */
 export async function clientApiRequest<T = any>(path: string, options: ApiOptions = {}): Promise<T> {
   try {

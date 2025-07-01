@@ -37,7 +37,6 @@ export default function RatedPokemonsSection({
   pokemonList, 
   userRatings, 
   pokemonCache,
-  favorites
 }: RatedPokemonsSectionProps) {
   const [sortBy, setSortBy] = useState<'userRating' | 'communityRating' | 'votes'>('userRating');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -71,7 +70,7 @@ export default function RatedPokemonsSection({
   
   // Handle sort change
   const handleSortChange = (option: string, direction: 'asc' | 'desc') => {
-    setSortBy(option as any);
+    setSortBy(option as 'userRating' | 'communityRating' | 'votes');
     setSortDir(direction);
   };
 

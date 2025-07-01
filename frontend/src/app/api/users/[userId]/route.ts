@@ -4,7 +4,10 @@ import { authOptions } from '../../auth/[...nextauth]/route';
 import { serverApiRequest } from '@/lib/api/server/base';
 
 /**
- * GET - Récupère les détails d'un utilisateur spécifique
+ * GET - Retrieves details for a specific user
+ * @param request - The incoming request object
+ * @param params - Route parameters containing the userId
+ * @returns User data or error response
  */
 export async function GET(
     request: NextRequest,
@@ -13,13 +16,13 @@ export async function GET(
     const { userId } = params;
     const session = await getServerSession(authOptions);
 
-    // Vérifier si l'utilisateur est authentifié
+    // Check if user is authenticated
     if (!session?.user) {
-        return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     try {
-        // Utiliser serverApiRequest au lieu de callBackend pour une meilleure cohérence
+        // Use serverApiRequest instead of callBackend for better consistency
         const userData = await serverApiRequest(`/user/${userId}`, {
             headers: {
                 'Authorization': `Bearer ${session.accessToken}`
@@ -31,14 +34,17 @@ export async function GET(
     } catch (error) {
         console.error(`Error fetching user ${userId}:`, error);
         return NextResponse.json(
-            { error: "Impossible de récupérer les informations de l'utilisateur" },
+            { error: "Unable to retrieve user information" },
             { status: 500 }
         );
     }
 }
 
 /**
- * PATCH - Met à jour les informations d'un utilisateur
+ * PATCH - Updates information for a specific user
+ * @param request - The incoming request object containing update data
+ * @param params - Route parameters containing the userId
+ * @returns Updated user data or error response
  */
 export async function PATCH(
     request: NextRequest,
@@ -47,15 +53,15 @@ export async function PATCH(
     const { userId } = params;
     const session = await getServerSession(authOptions);
 
-    // Vérifier si l'utilisateur est authentifié
+    // Check if user is authenticated
     if (!session?.user) {
-        return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     try {
         const body = await request.json();
 
-        // Validation des données
+        // Validate data
         const validFields = ['name', 'pseudo', 'email'];
         const updateData: Record<string, any> = {};
 
@@ -65,15 +71,15 @@ export async function PATCH(
             }
         });
 
-        // Si aucun champ valide n'est fourni
+        // If no valid fields are provided
         if (Object.keys(updateData).length === 0) {
             return NextResponse.json(
-                { error: "Aucune donnée valide fournie pour la mise à jour" },
+                { error: "No valid data provided for update" },
                 { status: 400 }
             );
         }
 
-        // Appeler l'API backend
+        // Call backend API
         const updatedUser = await serverApiRequest(`/user/${userId}`, {
             method: 'PATCH',
             body: updateData,
@@ -89,14 +95,17 @@ export async function PATCH(
     } catch (error: any) {
         console.error(`Error updating user ${userId}:`, error);
         return NextResponse.json(
-            { error: error.message || "Impossible de mettre à jour l'utilisateur" },
+            { error: error.message || "Unable to update user" },
             { status: 500 }
         );
     }
 }
 
 /**
- * DELETE - Supprime un compte utilisateur
+ * DELETE - Deletes a user account
+ * @param request - The incoming request object
+ * @param params - Route parameters containing the userId
+ * @returns Success message or error response
  */
 export async function DELETE(
     request: NextRequest,
@@ -105,13 +114,13 @@ export async function DELETE(
     const { userId } = params;
     const session = await getServerSession(authOptions);
 
-    // Vérifier si l'utilisateur est authentifié
+    // Check if user is authenticated
     if (!session?.user) {
-        return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     try {
-        // Appeler l'API backend
+        // Call backend API
         await serverApiRequest(`/user/${userId}`, {
             method: 'DELETE',
             headers: {
@@ -121,12 +130,12 @@ export async function DELETE(
 
         return NextResponse.json({
             success: true,
-            message: "Compte utilisateur supprimé avec succès"
+            message: "User account successfully deleted"
         });
     } catch (error) {
         console.error(`Error deleting user ${userId}:`, error);
         return NextResponse.json(
-            { error: "Impossible de supprimer le compte utilisateur" },
+            { error: "Unable to delete user account" },
             { status: 500 }
         );
     }

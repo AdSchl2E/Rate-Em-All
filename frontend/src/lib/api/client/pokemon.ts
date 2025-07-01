@@ -2,9 +2,17 @@ import { clientApiRequest } from './base';
 import type { PokemonListResponse, PokemonRatingData } from '../shared/types';
 import type { Pokemon } from '../../../types/pokemon';
 
+/**
+ * Client-side Pokemon API utilities
+ * For use in client components only ('use client')
+ */
 export const clientPokemon = {
   /**
    * Get list of Pokemon with optional pagination
+   * 
+   * @param page - Page number for pagination (0-indexed)
+   * @param limit - Number of Pokemon per page
+   * @returns Response containing Pokemon list, pagination info
    */
   async getList(page = 0, limit = 20): Promise<PokemonListResponse> {
     return clientApiRequest('/pokemon', {
@@ -19,6 +27,10 @@ export const clientPokemon = {
   
   /**
    * Get alternate forms of Pokemon
+   * 
+   * @param offset - Starting index for Pokemon forms (typically 898)
+   * @param limit - Maximum number of forms to retrieve
+   * @returns Response containing list of Pokemon alternate forms
    */
   async getAlternateForms(offset = 898, limit = 1000): Promise<PokemonListResponse> {
     return clientApiRequest('/pokemon', {
@@ -32,6 +44,9 @@ export const clientPokemon = {
   
   /**
    * Get top rated Pokemon
+   * 
+   * @param limit - Maximum number of Pokemon to retrieve
+   * @returns Array of top rated Pokemon
    */
   async getTopRated(limit = 10): Promise<Pokemon[]> {
     return clientApiRequest('/pokemon', {
@@ -45,6 +60,9 @@ export const clientPokemon = {
   
   /**
    * Get trending Pokemon
+   * 
+   * @param limit - Maximum number of Pokemon to retrieve
+   * @returns Array of trending Pokemon
    */
   async getTrending(limit = 10): Promise<Pokemon[]> {
     return clientApiRequest('/pokemon', {
@@ -58,6 +76,9 @@ export const clientPokemon = {
   
   /**
    * Search Pokemon by name
+   * 
+   * @param query - Search term to match against Pokemon names
+   * @returns Array of matching Pokemon
    */
   async search(query: string): Promise<Pokemon[]> {
     return clientApiRequest('/pokemon', {
@@ -71,6 +92,8 @@ export const clientPokemon = {
   
   /**
    * Get total Pokemon count
+   * 
+   * @returns Total number of Pokemon in the database
    */
   async getCount(): Promise<number> {
     const response = await clientApiRequest('/pokemon', {
@@ -81,6 +104,10 @@ export const clientPokemon = {
   
   /**
    * Get Pokemon details by ID
+   * 
+   * @param id - Pokedex ID of the Pokemon to retrieve
+   * @param includeUserData - Whether to include user-specific data (ratings, favorites)
+   * @returns Detailed Pokemon information
    */
   async getById(id: number, includeUserData = false): Promise<Pokemon> {
     return clientApiRequest(`/pokemon/${id}`, {
@@ -91,6 +118,9 @@ export const clientPokemon = {
   
   /**
    * Get Pokemon rating information
+   * 
+   * @param id - Pokedex ID of the Pokemon
+   * @returns Rating statistics for the Pokemon
    */
   async getRating(id: number): Promise<PokemonRatingData> {
     return clientApiRequest(`/pokemon/${id}/rating`, {
@@ -100,11 +130,14 @@ export const clientPokemon = {
   
   /**
    * Get multiple Pokemon by IDs
+   * 
+   * @param ids - Array of Pokemon IDs to retrieve
+   * @returns Array of Pokemon objects
    */
   async getByIds(ids: number[]): Promise<Pokemon[]> {
     if (!ids.length) return [];
     
-    // Utiliser l'action 'list' pour obtenir les informations complètes des Pokémon
+    // Use 'list' action to get complete Pokemon information
     const response = await clientApiRequest('/pokemon', {
       params: { 
         action: 'list',
@@ -113,7 +146,7 @@ export const clientPokemon = {
       noCache: true
     });
     
-    // S'assurer qu'on retourne bien le tableau de Pokémon
+    // Ensure we return the Pokemon array
     if (response && response.pokemons && Array.isArray(response.pokemons)) {
       return response.pokemons;
     } else if (Array.isArray(response)) {
@@ -126,6 +159,9 @@ export const clientPokemon = {
 
   /**
    * Get ratings for multiple Pokemon by IDs (batch)
+   * 
+   * @param ids - Array of Pokemon IDs to get ratings for
+   * @returns Object mapping Pokemon IDs to rating statistics
    */
   async getBatchRatings(ids: number[]): Promise<Record<string, { rating: number, numberOfVotes: number }>> {
     if (!ids.length) return {};
@@ -141,14 +177,16 @@ export const clientPokemon = {
 
   /**
    * Get lightweight metadata for all Pokemon (for filtering purposes)
+   * 
+   * @returns Array of Pokemon with basic metadata
    */
   async getAllMetadata(): Promise<Pokemon[]> {
     try {
-      // Utiliser le nouveau endpoint avec action=metadata
+      // Use the metadata endpoint
       return clientApiRequest('/pokemon', {
         params: { 
           action: 'metadata',
-          limit: 1500 // Assez grand pour inclure tous les Pokémon
+          limit: 1500 // Large enough to include all Pokemon
         }
       });
     } catch (error) {

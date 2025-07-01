@@ -4,17 +4,19 @@ import type { Pokemon } from '../../../types/pokemon';
 import { spec } from 'node:test/reporters';
 
 /**
- * Récupérer les meilleurs Pokémon - version serveur
- * Utilisable uniquement dans les composants serveur
+ * Gets the top rated Pokémon - server version
+ * For use in server components only
+ * @param limit - Maximum number of Pokémon to retrieve
+ * @returns Array of Pokémon with detailed information
  */
 export async function getTopRatedPokemon(limit: number = 10): Promise<Pokemon[]> {
-  // Appel direct au backend
+  // Direct backend call
   const data = await serverApiRequest(API_CONFIG.endpoints.pokemon.topRated, {
     params: { limit },
-    cache: 'no-store' // Toujours des données fraîches
+    cache: 'no-store' // Always get fresh data
   });
   
-  // Enrichir avec les détails de l'API Pokémon, y compris les données d'espèce
+  // Enrich with details from Pokémon API, including species data
   return await Promise.all(
     data.map(async (pokemon: any) => {
       try {
@@ -31,17 +33,19 @@ export async function getTopRatedPokemon(limit: number = 10): Promise<Pokemon[]>
 }
 
 /**
- * Récupérer les Pokémon tendance - version serveur
+ * Gets the trending Pokémon - server version
+ * @param limit - Maximum number of Pokémon to retrieve
+ * @returns Array of trending Pokémon with detailed information
  */
 export async function getTrendingPokemon(limit: number = 10): Promise<Pokemon[]> {
   try {
-    // Appel direct au backend
+    // Direct backend call
     const data = await serverApiRequest(API_CONFIG.endpoints.pokemon.trending, {
       params: { limit },
-      cache: 'no-store' // Toujours des données fraîches
+      cache: 'no-store' // Always get fresh data
     });
     
-    // Enrichir avec les détails de l'API Pokémon
+    // Enrich with details from Pokémon API
     return await Promise.all(
       data.map(async (pokemon: any) => {
         try {
@@ -64,12 +68,14 @@ export async function getTrendingPokemon(limit: number = 10): Promise<Pokemon[]>
 }
 
 /**
- * Récupérer les détails d'un Pokémon - version serveur
- * Incluant les détails d'espèce (génération, statut légendaire, etc.)
+ * Gets details for a specific Pokémon - server version
+ * Including species details (generation, legendary status, etc.)
+ * @param id - Pokémon ID to retrieve
+ * @returns Detailed Pokémon data including species information
  */
 export async function getPokemonDetails(id: number): Promise<Pokemon> {
   try {
-    // Récupération parallèle des données de base, des notes et des informations d'espèce
+    // Parallel retrieval of basic data, ratings, and species information
     const [pokeDetails, ratings, initialSpeciesData] = await Promise.all([
       serverPokeApiRequest(`/pokemon/${id}`),
       serverApiRequest(API_CONFIG.endpoints.pokemon.details(id))
@@ -82,14 +88,14 @@ export async function getPokemonDetails(id: number): Promise<Pokemon> {
 
     if (speciesData === null) {
       const baseSpeciesData = await serverPokeApiRequest(`/pokemon-species/${pokeDetails.species.name}`);
-      speciesData = baseSpeciesData || undefined; // Si aucune donnée d'espèce n'est trouvée, on la met à undefined
+      speciesData = baseSpeciesData || undefined; // If no species data is found, set to undefined
     }    
-    // Fusionner les données
+    // Merge data
     return {
       ...pokeDetails,
       rating: ratings.rating || 0,
       numberOfVotes: ratings.numberOfVotes || 0,
-      // Ajouter les informations d'espèce s'ils sont disponibles
+      // Add species information if available
       species_info: speciesData ? {
         is_legendary: speciesData.is_legendary,
         is_mythical: speciesData.is_mythical,
@@ -121,7 +127,9 @@ export async function getPokemonDetails(id: number): Promise<Pokemon> {
 }
 
 /**
- * Générer des données Pokémon par défaut pour les cas d'erreur
+ * Generate default Pokémon data for error cases
+ * @param fallback - Optional fallback data to include
+ * @returns Default Pokémon object with fallback values
  */
 function defaultPokemonData(fallback: any = {}): Pokemon {
   return {
@@ -143,10 +151,11 @@ function defaultPokemonData(fallback: any = {}): Pokemon {
 }
 
 /**
- * Récupérer les Pokémon par type
- * @param type Le type de Pokémon à rechercher (ex: "fire", "water")
- * @param limit Nombre maximum de Pokémon à récupérer
- * @param excludeIds IDs de Pokémon à exclure des résultats (facultatif)
+ * Get Pokémon by type
+ * @param type - The type of Pokémon to search for (e.g., "fire", "water")
+ * @param limit - Maximum number of Pokémon to retrieve
+ * @param excludeIds - Pokémon IDs to exclude from results (optional)
+ * @returns Array of Pokémon of the specified type
  */
 export async function getPokemonByType(
   type: string,
@@ -156,29 +165,29 @@ export async function getPokemonByType(
   if (!type) return [];
   
   try {
-    // Récupérer les Pokémon du type spécifié depuis PokeAPI
+    // Get Pokémon of the specified type from PokeAPI
     const response = await serverPokeApiRequest(`/type/${type}`);
     
     if (!response?.pokemon) return [];
     
-    // Filtrer pour exclure les IDs spécifiés et limiter les résultats
+    // Filter to exclude specified IDs and limit results
     const filteredPokemon = response.pokemon
       .filter((entry: any) => {
-        // Extraire l'ID du Pokémon de l'URL
+        // Extract Pokémon ID from URL
         const url = entry.pokemon.url;
         const id = parseInt(url.split('/').filter(Boolean).pop());
         return !excludeIds.includes(id);
       })
       .slice(0, limit);
     
-    // Récupérer les détails complets pour chaque Pokémon
+    // Get complete details for each Pokémon
     const detailedPokemon = await Promise.all(
       filteredPokemon.map(async (entry: any) => {
         try {
           const url = entry.pokemon.url;
           const id = parseInt(url.split('/').filter(Boolean).pop());
           
-          // Récupérer les détails du Pokémon avec les notes
+          // Get Pokémon details with ratings
           const pokemon = await getPokemonDetails(id);
           return pokemon;
         } catch (error) {
@@ -188,7 +197,7 @@ export async function getPokemonByType(
       })
     );
     
-    // Filtrer les valeurs null (en cas d'échec de récupération)
+    // Filter null values (in case of retrieval failure)
     return detailedPokemon.filter(Boolean) as Pokemon[];
   } catch (error) {
     console.error(`Failed to fetch pokemon by type ${type}:`, error);
@@ -200,10 +209,13 @@ export const serverPokemon = {
   getTopRated: getTopRatedPokemon,
   getTrending: getTrendingPokemon,
   getDetails: getPokemonDetails,
-  getPokemonByType, // Ajouter la nouvelle fonction
+  getPokemonByType, // Add the new function
   
   /**
-   * Récupérer tous les Pokémon avec pagination - version serveur
+   * Get all Pokémon with pagination - server version
+   * @param page - Page number for pagination
+   * @param limit - Maximum number of Pokémon per page
+   * @returns Object with Pokémon array, total count, and hasMore flag
    */
   async getAll(page: number = 0, limit: number = 100): Promise<{
     pokemons: Pokemon[];
@@ -228,7 +240,9 @@ export const serverPokemon = {
   },
   
   /**
-   * Alias pour getAll pour compatibilité d'API
+   * Alias for getAll for API compatibility
+   * @param options - Optional pagination parameters
+   * @returns Array of Pokémon
    */
   getAllPokemon: async function({ limit = 100, page = 0 } = {}) {
     const result = await this.getAll(page, limit);
@@ -236,11 +250,12 @@ export const serverPokemon = {
   },
   
   /**
-   * Récupérer tous les types de Pokémon
+   * Get all Pokémon types
+   * @returns Array of Pokémon type names
    */
   async getAllTypes(): Promise<string[]> {
     try {
-      // Types de Pokémon depuis l'API PokeAPI
+      // Pokémon types from PokeAPI
       const response = await serverPokeApiRequest('/type');
       
       if (!response?.results) {
@@ -248,7 +263,7 @@ export const serverPokemon = {
         return [];
       }
       
-      // Extraire juste les noms des types
+      // Extract just the type names
       return response.results
         .filter((type: any) => !['unknown', 'shadow'].includes(type.name))
         .map((type: any) => type.name);
@@ -259,23 +274,26 @@ export const serverPokemon = {
   },
   
   /**
-   * Récupérer le nombre total de Pokémon
+   * Get total number of Pokémon
+   * @returns Total Pokémon count
    */
   async getTotalCount(): Promise<number> {
     try {
-      // Utiliser directement l'API PokeAPI pour le comptage
+      // Use PokeAPI directly for counting
       const response = await serverPokeApiRequest('/pokemon?limit=1');
       
       return response?.count || 898;
     } catch (error) {
       console.error('Failed to fetch total pokemon count:', error);
-      return 898; // Valeur par défaut
+      return 898; // Default value
     }
   }
 };
 
 /**
- * Charger les données complètes d'un Pokémon (y compris les données d'espèce)
+ * Load complete Pokémon data (including species data)
+ * @param pokemonId - ID of the Pokémon to load
+ * @returns Complete Pokémon data object
  */
 async function loadPokemonWithSpeciesData(pokemonId: number): Promise<Pokemon> {
   try {

@@ -4,6 +4,13 @@ import type { ApiOptions } from '../shared/types';
 
 /**
  * Server-side API request function - use only in Server Components
+ * Makes a request to the backend API with proper authentication and error handling
+ * 
+ * @template T - The expected response data type
+ * @param path - API endpoint path to request
+ * @param options - Request configuration options
+ * @returns Promise with the response data of type T
+ * @throws Error if the request fails
  */
 export async function serverApiRequest<T = any>(
   path: string, 
@@ -110,6 +117,11 @@ export async function serverApiRequest<T = any>(
 
 /**
  * Call PokeAPI directly from server component
+ * 
+ * @template T - The expected response data type
+ * @param path - PokeAPI endpoint path
+ * @param cacheTime - Cache duration in seconds (defaults to 1 day)
+ * @returns Promise with the response data of type T
  */
 export async function serverPokeApiRequest<T = any>(
   path: string,

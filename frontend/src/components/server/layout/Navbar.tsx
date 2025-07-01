@@ -8,7 +8,7 @@ import UserMenuButton from '@/components/client/navigation/UserMenuButton';
 /**
  * Navbar component
  * 
- * Server component that renders the application's navigation bar.
+ * Server component that renders the application's navigation bar for desktop view.
  * Gets the user's session server-side for initial render optimization.
  * 
  * @returns React server component
@@ -18,7 +18,7 @@ export default async function Navbar() {
   const session = await getServerSession(auth);
   
   return (
-    <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-40">
+    <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-40 shadow-lg">
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-16">
           {/* Logo and title */}
@@ -30,6 +30,7 @@ export default async function Navbar() {
                 width={30}
                 height={30}
                 className="object-contain group-hover:scale-110 transition-transform"
+                priority
               />
             </div>
             <span className="text-lg font-bold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">

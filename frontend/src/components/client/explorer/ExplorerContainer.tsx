@@ -57,7 +57,7 @@ interface ExplorerContainerProps {
  * @param props - Component props
  * @returns React component
  */
-export default function ExplorerContainer({ initialTypes, totalCount }: ExplorerContainerProps) {
+export default function ExplorerContainer() {
   // States for Pokemon and filtering
   const [allPokemons, setAllPokemons] = useState<Pokemon[]>([]);
   const [displayedPokemons, setDisplayedPokemons] = useState<Pokemon[]>([]);
@@ -82,7 +82,7 @@ export default function ExplorerContainer({ initialTypes, totalCount }: Explorer
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   
   // Get global context to access favorites
-  const { favorites, userRatings, isFavorite, getRating } = useGlobal();
+  const { favorites, isFavorite, getRating } = useGlobal();
   
   // Load more Pokemon when scrolling
   const loadMorePokemons = useCallback(async () => {

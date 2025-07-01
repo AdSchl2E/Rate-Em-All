@@ -4,7 +4,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/route';
 
 /**
- * Standardized API response
+ * Standardized API response interface
+ * @template T Type of data to be returned
  */
 export interface ApiResponse<T = any> {
   data?: T;
@@ -14,6 +15,10 @@ export interface ApiResponse<T = any> {
 
 /**
  * Make an authenticated request to the backend API
+ * @template T Expected response data type
+ * @param path API endpoint path
+ * @param options Request options including method, body, headers, etc.
+ * @returns Standardized API response
  */
 export async function callBackend<T = any>(
   path: string, 
@@ -108,6 +113,9 @@ export async function callBackend<T = any>(
 
 /**
  * Standard API response handler
+ * @template T Type of data to be returned
+ * @param apiResponse The response object from callBackend
+ * @returns NextResponse with appropriate status and data
  */
 export function createApiResponse<T>(apiResponse: ApiResponse<T>) {
   if (apiResponse.error) {
@@ -121,7 +129,9 @@ export function createApiResponse<T>(apiResponse: ApiResponse<T>) {
 }
 
 /**
- * Get token from request headers
+ * Extract token from request headers
+ * @param request The incoming request object
+ * @returns The authorization token or null if not found
  */
 export function getTokenFromRequest(request: Request): string | null {
   const authHeader = request.headers.get("Authorization");
@@ -133,6 +143,10 @@ export function getTokenFromRequest(request: Request): string | null {
 
 /**
  * Call PokeAPI with standard error handling
+ * @template T Expected response data type
+ * @param path API endpoint path
+ * @param cacheConfig Cache configuration
+ * @returns Standardized API response
  */
 export async function callPokeApi<T = any>(
   path: string,

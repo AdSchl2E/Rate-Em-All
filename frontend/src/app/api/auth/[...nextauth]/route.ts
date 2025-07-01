@@ -54,6 +54,8 @@ export const authOptions: AuthOptions = {
   },
   session: {
     strategy: "jwt",
+    // Auto logout after 2 hours of inactivity
+    maxAge: 2 * 60 * 60, // 2 hours in seconds
   },
   callbacks: {
     async jwt({ token, user }) {

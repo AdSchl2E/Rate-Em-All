@@ -37,7 +37,6 @@ export default function PokemonGrid({
   pokemons, 
   userRatings, 
   pokemonCache,
-  favorites 
 }: PokemonGridProps) {
   // Animation variants
   const containerVariants = {

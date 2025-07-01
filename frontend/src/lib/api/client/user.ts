@@ -1,9 +1,16 @@
 import { clientApiRequest } from './base';
 import type { UserRatingsResponse } from '../shared/types';
 
+/**
+ * Client-side user API utilities
+ * For use in client components only ('use client')
+ */
 export const clientUser = {
   /**
    * Update user profile
+   * 
+   * @param username - New username to set for the user
+   * @returns Response with updated user data
    */
   async updateProfile(username: string): Promise<{ success: boolean; user: any }> {
     return clientApiRequest('/users', {
@@ -16,6 +23,9 @@ export const clientUser = {
   
   /**
    * Check if username is available
+   * 
+   * @param username - Username to check availability for
+   * @returns Object indicating if the username is available
    */
   async checkUsername(username: string): Promise<{ available: boolean }> {
     return clientApiRequest('/users', {
@@ -27,6 +37,10 @@ export const clientUser = {
   
   /**
    * Change user password
+   * 
+   * @param currentPassword - User's current password for verification
+   * @param newPassword - New password to set
+   * @returns Success status
    */
   async changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean }> {
     return clientApiRequest('/users', {
@@ -39,6 +53,8 @@ export const clientUser = {
   
   /**
    * Delete user account
+   * 
+   * @returns Success status
    */
   async deleteAccount(): Promise<{ success: boolean }> {
     return clientApiRequest('/users', {
@@ -49,6 +65,9 @@ export const clientUser = {
   
   /**
    * Get user's Pokemon ratings
+   * 
+   * @param userId - Optional user ID (defaults to current user)
+   * @returns User's ratings for various Pokemon
    */
   async getUserRatings(userId?: string | number): Promise<UserRatingsResponse> {
     const id = userId || 'me';
@@ -62,6 +81,9 @@ export const clientUser = {
   
   /**
    * Get user's favorite Pokemon
+   * 
+   * @param userId - Optional user ID (defaults to current user)
+   * @returns Array of Pokemon IDs that the user has favorited
    */
   async getUserFavorites(userId?: string | number): Promise<{ favorites: number[] }> {
     const id = userId || 'me';
@@ -75,6 +97,11 @@ export const clientUser = {
   
   /**
    * Rate a Pokemon
+   * 
+   * @param pokemonId - Pokedex ID of the Pokemon to rate
+   * @param rating - Rating value (typically 0-5)
+   * @param userId - Optional user ID (defaults to current user)
+   * @returns Updated rating statistics
    */
   async ratePokemon(
     pokemonId: number, 
@@ -93,6 +120,10 @@ export const clientUser = {
   
   /**
    * Toggle Pokemon favorite status
+   * 
+   * @param pokemonId - Pokedex ID of the Pokemon to toggle favorite status for
+   * @param userId - Optional user ID (defaults to current user)
+   * @returns Updated favorite status
    */
   async toggleFavorite(
     pokemonId: number, 

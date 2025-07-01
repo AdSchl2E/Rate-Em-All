@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { Session } from 'next-auth';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { UserIcon, CogIcon } from '@heroicons/react/24/outline';
-import { useGlobal } from '@/providers/GlobalProvider';
 
 interface ProfileHeaderProps {
   session: Session | null;

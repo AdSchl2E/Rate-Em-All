@@ -1,7 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { LoadingSpinner } from '@/components/client/ui/LoadingSpinner';
+import { useRouter } from 'next/navigation';
+import { signOut } from 'next-auth/react';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { ReactNode } from 'react';
 
 /**
@@ -19,26 +22,67 @@ interface AuthenticationGuardProps {
  * 
  * Protects content that requires authentication.
  * Shows a loading indicator while checking authentication status,
- * and renders either the protected content or a fallback when not authenticated.
+ * and redirects to login page if user is not authenticated or session has expired.
  * 
  * @param props - Component props
  * @returns React component
  */
 export default function AuthenticationGuard({ children, fallback }: AuthenticationGuardProps) {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [isSessionChecked, setIsSessionChecked] = useState(false);
+  
+  useEffect(() => {
+    // Check if session is still valid by making a simple API request
+    const validateSession = async () => {
+      if (session?.user) {
+        try {
+          const response = await fetch('/api/users', { cache: 'no-store' });
+          const data = await response.json();
+          
+          if (response.status === 401 || data.error === 'Unauthorized' || data.requiresLogin) {
+            console.warn('Session expired or invalid, redirecting to login');
+            await signOut({ redirect: false });
+            router.push('/login?expired=true');
+            return;
+          }
+          
+          setIsSessionChecked(true);
+        } catch (error) {
+          console.error('Error validating session:', error);
+          setIsSessionChecked(true);
+        }
+      } else {
+        setIsSessionChecked(true);
+      }
+    };
+    
+    validateSession();
+  }, [session, router]);
 
-  if (status === 'loading') {
+  useEffect(() => {
+    // Handle authentication status
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    } else if (status === 'authenticated') {
+      setIsSessionChecked(true);
+    }
+  }, [status, router]);
+
+  // Show loading spinner while checking authentication
+  if (status === 'loading' || !isSessionChecked) {
     return (
-      <div className="flex flex-col items-center justify-center py-10">
-        <LoadingSpinner />
-        <p className="mt-4 text-gray-400">Verifying authentication...</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
 
-  if (status === 'unauthenticated') {
-    return fallback ? <>{fallback}</> : null;
+  // If authenticated, render the protected content
+  if (status === 'authenticated' && isSessionChecked) {
+    return <>{children}</>;
   }
 
-  return <>{children}</>;
+  // Default fallback - should not normally be reached
+  return null;
 }

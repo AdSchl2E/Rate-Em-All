@@ -1,3 +1,7 @@
+/**
+ * Pokemon interface representing a Pokemon entity with all its properties
+ * Includes both PokeAPI data and custom application data
+ */
 export interface Pokemon {
   id: number;
   name: string;
@@ -39,7 +43,7 @@ export interface Pokemon {
     };
   }[];
   
-  // Propriétés ajoutées par notre API
+  // Properties added by our API
   rating?: number;
   numberOfVotes?: number;
   userRating?: number;
@@ -140,11 +144,17 @@ export interface Pokemon {
   };
 }
 
+/**
+ * User rating for a specific Pokemon
+ */
 export interface UserRating {
   pokemonId: number;
   rating: number;
 }
 
+/**
+ * Response structure for user ratings API
+ */
 export interface UserRatingsResponse {
   ratings: UserRating[];
 }

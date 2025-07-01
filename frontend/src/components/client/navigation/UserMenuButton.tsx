@@ -30,7 +30,6 @@ export default function UserMenuButton({
   userImage: initialUserImage 
 }: UserMenuButtonProps) {
   const { data: session, status } = useSession();
-  const globalContext = useGlobal();
   
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);

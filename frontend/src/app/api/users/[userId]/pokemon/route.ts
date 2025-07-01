@@ -12,11 +12,11 @@ export async function GET(
   const searchParams = request.nextUrl.searchParams;
   const action = searchParams.get('action') || 'ratings';
   
-  // Obtenir la session pour l'authentification
+  // Get session for authentication
   const session = await getServerSession(authOptions);
   
   if (!session?.accessToken) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   
   try {
@@ -43,12 +43,18 @@ export async function GET(
       }
       
       default:
-        return NextResponse.json({ error: 'Action invalide' }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error) {
     console.error(`Error fetching user ${userId} ${action}:`, error);
+    
+    // Check if error is due to authentication issues
+    if (error instanceof Error && error.message.includes('401')) {
+      return NextResponse.json({ error: 'Session expired', requiresLogin: true }, { status: 401 });
+    }
+    
     return NextResponse.json(
-      { error: `Impossible de récupérer les données ${action} de l'utilisateur` },
+      { error: `Unable to retrieve user ${action} data` },
       { status: 500 }
     );
   }
@@ -63,15 +69,15 @@ export async function POST(
   const pokedexId = searchParams.get('pokedexId');
   const action = searchParams.get('action') || '';
   
-  // Obtenir la session pour l'authentification
+  // Get session for authentication
   const session = await getServerSession(authOptions);
   
   if (!session?.accessToken) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   
   if (!pokedexId) {
-    return NextResponse.json({ error: 'Paramètre pokedexId manquant' }, { status: 400 });
+    return NextResponse.json({ error: 'Missing pokedexId parameter' }, { status: 400 });
   }
   
   try {
@@ -81,7 +87,7 @@ export async function POST(
         const { rating } = body;
         
         if (rating === undefined) {
-          return NextResponse.json({ error: 'La note est requise' }, { status: 400 });
+          return NextResponse.json({ error: 'Rating is required' }, { status: 400 });
         }
         
         const response = await serverApiRequest(`/user/${userId}/rate-pokemon/${pokedexId}`, {
@@ -103,12 +109,18 @@ export async function POST(
       }
       
       default:
-        return NextResponse.json({ error: 'Action invalide' }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error) {
     console.error(`Error performing ${action} for user ${userId} on Pokemon ${pokedexId}:`, error);
+    
+    // Check if error is due to authentication issues
+    if (error instanceof Error && error.message.includes('401')) {
+      return NextResponse.json({ error: 'Session expired', requiresLogin: true }, { status: 401 });
+    }
+    
     return NextResponse.json(
-      { error: `Impossible de réaliser l'action ${action}` },
+      { error: `Unable to perform action ${action}` },
       { status: 500 }
     );
   }

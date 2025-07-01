@@ -3,12 +3,18 @@ import { serverApiRequest } from '@/lib/api/server/base';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
 
+/**
+ * GET - Retrieves data for a specific Pokemon by its Pokedex ID
+ * Including community ratings and user-specific data if authenticated
+ * 
+ * @param request - The incoming request object
+ * @param params - Route parameters containing the pokedexId
+ * @returns Pokemon data with ratings and user preferences
+ */
 export async function GET(
-  request: NextRequest,
   { params }: { params: { pokedexId: string } }
 ) {
   const { pokedexId } = params;
-  const searchParams = request.nextUrl.searchParams;
   const session = await getServerSession(authOptions);
   
   try {
@@ -17,7 +23,7 @@ export async function GET(
       cache: 'no-store'
     });
     
-    // Si l'utilisateur est connecté, récupérer ses données spécifiques
+    // If user is authenticated, get their specific data
     if (session?.user?.id && session.accessToken) {
       try {
         // Get user's rating for this Pokémon

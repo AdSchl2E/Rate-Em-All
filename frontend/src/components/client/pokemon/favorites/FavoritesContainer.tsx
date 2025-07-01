@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { LoadingSpinner } from '@/components/client/ui/LoadingSpinner';
 import { Pokemon } from '@/types/pokemon';
 import clientApi from '@/lib/api/client';

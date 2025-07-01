@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useGlobal } from '@/providers/GlobalProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Pokemon } from '@/types/pokemon';
 import PokemonCard from '@/components/client/shared/PokemonCard';
@@ -84,7 +83,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
   // Filtering and sorting logic
   const displayedPokemons = useMemo(() => {
     // Apply filters
-    let filtered = allPokemons.filter(pokemon => {
+    const filtered = allPokemons.filter(pokemon => {
       // Filter by type - modified for exact match
       if (selectedTypes.length > 0) {
         const pokemonTypes = pokemon.types?.map(t => t.type.name) || [];

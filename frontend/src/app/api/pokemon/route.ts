@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { serverApiRequest, serverPokeApiRequest } from '@/lib/api/server/base';
 import { API_CONFIG } from '@/lib/api/shared/config';
 
-// List Pokémon with filtering and pagination
+/**
+ * GET - Handles various Pokemon data retrieval actions
+ * Supports listing, searching, getting top-rated, trending, and more
+ * 
+ * @param request - The incoming request object
+ * @returns Response with Pokemon data based on the requested action
+ */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const action = searchParams.get('action') || 'list';
@@ -110,7 +116,7 @@ export async function GET(request: NextRequest) {
         if (pokedexIds.length > 0) {
           const ratingsData = await serverApiRequest(`/pokemons/ratings/batch`, {
             params: { ids: pokedexIds.join(',') },
-            cache: 'no-store' // Toujours des données fraîches
+            cache: 'no-store' // Always get fresh data
           });
           
           // Combine Pokémon details with ratings
@@ -180,7 +186,7 @@ export async function GET(request: NextRequest) {
     case 'top-rated': {
       try {
         const data = await serverApiRequest('/pokemons/top-rated', {
-          cache: 'no-store' // Toujours des données fraîches
+          cache: 'no-store' // Always get fresh data
         });
         
         return NextResponse.json(data);
@@ -193,7 +199,7 @@ export async function GET(request: NextRequest) {
     case 'trending': {
       try {
         const data = await serverApiRequest('/pokemons/trending', {
-          cache: 'no-store' // Toujours des données fraîches
+          cache: 'no-store' // Always get fresh data
         });
         
         return NextResponse.json(data);
@@ -273,27 +279,27 @@ export async function GET(request: NextRequest) {
       const limit = parseInt(searchParams.get('limit') || '1500');
       
       try {
-        // Utiliser l'API PokeAPI pour récupérer les métadonnées minimales
+        // Use PokeAPI to get minimal metadata
         const response = await serverPokeApiRequest(`/pokemon?limit=${limit}`);
         
         if (!response?.results) {
           return NextResponse.json({ error: 'Failed to fetch Pokemon metadata' }, { status: 500 });
         }
 
-        // Transformer les résultats en métadonnées légères
+        // Transform results into lightweight metadata
         const metadata = await Promise.all(
           response.results.map(async (pokemon: any) => {
             const id = parseInt(pokemon.url.split('/').filter(Boolean).pop() || '0');
             
-            // Pour les types, nous devons faire une requête supplémentaire mais légère
-            // Nous limitons cela aux premiers 100 Pokémon pour l'affichage initial
+            // For types, we need to make an additional light request
+            // We limit this to the first 100 Pokemon for initial display
             let types = [];
-            if (id <= 100) { // Limiter les requêtes pour les types
+            if (id <= 100) { // Limit requests for types
               try {
                 const details = await serverPokeApiRequest(`/pokemon/${id}`);
                 types = details.types || [];
               } catch (err) {
-                // Ignorer les erreurs, on utilisera un tableau vide
+                // Ignore errors, we'll use an empty array
               }
             }
             
@@ -304,7 +310,7 @@ export async function GET(request: NextRequest) {
                 front_default: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
               },
               types,
-              // Ajouter des champs par défaut pour éviter les erreurs
+              // Add default fields to avoid errors
               rating: 0,
               numberOfVotes: 0
             };
@@ -322,20 +328,20 @@ export async function GET(request: NextRequest) {
       const ids = searchParams.get('ids')?.split(',');
       
       if (!ids || ids.length === 0) {
-        return NextResponse.json({ error: 'Aucun ID de Pokémon fourni' }, { status: 400 });
+        return NextResponse.json({ error: 'No Pokemon IDs provided' }, { status: 400 });
       }
       
       try {
-        // Récupérer les ratings en batch depuis le backend
+        // Get batch ratings from backend
         const ratingsData = await serverApiRequest(`/pokemons/ratings/batch`, {
           params: { ids: ids.join(',') },
-          cache: 'no-store' // Toujours des données fraîches
+          cache: 'no-store' // Always get fresh data
         });
         
         return NextResponse.json(ratingsData);
       } catch (error) {
         console.error('Error fetching batch ratings:', error);
-        return NextResponse.json({ error: 'Impossible de récupérer les évaluations par lot' }, { status: 500 });
+        return NextResponse.json({ error: 'Unable to retrieve batch ratings' }, { status: 500 });
       }
     }
     
