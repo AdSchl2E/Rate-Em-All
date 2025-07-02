@@ -92,9 +92,6 @@ export function MobileNavBar() {
             >
               <div className={`relative ${isActive ? 'transform scale-110' : ''}`}>
                 {item.icon}
-                {isActive && (
-                  <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-5 h-1 bg-blue-500 rounded-full" />
-                )}
               </div>
               <span className="text-xs mt-1">{item.label}</span>
             </Link>

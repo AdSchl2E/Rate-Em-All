@@ -30,7 +30,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </div>
       
       {/* Main content with padding to avoid overlap with mobile navbar */}
-      <main className="flex-grow container mx-auto px-4 py-6 pb-20 md:pb-6 animate-fade-in">
+      <main className="flex-grow container mx-auto px-4 pt-12 py-6 pb-20 md:pt-6 md:pb-6 animate-fade-in">
         {children}
       </main>
       

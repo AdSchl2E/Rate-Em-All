@@ -518,7 +518,7 @@ function RankedPokemonCard({ pokemon, rank }: RankedPokemonCardProps) {
   const opacity = Math.max(0.6, 1 - (rank - 3) * 0.1).toFixed(1);
   
   return (
-    <motion.div 
+          <motion.div 
       className="relative bg-gray-800 rounded-xl overflow-hidden shadow-lg"
       style={{ opacity }}
       initial={{ opacity: 0, x: -20 }}
@@ -530,16 +530,16 @@ function RankedPokemonCard({ pokemon, rank }: RankedPokemonCardProps) {
         scale: 1.01
       }}
     >
-      <div className="flex items-center">
+      <div className="flex items-center flex-col sm:flex-row">
         {/* Minimalist rank indicator */}
-        <div className="w-16 h-full bg-gray-800 flex-shrink-0 flex items-center justify-center">
+        <div className="w-full sm:w-16 py-2 sm:py-0 sm:h-full bg-gray-800 flex-shrink-0 flex items-center justify-center">
           <span className="text-base font-semibold text-gray-400">
             #{rank}
           </span>
         </div>
         
         {/* List version of PokemonCard */}
-        <div className="flex-grow">
+        <div className="w-full flex-grow">
           <PokemonCard
             pokemon={pokemon}
             viewMode="list"

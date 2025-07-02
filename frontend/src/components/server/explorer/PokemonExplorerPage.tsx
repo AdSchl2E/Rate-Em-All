@@ -20,7 +20,7 @@ export async function PokemonExplorerPage() {
     <div className="container mx-auto px-4 py-6 max-w-7xl">
       <PageHeader 
         title="Explore Pokémon"
-        description="Discover, filter and rate all existing Pokémon"
+        description="Discover and rate all existing Pokémon"
       />
       
       <ExplorerContainer 

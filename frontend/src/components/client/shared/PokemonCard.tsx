@@ -157,7 +157,7 @@ export default function PokemonCard({
 
       // Update local states with values returned by the API
       if (result) {
-        // Check if result has the expected shape
+        // Get updated values from result
         const updatedRating = typeof result.updatedRating === 'number' ? 
           result.updatedRating : 
           (result.pokemon?.rating || localCommunityRating);
@@ -444,7 +444,7 @@ export default function PokemonCard({
 
     return (
       <div className="bg-gray-800/40 hover:bg-gray-800/60 rounded-lg transition-all duration-200 shadow-sm">
-        <div className={`flex items-center ${listClasses.container}`}>
+        <div className={`flex items-center flex-wrap sm:flex-nowrap ${listClasses.container}`}>
           {/* Image with colored background (left) */}
           <div className="relative mr-3 flex-shrink-0">
             <div
@@ -492,7 +492,7 @@ export default function PokemonCard({
           </div>
 
           {/* Actions (right): Favorite button, user rating, community rating */}
-          <div className={`flex items-center ${listClasses.gap} ml-2`}>
+          <div className={`flex items-center justify-center w-full sm:w-auto ${listClasses.gap} ml-0 sm:ml-2 mt-2 sm:mt-0`}>
             {/* Favorite button */}
             {showActions && (
               <button

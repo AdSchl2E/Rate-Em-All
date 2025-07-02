@@ -17,7 +17,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
     <SessionProvider>
       <GlobalProvider>
         {children}
-        <Toaster position="bottom-right" />
+        <Toaster position="top-center" />
       </GlobalProvider>
     </SessionProvider>
   );
