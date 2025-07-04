@@ -3,7 +3,7 @@
  * Handles business logic for Pokemon-related operations
  * Manages CRUD operations and specialized queries for Pokemon data
  */
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { InjectRepository } from '@nestjs/typeorm';
