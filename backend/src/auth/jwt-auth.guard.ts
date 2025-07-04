@@ -18,8 +18,8 @@ export class JwtAuthGuard implements CanActivate {
    * @returns {boolean} Whether the request is authorized
    */
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest<Request & { user?: any }>(); // 🔥 Correction ici
-    const authHeader = request.headers.authorization;
+    const request = context.switchToHttp().getRequest();
+    const authHeader = request.headers?.authorization;
 
     if (!authHeader) return false;
 
