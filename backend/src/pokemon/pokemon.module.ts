@@ -1,3 +1,8 @@
+/**
+ * Pokemon module
+ * Configures dependencies for Pokemon-related features
+ * Exports the PokemonService for use in other modules
+ */
 // backend/src/pokemon/pokemon.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';

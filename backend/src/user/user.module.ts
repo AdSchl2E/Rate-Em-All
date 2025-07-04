@@ -1,3 +1,8 @@
+/**
+ * User module
+ * Configures dependencies for user-related features
+ * Exports the UserService for use in other modules
+ */
 // backend/src/user/user.module.ts
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';

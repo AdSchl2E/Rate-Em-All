@@ -1,3 +1,7 @@
+/**
+ * Main application module that coordinates all other modules
+ * Configures TypeORM database connection, JWT, and imports all feature modules
+ */
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -32,7 +36,7 @@ import { JwtModule } from '@nestjs/jwt';
     }),
     UserModule,
     PokemonModule,
-    AuthModule, // Ajout du module Auth
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

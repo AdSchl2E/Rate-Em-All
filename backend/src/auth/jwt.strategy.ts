@@ -1,9 +1,17 @@
+/**
+ * JWT strategy for Passport authentication
+ * Configures how JWT tokens are extracted and validated
+ */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
+  /**
+   * Constructor for JWT strategy
+   * Configures token extraction from the Authorization header and the secret key
+   */
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -11,6 +19,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
+  /**
+   * Validates the JWT payload after it has been verified
+   * @param {any} payload - The decoded JWT payload
+   * @returns {Promise<any>} The user object to be attached to the request
+   * @throws {UnauthorizedException} If payload is invalid
+   */
   async validate(payload: any) {
     if (!payload) throw new UnauthorizedException();
     return payload; // User will be available via request.user
