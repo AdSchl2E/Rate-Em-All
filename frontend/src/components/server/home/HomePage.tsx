@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { serverPokemon } from '@/lib/api/server';
 import { LoadingSpinner } from '@/components/client/ui/LoadingSpinner';
-import HeroSection from '@/components/client/home/HeroSection';
+import HeroSection from '@/components/server/home/HeroSection';
 import PokemonCarousel from '@/components/client/home/PokemonCarousel';
 import RandomPokemonShowcase from '@/components/client/home/RandomPokemonShowcase';
 import { AuthCTA } from '@/components/client/auth/AuthCTA';
