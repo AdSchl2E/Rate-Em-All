@@ -3,7 +3,13 @@
  * Represents the many-to-many relationship between users and Pokemon ratings
  * Stores individual user ratings for Pokemon
  */
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Pokemon } from './pokemon.entity';
 

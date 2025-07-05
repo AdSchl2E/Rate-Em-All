@@ -156,8 +156,8 @@ export default function PokemonCard({
 
       // More subtle notification to avoid overwhelming the user
       toast.success(isFavoriteNow
-        ? `${pokemon.name} added to favorites`
-        : `${pokemon.name} removed from favorites`,
+        ? `${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)} added to favorites`
+        : `${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)} removed from favorites`,
         { duration: 2000 }
       );
     } catch (error) {
@@ -198,7 +198,7 @@ export default function PokemonCard({
       }
 
       // More subtle notification
-      toast.success(`You rated ${pokemon.name} ${rating}/5`, {
+      toast.success(`You rated ${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)} ${rating}/5`, {
         duration: 2000
       });
     } catch (error) {

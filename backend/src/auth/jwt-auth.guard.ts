@@ -5,7 +5,6 @@
  */
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -18,14 +17,18 @@ export class JwtAuthGuard implements CanActivate {
    * @returns {boolean} Whether the request is authorized
    */
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<any>();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const authHeader = request.headers?.authorization;
 
     if (!authHeader) return false;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const token = authHeader.split(' ')[1];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
       const decoded = this.jwtService.verify(token);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       request.user = decoded;
       return true;
     } catch {

@@ -2,11 +2,15 @@
  * Authentication service
  * Handles user registration, authentication, and JWT token generation
  */
-import { Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
-import { race } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +18,7 @@ export class AuthService {
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   /**
    * Register a new user
@@ -47,7 +51,8 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
+    if (!isPasswordValid)
+      throw new UnauthorizedException('Invalid credentials');
 
     const payload = { id: user.id, pseudo: user.pseudo };
     const accessToken = this.jwtService.sign(payload);

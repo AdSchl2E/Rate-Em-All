@@ -3,7 +3,11 @@
  * Handles business logic for user-related operations
  * Manages CRUD operations and specialized queries for user data
  */
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,7 +26,7 @@ export class UserService {
     private readonly pokemonRepository: Repository<Pokemon>,
     @InjectRepository(UserPokemonRating)
     private readonly userPokemonRatingRepository: Repository<UserPokemonRating>,
-  ) { }
+  ) {}
 
   /**
    * Create a new user
@@ -47,10 +51,13 @@ export class UserService {
    * @param {any} id - User ID (string or number)
    * @returns {Promise<User|null>} Found user or null
    */
+
   async findOne(id: any): Promise<User | null> {
     // Ensure ID is a valid number
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const numericId = typeof id === 'string' ? parseInt(id) : id;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (isNaN(numericId)) {
       console.warn(`Invalid user ID provided: ${id}`);
       return null;
@@ -58,7 +65,7 @@ export class UserService {
 
     try {
       return await this.usersRepository.findOne({
-        where: { id: numericId }
+        where: { id: numericId },
       });
     } catch (error) {
       console.error(`Error finding user with ID ${numericId}:`, error);
@@ -94,7 +101,7 @@ export class UserService {
   async remove(id: number) {
     const userRatings = await this.userPokemonRatingRepository.find({
       where: { userId: id },
-      relations: ['pokemon']
+      relations: ['pokemon'],
     });
 
     for (const userRating of userRatings) {
@@ -105,11 +112,14 @@ export class UserService {
       const newNumberOfVotes = pokemon.numberOfVotes - 1;
 
       if (newNumberOfVotes > 0) {
-        pokemon.rating = (currentTotalScore - userRatingValue) / newNumberOfVotes;
+        pokemon.rating =
+          (currentTotalScore - userRatingValue) / newNumberOfVotes;
         pokemon.numberOfVotes = newNumberOfVotes;
         await this.pokemonRepository.save(pokemon);
       } else {
-        const hasRatings = await this.userPokemonRatingRepository.findOne({ where: { pokemonId: pokemon.id } });
+        const hasRatings = await this.userPokemonRatingRepository.findOne({
+          where: { pokemonId: pokemon.id },
+        });
         if (!hasRatings) {
           await this.pokemonRepository.delete(pokemon.id);
         }
@@ -163,7 +173,9 @@ export class UserService {
       throw new NotFoundException(`User with ID ${userId} not found.`);
     }
 
-    let pokemon = await this.pokemonRepository.findOne({ where: { pokedexId: pokedexId } });
+    let pokemon = await this.pokemonRepository.findOne({
+      where: { pokedexId: pokedexId },
+    });
 
     if (!pokemon) {
       pokemon = this.pokemonRepository.create({
@@ -174,11 +186,11 @@ export class UserService {
       await this.pokemonRepository.save(pokemon);
     }
 
-    let existingRating = await this.userPokemonRatingRepository.findOne({
+    const existingRating = await this.userPokemonRatingRepository.findOne({
       where: {
         user: { id: user.id },
-        pokemon: { id: pokemon.id }
-      }
+        pokemon: { id: pokemon.id },
+      },
     });
 
     const ratedPokemonIndex = user.ratedPokemons.indexOf(pokedexId);
@@ -192,12 +204,12 @@ export class UserService {
       existingRating.rating = rating;
       await this.userPokemonRatingRepository.save(existingRating);
 
-      return { 
-        message: 'Rating updated', 
-        pokemon, 
+      return {
+        message: 'Rating updated',
+        pokemon,
         userRating: existingRating,
         updatedRating: pokemon.rating,
-        numberOfVotes: pokemon.numberOfVotes
+        numberOfVotes: pokemon.numberOfVotes,
       };
     } else {
       const totalBefore = pokemon.rating * pokemon.numberOfVotes;
@@ -219,12 +231,12 @@ export class UserService {
         await this.usersRepository.save(user);
       }
 
-      return { 
-        message: 'Rating created', 
-        pokemon, 
+      return {
+        message: 'Rating created',
+        pokemon,
         userRating: newRatingRecord,
         updatedRating: pokemon.rating,
-        numberOfVotes: pokemon.numberOfVotes
+        numberOfVotes: pokemon.numberOfVotes,
       };
     }
   }
@@ -244,8 +256,12 @@ export class UserService {
     }
 
     // Get Pokemon name from Pokemon API
-    const pokemonResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokedexId}`);
+    const pokemonResponse = await fetch(
+      `https://pokeapi.co/api/v2/pokemon/${pokedexId}`,
+    );
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const pokemonData = await pokemonResponse.json();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const pokemonName = pokemonData.name;
 
     // Check if Pokemon is already in the list
@@ -265,7 +281,7 @@ export class UserService {
     // Return favorite status and Pokemon name
     return {
       isFavorite: isFavorite,
-      pokemonName
+      pokemonName,
     };
   }
 
@@ -302,7 +318,7 @@ export class UserService {
       relations: ['pokemon'],
     });
 
-    return ratings.map(rating => ({
+    return ratings.map((rating) => ({
       pokemonId: rating.pokemon.pokedexId,
       rating: rating.rating,
     }));
@@ -332,7 +348,10 @@ export class UserService {
    * @returns {Promise<{isFavorite: boolean}>} New favorite status
    * @throws {NotFoundException} If user not found
    */
-  async toggleFavoritePokemon(userId: number, pokedexId: number): Promise<{ isFavorite: boolean }> {
+  async toggleFavoritePokemon(
+    userId: number,
+    pokedexId: number,
+  ): Promise<{ isFavorite: boolean }> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
 
     if (!user) {
@@ -385,14 +404,21 @@ export class UserService {
    * @throws {NotFoundException} If user not found
    * @throws {UnauthorizedException} If current password is incorrect
    */
-  async changePassword(userId: number, currentPassword: string, newPassword: string) {
+  async changePassword(
+    userId: number,
+    currentPassword: string,
+    newPassword: string,
+  ) {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
 
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found.`);
     }
 
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
@@ -415,7 +441,7 @@ export class UserService {
 
     try {
       return await this.usersRepository.findOne({
-        where: { pseudo: username }
+        where: { pseudo: username },
       });
     } catch (error) {
       console.error(`Error finding user with username ${username}:`, error);

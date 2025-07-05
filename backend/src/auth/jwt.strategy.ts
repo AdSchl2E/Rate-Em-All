@@ -13,7 +13,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * Configures token extraction from the Authorization header and the secret key
    */
   constructor() {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     super({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: process.env.JWT_SECRET,
     });
@@ -25,8 +27,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @returns {Promise<any>} The user object to be attached to the request
    * @throws {UnauthorizedException} If payload is invalid
    */
+  // eslint-disable-next-line @typescript-eslint/require-await
   async validate(payload: any) {
     if (!payload) throw new UnauthorizedException();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return payload; // User will be available via request.user
   }
 }

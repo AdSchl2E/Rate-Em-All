@@ -16,14 +16,31 @@ dotenv.config();
  */
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
+  // CORS Configuration for production
   app.enableCors({
-    origin: ["http://localhost:3000"],
+    origin: [
+      'http://localhost:3000',  // Development
+      'http://localhost:3001',  // Alternative dev
+      process.env.FRONTEND_URL || 'http://localhost:3000', // Production Vercel URL
+    ],
     credentials: true,
   });
 
-  const configService = app.get(ConfigService);
-  console.log("JWT_SECRET:", configService.get<string>('JWT_SECRET'));
+  // Global prefix for API routes
+  app.setGlobalPrefix('api');
 
-  await app.listen(process.env.PORT ?? 3001);
+  const configService = app.get(ConfigService);
+  console.log('Environment:', process.env.NODE_ENV);
+  console.log('Port:', process.env.PORT);
+  
+  // Don't log JWT secret in production
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('JWT_SECRET:', configService.get<string>('JWT_SECRET'));
+  }
+
+  const port = process.env.PORT || 3001;
+  await app.listen(port);
+  console.log(`🚀 Backend running on port ${port}`);
 }
-bootstrap();
+void bootstrap();

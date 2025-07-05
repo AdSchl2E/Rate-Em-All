@@ -13,7 +13,7 @@ import { Pokemon } from './entities/pokemon.entity';
 @Injectable()
 export class PokemonService {
   private readonly logger = new Logger(PokemonService.name);
-  
+
   constructor(
     @InjectRepository(Pokemon)
     private readonly pokemonRepository: Repository<Pokemon>,
@@ -83,14 +83,15 @@ export class PokemonService {
    * @returns {Promise<Pokemon|{rating: number, numberOfVotes: number}>} Found Pokemon or default values
    */
   async findByPokedexId(pokedexId: number) {
-    let pokemon = await this.pokemonRepository.findOne({ where: { pokedexId } });
-    
+    const pokemon = await this.pokemonRepository.findOne({
+      where: { pokedexId },
+    });
+
     if (!pokemon) {
       return { rating: 0, numberOfVotes: 0 };
     }
 
     return pokemon;
-    
   }
 
   /**
@@ -101,7 +102,9 @@ export class PokemonService {
    * @returns {Promise<Pokemon>} Updated Pokemon with new rating
    */
   async ratePokemon(pokemonId: number, rating: number) {
-    let pokemon = await this.pokemonRepository.findOne({ where: { pokedexId: pokemonId } });
+    let pokemon = await this.pokemonRepository.findOne({
+      where: { pokedexId: pokemonId },
+    });
 
     console.log(pokemon);
 
@@ -113,10 +116,10 @@ export class PokemonService {
       });
 
       return await this.pokemonRepository.save(pokemon);
-
     } else {
-      
-      const newRating = (pokemon.rating * pokemon.numberOfVotes + rating) / (pokemon.numberOfVotes + 1);
+      const newRating =
+        (pokemon.rating * pokemon.numberOfVotes + rating) /
+        (pokemon.numberOfVotes + 1);
       pokemon.rating = newRating;
       pokemon.numberOfVotes++;
 
@@ -136,10 +139,11 @@ export class PokemonService {
         order: { rating: 'DESC' },
         take: limit,
       });
-      
+
       this.logger.log(`Retrieving ${pokemons.length} top rated Pokemon`);
       return pokemons;
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       this.logger.error(`Error retrieving top rated Pokemon: ${error.message}`);
       return [];
     }
@@ -157,10 +161,11 @@ export class PokemonService {
         order: { numberOfVotes: 'DESC', rating: 'DESC' },
         take: limit,
       });
-      
+
       this.logger.log(`Retrieving ${pokemons.length} trending Pokemon`);
       return pokemons;
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       this.logger.error(`Error retrieving trending Pokemon: ${error.message}`);
       return [];
     }
