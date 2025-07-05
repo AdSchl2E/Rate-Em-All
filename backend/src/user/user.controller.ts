@@ -2,7 +2,23 @@
  * User controller
  * Handles all HTTP requests related to user resources
  */
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, UnauthorizedException, NotFoundException, InternalServerErrorException, ParseIntPipe, Query, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  UseGuards,
+  UnauthorizedException,
+  NotFoundException,
+  InternalServerErrorException,
+  ParseIntPipe,
+  Query,
+  BadRequestException,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -30,7 +46,7 @@ export class UserController {
   findAll() {
     return this.userService.findAll();
   }
-  
+
   /**
    * Get the profile of the authenticated user
    * @param {any} req - Request object containing the authenticated user
@@ -52,14 +68,14 @@ export class UserController {
   @Get('check-username')
   async checkUsername(
     @Query('username') username: string,
-    @Query('userId') userIdParam: string
+    @Query('userId') userIdParam: string,
   ) {
     if (!username) {
       throw new BadRequestException('Username is required');
     }
-    
+
     let userId: number | null = null;
-    
+
     if (userIdParam) {
       userId = parseInt(userIdParam);
       if (isNaN(userId)) {
@@ -67,11 +83,14 @@ export class UserController {
         userId = null;
       }
     }
-    
-    console.log(`Checking username availability: ${username}, User ID: ${userId}`);
+
+    console.log(
+      `Checking username availability: ${username}, User ID: ${userId}`,
+    );
     const existingUser = await this.userService.findByUsername(username);
-    const available = !existingUser || (userId !== null && existingUser.id === userId);
-    
+    const available =
+      !existingUser || (userId !== null && existingUser.id === userId);
+
     return { available };
   }
 
@@ -130,7 +149,7 @@ export class UserController {
   /**
    * Rate a Pokemon as the authenticated user
    * @param {any} req - Request object containing authenticated user
-   * @param {string} userId - User ID 
+   * @param {string} userId - User ID
    * @param {string} pokedexId - Pokemon Pokedex ID
    * @param {Object} body - Rating data
    * @param {number} body.rating - Rating value
@@ -143,11 +162,11 @@ export class UserController {
     @Req() req,
     @Param('userId') userId: string,
     @Param('pokedexId') pokedexId: string,
-    @Body() body: { rating: number }
+    @Body() body: { rating: number },
   ) {
     // Verify that authenticated user can only rate for themselves
     if (+userId !== req.user.id) {
-      throw new UnauthorizedException("You cannot rate for another user");
+      throw new UnauthorizedException('You cannot rate for another user');
     }
     return this.userService.ratePokemon(+userId, +pokedexId, body.rating);
   }
@@ -160,11 +179,17 @@ export class UserController {
    */
   @UseGuards(JwtAuthGuard)
   @Post(':userId/favorite-pokemon/:pokedexId')
-  async setFavoritePokemon(@Param('userId') userId: string, @Param('pokedexId') pokedexId: string) {
-    const pokemonData = await this.userService.setFavoritePokemon(+userId, +pokedexId);
-    return { 
+  async setFavoritePokemon(
+    @Param('userId') userId: string,
+    @Param('pokedexId') pokedexId: string,
+  ) {
+    const pokemonData = await this.userService.setFavoritePokemon(
+      +userId,
+      +pokedexId,
+    );
+    return {
       isFavorite: pokemonData.isFavorite,
-      pokemonName: pokemonData.pokemonName
+      pokemonName: pokemonData.pokemonName,
     };
   }
 
@@ -179,9 +204,11 @@ export class UserController {
   @Get(':userId/favorite-pokemon')
   async getUserFavoritePokemons(@Req() req, @Param('userId') userId: string) {
     if (+userId !== req.user.id) {
-      throw new UnauthorizedException("You cannot access another user's favorites");
+      throw new UnauthorizedException(
+        "You cannot access another user's favorites",
+      );
     }
-    
+
     const favorites = await this.userService.getUserFavoritePokemons(+userId);
     return { favorites: Array.isArray(favorites) ? favorites : [] };
   }
@@ -197,7 +224,9 @@ export class UserController {
   @Get(':userId/ratings')
   async getUserRatings(@Req() req, @Param('userId') userId: string) {
     if (+userId !== req.user.id) {
-      throw new UnauthorizedException("You cannot access another user's ratings");
+      throw new UnauthorizedException(
+        "You cannot access another user's ratings",
+      );
     }
     const ratings = await this.userService.getUserRatings(+userId);
     return { ratings };
@@ -213,12 +242,21 @@ export class UserController {
    */
   @UseGuards(JwtAuthGuard)
   @Get(':userId/favorite-pokemon/:pokedexId')
-  async checkIsFavorite(@Req() req, @Param('userId') userId: string, @Param('pokedexId') pokedexId: string) {
+  async checkIsFavorite(
+    @Req() req,
+    @Param('userId') userId: string,
+    @Param('pokedexId') pokedexId: string,
+  ) {
     if (+userId !== req.user.id) {
-      throw new UnauthorizedException("You cannot access another user's favorites");
+      throw new UnauthorizedException(
+        "You cannot access another user's favorites",
+      );
     }
-    
-    const isFavorite = await this.userService.checkIsFavorite(+userId, +pokedexId);
+
+    const isFavorite = await this.userService.checkIsFavorite(
+      +userId,
+      +pokedexId,
+    );
     return { isFavorite };
   }
 
@@ -233,7 +271,7 @@ export class UserController {
   @Post(':id/favorite-pokemon/:pokedexId')
   async toggleFavoritePokemon(
     @Param('id', ParseIntPipe) userId: number,
-    @Param('pokedexId', ParseIntPipe) pokedexId: number
+    @Param('pokedexId', ParseIntPipe) pokedexId: number,
   ) {
     try {
       return await this.userService.toggleFavoritePokemon(userId, pokedexId);
@@ -262,19 +300,25 @@ export class UserController {
   async changePassword(
     @Req() req,
     @Param('userId') userIdParam: string,
-    @Body() body: { currentPassword: string; newPassword: string }
+    @Body() body: { currentPassword: string; newPassword: string },
   ) {
     const userId = parseInt(userIdParam);
     if (isNaN(userId)) {
       throw new BadRequestException('Invalid user ID');
     }
-    
+
     if (userId !== req.user.id) {
-      throw new UnauthorizedException("You cannot change another user's password");
+      throw new UnauthorizedException(
+        "You cannot change another user's password",
+      );
     }
-    
+
     try {
-      return await this.userService.changePassword(userId, body.currentPassword, body.newPassword);
+      return await this.userService.changePassword(
+        userId,
+        body.currentPassword,
+        body.newPassword,
+      );
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;

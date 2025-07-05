@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
@@ -16,7 +15,6 @@ import { useGlobal } from '@/providers/GlobalProvider';
  * @returns {JSX.Element} Account deletion form with confirmation dialog
  */
 export function DeleteAccountSettings() {
-  const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const globalContext = useGlobal();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -44,8 +42,11 @@ export function DeleteAccountSettings() {
       // Show success message
       toast.success('Your account has been deleted successfully');
       
-      // Redirect to home page
-      router.push('/');
+      // Small delay to ensure toast is visible
+      setTimeout(() => {
+        // Force page reload to clear all client-side state
+        window.location.href = '/';
+      }, 1500);
     } catch (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any
@@ -76,8 +77,8 @@ export function DeleteAccountSettings() {
             <h3 className="font-medium">Warning: This action is irreversible</h3>
           </div>
           <p className="text-sm text-red-200/70 pl-8">
-            Deleting your account will permanently remove all your data, including your ratings,
-            favorites, and account settings. This action cannot be undone.
+            Deleting your account will permanently remove all your data, including your ratings and
+            favorites. This action cannot be undone.
           </p>
         </div>
 

@@ -3,20 +3,19 @@
  * Extends Express Request interface to include user property for authentication
  */
 
-
 /**
  * Interface defining the JWT payload structure
  */
 interface JwtPayload {
   /** User ID */
   id: number;
-  
+
   /** Username */
   pseudo: string;
-  
+
   /** JWT standard issue time */
   iat?: number;
-  
+
   /** JWT standard expiration time */
   exp?: number;
 }

@@ -10,8 +10,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { PokemonModule } from './pokemon/pokemon.module';
-import { AuthModule } from './auth/auth.module';  
-import { JwtModule } from '@nestjs/jwt'; 
+import { AuthModule } from './auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -29,6 +29,7 @@ import { JwtModule } from '@nestjs/jwt';
         entities: [join(__dirname, '**', '*.entity.{ts,js}')],
         synchronize: false,
       }),
+
     }),
     JwtModule.register({
       secret: process.env.JWT_SECRET,

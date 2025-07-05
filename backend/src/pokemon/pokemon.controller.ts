@@ -2,7 +2,17 @@
  * Pokemon controller
  * Handles all HTTP requests related to Pokemon resources
  */
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, Query, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  BadRequestException,
+  Query,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserPokemonRating } from './entities/user-pokemon-rating.entity';
@@ -61,7 +71,6 @@ export class PokemonController {
    * Get Pokemon by Pokedex ID with optional user rating
    * @param {string} pokedexId - The Pokedex ID of the Pokemon
    * @param {number} userId - Optional user ID to check if user has rated the Pokemon
-   * @param {any} req - Request object
    * @returns {Promise<any>} Pokemon data, possibly with user's rating
    * @throws {BadRequestException} If pokedexId is not a valid number
    */
@@ -69,32 +78,34 @@ export class PokemonController {
   async findByPokedexId(
     @Param('pokedexId') pokedexId: string,
     @Query('userId') userId?: number,
-    @Req() req?: any
   ) {
     const parsedId = parseInt(pokedexId, 10);
     if (isNaN(parsedId)) {
-      throw new BadRequestException(`The pokedexId '${pokedexId}' is not a valid number`);
+      throw new BadRequestException(
+        `The pokedexId '${pokedexId}' is not a valid number`,
+      );
     }
-    
+
     const pokemon = await this.pokemonService.findByPokedexId(parsedId);
-    
+
     if (userId) {
       try {
         const userRating = await this.userPokemonRatingRepository.findOne({
-          where: { 
-            user: { id: userId }, 
-            pokemon: { pokedexId: parsedId } 
-          }
+          where: {
+            user: { id: userId },
+            pokemon: { pokedexId: parsedId },
+          },
         });
-        
+
         if (userRating) {
           return { ...pokemon, userRating: userRating.rating };
         }
       } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         console.error(`Error fetching user rating: ${error.message}`);
       }
     }
-    
+
     return pokemon;
   }
 
@@ -110,7 +121,7 @@ export class PokemonController {
     if (isNaN(parsedId)) {
       throw new BadRequestException(`L'ID '${id}' n'est pas un nombre valide`);
     }
-    
+
     return this.pokemonService.findOne(parsedId);
   }
 
@@ -158,14 +169,17 @@ export class PokemonController {
     if (!idsParam) {
       return {};
     }
-    
+
     try {
-      const ids = idsParam.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id));
-      
+      const ids = idsParam
+        .split(',')
+        .map((id) => parseInt(id, 10))
+        .filter((id) => !isNaN(id));
+
       if (ids.length === 0) {
         return {};
       }
-      
+
       const pokemons = await Promise.all(
         ids.map(async (id) => {
           try {
@@ -175,21 +189,21 @@ export class PokemonController {
             console.error(`Error fetching pokemon ${id}:`, error);
             return { id, pokemon: null };
           }
-        })
+        }),
       );
-      
+
       const result = {};
       pokemons.forEach(({ id, pokemon }) => {
         if (pokemon) {
           result[id] = {
             rating: pokemon.rating || 0,
-            numberOfVotes: pokemon.numberOfVotes || 0
+            numberOfVotes: pokemon.numberOfVotes || 0,
           };
         } else {
           result[id] = { rating: 0, numberOfVotes: 0 };
         }
       });
-      
+
       return result;
     } catch (error) {
       console.error('Error in batch ratings:', error);

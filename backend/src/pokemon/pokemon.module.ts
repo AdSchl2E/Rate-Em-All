@@ -12,9 +12,7 @@ import { Pokemon } from './entities/pokemon.entity';
 import { UserPokemonRating } from './entities/user-pokemon-rating.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Pokemon, UserPokemonRating]),
-  ],
+  imports: [TypeOrmModule.forFeature([Pokemon, UserPokemonRating])],
   controllers: [PokemonController],
   providers: [PokemonService],
   exports: [PokemonService],

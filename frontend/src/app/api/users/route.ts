@@ -134,3 +134,36 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
+
+/**
+ * DELETE - Delete current user account
+ * Simplified proxy to backend API
+ */
+export async function DELETE(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  request: NextRequest
+) {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const session = await getServerSession(authOptions) as any;
+
+    if (!session?.user || !session?.accessToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await serverApiRequest(`/user/${session.user.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${session.accessToken}`
+      }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('[Users Route] DELETE error:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Unable to delete account' },
+      { status: 500 }
+    );
+  }
+}
