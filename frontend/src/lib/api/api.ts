@@ -23,6 +23,9 @@ const API_CONFIG = {
   nextUrl: process.env.NEXT_PUBLIC_URL || 'http://localhost:3000',
 };
 
+console.log('API_URL', process.env.API_URL);
+console.log('NEXT_PUBLIC_URL', process.env.NEXT_PUBLIC_URL);
+
 /**
  * Fonction de base pour les requêtes API côté client
  */
