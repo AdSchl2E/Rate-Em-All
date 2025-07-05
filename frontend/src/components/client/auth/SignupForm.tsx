@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
-import clientApi from '@/lib/api/client';
+import { useAuth } from '@/lib/api';
 
 /**
  * SignupForm component
@@ -13,12 +13,12 @@ import clientApi from '@/lib/api/client';
  */
 export default function SignupForm() {
   const router = useRouter();
+  const { register, loading, error } = useAuth();
   const [formData, setFormData] = useState({
     pseudo: '',
     password: '',
     confirmPassword: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   /**
@@ -71,44 +71,43 @@ export default function SignupForm() {
       return;
     }
     
-    setIsLoading(true);
-    
     try {
-      // Use our new client API
-      await clientApi.auth.register({
+      // Use our new auth hook
+      const result = await register({
         pseudo: formData.pseudo,
         password: formData.password
       });
       
-      toast.success('Account created successfully');
-      
-      // Automatic login
-      const signInResult = await signIn('credentials', {
-        pseudo: formData.pseudo,
-        password: formData.password,
-        redirect: false,
-      });
-      
-      if (signInResult?.error) {
-        console.error('Auto-login error:', signInResult.error);
-        toast.error("Account created but error during automatic login");
-        router.push('/login');
+      if (result.success) {
+        toast.success('Account created successfully');
+        
+        // Automatic login
+        const signInResult = await signIn('credentials', {
+          pseudo: formData.pseudo,
+          password: formData.password,
+          redirect: false,
+        });
+        
+        if (signInResult?.error) {
+          console.error('Auto-login error:', signInResult.error);
+          toast.error("Account created but error during automatic login");
+          router.push('/login');
+        } else {
+          toast.success('Welcome to Rate \'em All!');
+          router.push('/');
+          router.refresh();
+        }
       } else {
-        toast.success('Welcome to Rate \'em All!');
-        router.push('/');
-        router.refresh();
+        // Handle specific errors returned by API
+        if (result.error?.includes('pseudo already exists')) {
+          setErrors(prev => ({ ...prev, pseudo: 'This username is already taken' }));
+        } else {
+          toast.error(result.error || 'An error occurred during registration');
+        }
       }
     } catch (error: any) {
       console.error('Registration error:', error);
-      
-      // Handle specific errors returned by API
-      if (error.message?.includes('pseudo already exists')) {
-        setErrors(prev => ({ ...prev, pseudo: 'This username is already taken' }));
-      } else {
-        toast.error(error.message || 'An error occurred during registration');
-      }
-    } finally {
-      setIsLoading(false);
+      toast.error(error.message || 'An error occurred during registration');
     }
   };
 
@@ -165,12 +164,12 @@ export default function SignupForm() {
       
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={loading}
         className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 ${
-          isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'
+          loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'
         } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200`}
       >
-        {isLoading ? (
+        {loading ? (
           <>
             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

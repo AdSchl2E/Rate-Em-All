@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import clientApi from '@/lib/api/client';
+import { api } from '@/lib/api';
 import SettingsSection from '../ui/SettingsSection';
 import { useGlobal } from '@/providers/GlobalProvider';
 
@@ -35,7 +35,7 @@ export function DeleteAccountSettings() {
     try {
       setIsSubmitting(true);
 
-      await clientApi.user.deleteAccount();
+      await api.user.deleteAccount();
       
       // Sign out and redirect
       await signOut({ redirect: false });

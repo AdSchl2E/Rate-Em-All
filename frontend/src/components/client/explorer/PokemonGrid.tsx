@@ -52,8 +52,6 @@ export default function PokemonGrid({ pokemons, loading, lastPokemonRef, viewMod
   if (pokemonArray.length === 0 && !loading) {
     return <div className="text-center py-8 text-gray-400">No Pokémon match your criteria</div>;
   }
-
-  console.log(`Rendering PokemonGrid in ${viewMode} mode with ${pokemonArray.length} Pokémon`);
   
   return (
     <motion.div
@@ -75,7 +73,6 @@ export default function PokemonGrid({ pokemons, loading, lastPokemonRef, viewMod
             variants={itemVariants}
             // Reference for infinite scroll
             ref={isLastItem ? node => {
-              console.log("Setting ref on last Pokémon:", pokemon.id);
               lastPokemonRef(node);
             } : null}
           >

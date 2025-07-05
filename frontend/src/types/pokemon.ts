@@ -21,9 +21,9 @@ export interface Pokemon {
     front_shiny?: string;
     back_default?: string;
     back_shiny?: string;
-    other: {
-      'official-artwork': {
-        front_default: string;
+    other?: {
+      'official-artwork'?: {
+        front_default?: string;
       };
     };
   };

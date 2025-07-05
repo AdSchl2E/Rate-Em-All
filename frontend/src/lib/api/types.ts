@@ -1,4 +1,6 @@
-import { Pokemon } from '../../../types/pokemon';
+/**
+ * Types pour l'API Rate-Em-All
+ */
 
 export interface ApiOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
@@ -10,10 +12,17 @@ export interface ApiOptions {
   cache?: RequestCache;
 }
 
-export interface ApiResponse<T = any> {
-  data?: T;
-  error?: string;
-  status: number;
+export interface RegisterUserData {
+  pseudo: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  user: {
+    id: number;
+    pseudo: string;
+  };
+  accessToken: string;
 }
 
 export interface PokemonRatingData {
@@ -31,21 +40,8 @@ export interface UserRatingsResponse {
   ratings: UserRatingEntry[];
 }
 
-export interface RegisterUserData {
-  pseudo: string;
-  password: string;
-}
-
-export interface AuthResponse {
-  user: {
-    id: number;
-    pseudo: string;
-  };
-  accessToken: string;
-}
-
 export interface PokemonListResponse {
-  pokemons: Pokemon[];
+  pokemons: any[];
   hasMore: boolean;
   total: number;
 }

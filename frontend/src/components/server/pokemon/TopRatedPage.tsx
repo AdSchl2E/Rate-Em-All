@@ -1,5 +1,5 @@
 import TopRatedContainer from '@/components/client/pokemon/top-rated/TopRatedContainer';
-import { serverPokemon } from '@/lib/api/server';
+import { serverApi } from '@/lib/api';
 import PageHeader from '@/components/server/shared/PageHeader';
 
 /**
@@ -12,7 +12,7 @@ import PageHeader from '@/components/server/shared/PageHeader';
  */
 export async function TopRatedPage() {
   // Fetch data from the server
-  const topPokemon = await serverPokemon.getTopRated(50);
+  const topPokemon = await serverApi.pokemon.getTopRated(50);
   
   return (
     <div className="container mx-auto px-4 py-8">

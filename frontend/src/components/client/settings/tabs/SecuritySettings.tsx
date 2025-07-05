@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { LockClosedIcon } from '@heroicons/react/24/outline';
-import clientApi from '@/lib/api/client';
+import { useAuth } from '@/lib/api';
 import SettingsSection from '../ui/SettingsSection';
 
 /**
@@ -13,6 +13,7 @@ import SettingsSection from '../ui/SettingsSection';
  * @returns {JSX.Element} Password change form
  */
 export function SecuritySettings() {
+  const { changePassword } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -63,10 +64,14 @@ export function SecuritySettings() {
     setIsSubmitting(true);
     
     try {
-      await clientApi.user.changePassword(currentPassword, newPassword);
+      const result = await changePassword(currentPassword, newPassword);
       
-      toast.success('Password changed successfully');
-      resetForm();
+      if (result.success) {
+        toast.success('Password changed successfully');
+        resetForm();
+      } else {
+        toast.error(result.error || 'Error changing password');
+      }
     } catch (error: any) {
       console.error('Error changing password:', error);
       toast.error(error?.message || 'Error changing password');

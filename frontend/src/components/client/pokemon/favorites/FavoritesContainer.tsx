@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { LoadingSpinner } from '@/components/client/ui/LoadingSpinner';
 import { Pokemon } from '@/types/pokemon';
-import clientApi from '@/lib/api/client';
+import { api } from '@/lib/api';
 import { useGlobal } from '@/providers/GlobalProvider';
 
 import AuthenticationGuard from '../../shared/AuthenticationGuard';
@@ -40,7 +40,7 @@ export default function FavoritesContainer() {
         setError(null);
         
         // Use our client API
-        const pokemons = await clientApi.pokemon.getByIds(favorites);
+        const pokemons = await api.pokemon.getByIds(favorites);
         setFavoritePokemons(pokemons);
       } catch (error) {
         console.error('Error fetching favorite Pokémon details:', error);

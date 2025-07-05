@@ -1,4 +1,4 @@
-import { serverPokemon } from '@/lib/api/server';
+import { serverApi } from '@/lib/api';
 import ExplorerContainer from '@/components/client/explorer/ExplorerContainer';
 import PageHeader from '@/components/server/shared/PageHeader';
 
@@ -11,11 +11,6 @@ import PageHeader from '@/components/server/shared/PageHeader';
  * @returns React server component
  */
 export async function PokemonExplorerPage() {
-  // Load only the initial metadata needed for filters
-  // (avoids loading all Pokemon immediately)
-  const pokemonTypes = await serverPokemon.getAllTypes();
-  const totalPokemonCount = await serverPokemon.getTotalCount();
-  
   return (
     <div className="container mx-auto px-4 py-6 max-w-7xl">
       <PageHeader 
@@ -23,10 +18,7 @@ export async function PokemonExplorerPage() {
         description="Discover and rate all existing Pokémon"
       />
       
-      <ExplorerContainer 
-        initialTypes={pokemonTypes}
-        totalCount={totalPokemonCount}
-      />
+      <ExplorerContainer />
     </div>
   );
 }

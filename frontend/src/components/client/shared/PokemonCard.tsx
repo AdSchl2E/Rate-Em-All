@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -80,39 +80,64 @@ export default function PokemonCard({
   onRatingUpdate
 }: PokemonCardProps) {
   const { status } = useSession();
-  const { isFavorite, toggleFavorite, getRating, setRating, cachePokemon } = useGlobal();
+  const { 
+    isFavorite, 
+    toggleFavorite, 
+    getUserRating, 
+    setUserRating, 
+    cachePokemon,
+    pokemonCache,
+    getPokemonFromCache,
+    updatePokemonRating
+  } = useGlobal();
 
   const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
   const [isLoadingRating, setIsLoadingRating] = useState(false);
-  const [localUserRating, setLocalUserRating] = useState(0);
-
-  // Local states for community ratings and vote count
-  const [localCommunityRating, setLocalCommunityRating] = useState(pokemon.rating || 0);
-  const [localVoteCount, setLocalVoteCount] = useState(pokemon.numberOfVotes || 0);
-
+  
   // Use functions from the new GlobalProvider
   const isPokemonInFavorites = isFavorite(pokemon.id);
-  const userRating = getRating(pokemon.id);
+  const userRating = getUserRating(pokemon.id);
 
-  // Initialize local states with Pokemon values
+  // Local states pour une réactivité immédiate - avec data du cache si disponible
+  const cachedPokemon = getPokemonFromCache(pokemon.id);
+  const [localUserRating, setLocalUserRating] = useState(() => userRating);
+  const [localCommunityRating, setLocalCommunityRating] = useState(() => cachedPokemon?.rating || pokemon.rating || 0);
+  const [localVoteCount, setLocalVoteCount] = useState(() => cachedPokemon?.numberOfVotes || pokemon.numberOfVotes || 0);
+
+  // Initialize local states with Pokemon values - Only when pokemon.id changes
   useEffect(() => {
+    const cachedPokemon = getPokemonFromCache(pokemon.id);
     setLocalUserRating(userRating);
-    setLocalCommunityRating(pokemon.rating || 0);
-    setLocalVoteCount(pokemon.numberOfVotes || 0);
-  }, [userRating, pokemon.rating, pokemon.numberOfVotes]);
+    setLocalCommunityRating(cachedPokemon?.rating || pokemon.rating || 0);
+    setLocalVoteCount(cachedPokemon?.numberOfVotes || pokemon.numberOfVotes || 0);
+  }, [pokemon.id, userRating, pokemon.rating, pokemon.numberOfVotes, getPokemonFromCache]);
 
-  // Move cachePokemon call to useEffect
+  // Listener pour les changements dans le cache - Mise à jour automatique des ratings
   useEffect(() => {
-    if (pokemon) {
+    const cachedPokemon = getPokemonFromCache(pokemon.id);
+    if (cachedPokemon) {
+      // Mettre à jour les états locaux si le cache a changé
+      if (cachedPokemon.rating !== undefined && cachedPokemon.rating !== localCommunityRating) {
+        setLocalCommunityRating(cachedPokemon.rating);
+      }
+      if (cachedPokemon.numberOfVotes !== undefined && cachedPokemon.numberOfVotes !== localVoteCount) {
+        setLocalVoteCount(cachedPokemon.numberOfVotes);
+      }
+    }
+  }, [getPokemonFromCache, pokemon.id, localCommunityRating, localVoteCount]);
+
+  // Cache Pokemon only when pokemon.id changes to avoid infinite loops
+  useEffect(() => {
+    if (pokemon?.id) {
       cachePokemon(pokemon);
     }
-  }, [pokemon, cachePokemon]);
+  }, [pokemon.id, cachePokemon]);
 
   // Get pokemon type colors for gradient background
   const [primaryColor, secondaryColor] = getPokemonTypeColors(pokemon);
 
   // Toggle favorite status
-  const handleToggleFavorite = async (e: React.MouseEvent) => {
+  const handleToggleFavorite = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -139,10 +164,10 @@ export default function PokemonCard({
     } finally {
       setIsLoadingFavorite(false);
     }
-  };
+  }, [status, pokemon.id, pokemon.name, toggleFavorite]);
 
-  // Handle rating change
-  const handleRatingChange = async (rating: number) => {
+  // Handle rating change with optimistic updates
+  const handleRatingChange = useCallback(async (rating: number) => {
     if (status !== 'authenticated') {
       toast.error('Please sign in to rate Pokemon');
       return;
@@ -150,36 +175,23 @@ export default function PokemonCard({
 
     try {
       setIsLoadingRating(true);
+      
+      // Optimistic update - update UI immediately
       setLocalUserRating(rating);
 
-      // Use the setRating function from GlobalProvider
-      const result = await setRating(pokemon.id, rating);
+      // Appel API avec le nouveau nom de fonction
+      await setUserRating(pokemon.id, rating);
 
-      // Update local states with values returned by the API
-      if (result) {
-        // Get updated values from result
-        const updatedRating = typeof result.updatedRating === 'number' ? 
-          result.updatedRating : 
-          (result.pokemon?.rating || localCommunityRating);
-          
-        const updatedVotes = typeof result.numberOfVotes === 'number' ? 
-          result.numberOfVotes : 
-          (result.pokemon?.numberOfVotes || localVoteCount);
-
-        setLocalCommunityRating(updatedRating);
-        setLocalVoteCount(updatedVotes);
-
-        // Update the Pokemon in the cache
-        cachePokemon({
-          ...pokemon,
-          userRating: rating,
-          rating: updatedRating,
-          numberOfVotes: updatedVotes
-        });
+      // Les données communautaires seront mises à jour automatiquement par le GlobalProvider
+      // via updatePokemonRating, mais on force une mise à jour locale immédiate
+      const updatedPokemon = getPokemonFromCache(pokemon.id);
+      if (updatedPokemon) {
+        setLocalCommunityRating(updatedPokemon.rating || localCommunityRating);
+        setLocalVoteCount(updatedPokemon.numberOfVotes || localVoteCount);
         
         // Propagate the update to the parent if necessary
         if (onRatingUpdate) {
-          onRatingUpdate(updatedRating, updatedVotes);
+          onRatingUpdate(updatedPokemon.rating || localCommunityRating, updatedPokemon.numberOfVotes || localVoteCount);
         }
       }
 
@@ -190,11 +202,12 @@ export default function PokemonCard({
     } catch (error) {
       console.error('Error rating pokemon:', error);
       toast.error('Error saving the rating');
+      // Revert optimistic update on error
       setLocalUserRating(userRating);
     } finally {
       setIsLoadingRating(false);
     }
-  };
+  }, [status, pokemon.id, pokemon.name, setUserRating, localCommunityRating, localVoteCount, getPokemonFromCache, onRatingUpdate, userRating]);
 
   // Define classes and dimensions based on size
   const listSizeClasses = {
@@ -317,8 +330,8 @@ export default function PokemonCard({
               }}
             >
               <Image
-                src={pokemon.sprites.other?.['official-artwork']?.front_default || 
-                      pokemon.sprites.front_default || 
+                src={pokemon.sprites?.other?.['official-artwork']?.front_default || 
+                      pokemon.sprites?.front_default || 
                       '/images/pokeball.png'
                 }
                 alt={pokemon.name}
@@ -455,7 +468,7 @@ export default function PokemonCard({
             >
               <Link href={`/pokemon/${pokemon.id}`}>
                 <Image
-                  src={pokemon.sprites.other?.['official-artwork']?.front_default || pokemon.sprites.front_default || '/images/pokeball.png'}
+                  src={pokemon.sprites?.other?.['official-artwork']?.front_default || pokemon.sprites?.front_default || '/images/pokeball.png'}
                   width={listClasses.imageSize.width}
                   height={listClasses.imageSize.height}
                   alt={pokemon.name}
@@ -566,7 +579,7 @@ export default function PokemonCard({
 
         <Link href={`/pokemon/${pokemon.id}`} className="relative z-10">
           <Image
-            src={pokemon.sprites.other?.['official-artwork']?.front_default || pokemon.sprites.front_default || '/images/pokeball.png'}
+            src={pokemon.sprites?.other?.['official-artwork']?.front_default || pokemon.sprites?.front_default || '/images/pokeball.png'}
             width={gridClasses.imageSize.width}
             height={gridClasses.imageSize.height}
             alt={pokemon.name}

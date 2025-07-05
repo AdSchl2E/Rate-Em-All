@@ -30,18 +30,42 @@ type SortMode = 'id' | 'name' | 'rating';
 export default function FavoritesList({ pokemons }: FavoritesListProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortMode, setSortMode] = useState<SortMode>('id');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  // Sorting logic
+  // Handle sort mode change with direction toggle
+  const handleSortChange = (newMode: SortMode) => {
+    if (newMode === sortMode) {
+      // Toggle direction if same field
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New field: set default direction
+      setSortMode(newMode);
+      if (newMode === 'rating') {
+        setSortDirection('desc'); // Rating defaults to descending
+      } else {
+        setSortDirection('asc'); // ID and name default to ascending
+      }
+    }
+  };
+
+  // Sorting logic with direction support
   const sortedPokemons = [...pokemons].sort((a, b) => {
+    let comparison = 0;
+    
     switch (sortMode) {
       case 'name':
-        return a.name.localeCompare(b.name);
+        comparison = a.name.localeCompare(b.name);
+        break;
       case 'rating':
-        return (b.rating || 0) - (a.rating || 0);
+        comparison = (a.rating || 0) - (b.rating || 0);
+        break;
       case 'id':
       default:
-        return a.id - b.id;
+        comparison = a.id - b.id;
+        break;
     }
+    
+    return sortDirection === 'asc' ? comparison : -comparison;
   });
 
   // Animation variants
@@ -68,6 +92,9 @@ export default function FavoritesList({ pokemons }: FavoritesListProps) {
   /**
    * Get appropriate sort icon for a sorting field
    * @param {SortMode} field - Sorting field to check
+  /**
+   * Get appropriate sort icon for a sorting field
+   * @param {SortMode} field - Sorting field to check
    * @returns {JSX.Element} Icon component for current sort state
    */
   const getSortIcon = (field: SortMode) => {
@@ -75,9 +102,9 @@ export default function FavoritesList({ pokemons }: FavoritesListProps) {
       return <ArrowsUpDownIcon className="h-4 w-4 text-gray-500" />;
     }
     
-    return field === 'rating' ? 
-      <ArrowDownIcon className="h-4 w-4 text-blue-400" /> : 
-      <ArrowUpIcon className="h-4 w-4 text-blue-400" />;
+    return sortDirection === 'asc' ? 
+      <ArrowUpIcon className="h-4 w-4 text-blue-400" /> : 
+      <ArrowDownIcon className="h-4 w-4 text-blue-400" />;
   };
 
   return (
@@ -92,7 +119,7 @@ export default function FavoritesList({ pokemons }: FavoritesListProps) {
           {/* Sort Controls */}
           <div className="flex gap-2">
             <button 
-              onClick={() => setSortMode('id')}
+              onClick={() => handleSortChange('id')}
               className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-sm ${
                 sortMode === 'id' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
               }`}
@@ -100,7 +127,7 @@ export default function FavoritesList({ pokemons }: FavoritesListProps) {
               ID {getSortIcon('id')}
             </button>
             <button 
-              onClick={() => setSortMode('name')}
+              onClick={() => handleSortChange('name')}
               className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-sm ${
                 sortMode === 'name' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
               }`}
@@ -108,7 +135,7 @@ export default function FavoritesList({ pokemons }: FavoritesListProps) {
               Name {getSortIcon('name')}
             </button>
             <button 
-              onClick={() => setSortMode('rating')}
+              onClick={() => handleSortChange('rating')}
               className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-sm ${
                 sortMode === 'rating' ? 'bg-gray-700 text-blue-400' : 'bg-gray-800 text-gray-300'
               }`}

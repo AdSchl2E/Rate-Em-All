@@ -1,18 +1,14 @@
-// Re-export everything
-export * from './shared/types';
-export * from './shared/config';
+// API simplifié unifié
+export { default as api, serverApi, serverApiRequest } from './api';
+export * from './api';
+export * from './pokeapi';
+export * from './types';
+export * from './hooks';
 
-// Client-side API (use in 'use client' components)
-export * from './client';
+// Pour une compatibilité temporaire, on garde les exports existants
+// Vous pouvez progressivement migrer vers la nouvelle API
 
-// Re-export the server API (use in Server Components)
-export * from './server';
-
-// Main API object is not exported by default
-// Import specific API based on your component type:
-//
-// For client components:
-// import clientApi from '@/lib/api/client';
-//
-// For server components:
-// import { serverApi } from '@/lib/api/server';
+// Import recommandé :
+// import api from '@/lib/api'; // Pour les composants client
+// import { serverApi } from '@/lib/api'; // Pour les Server Components
+// import { useAuth, usePokemon } from '@/lib/api'; // Pour les hooks

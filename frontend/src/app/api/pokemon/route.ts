@@ -1,353 +1,89 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { serverApiRequest, serverPokeApiRequest } from '@/lib/api/server/base';
-import { API_CONFIG } from '@/lib/api/shared/config';
+import { serverApi } from '@/lib/api';
 
 /**
- * GET - Handles various Pokemon data retrieval actions
- * Supports listing, searching, getting top-rated, trending, and more
- * 
- * @param request - The incoming request object
- * @returns Response with Pokemon data based on the requested action
+ * GET - Simplified Pokemon route proxy to backend
+ * All logic is now handled by the unified API
  */
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const action = searchParams.get('action') || 'list';
-  
-  // Handle different types of Pokémon listings
-  switch (action) {
-    case 'list': {
-      // Check if specific IDs were requested
-      const specificIds = searchParams.get('ids');
-      if (specificIds) {
-        try {
-          const ids = specificIds.split(',').map(id => parseInt(id.trim()));
-          const validIds = ids.filter(id => !isNaN(id));
-          
-          if (validIds.length === 0) {
-            return NextResponse.json({ pokemons: [] });
-          }
-          
-          // Fetch details for each requested Pokemon
-          const detailsPromises = validIds.map(async (id) => {
-            try {
-              const url = `https://pokeapi.co/api/v2/pokemon/${id}`;
-              const response = await fetch(url, {
-                next: API_CONFIG.cacheConfig.medium
-              });
-              
-              if (!response.ok) return null;
-              return response.json();
-            } catch (error) {
-              console.error(`Error fetching Pokemon ${id}:`, error);
-              return null;
-            }
-          });
-          
-          const pokemonDetails = await Promise.all(detailsPromises);
-          const validDetails = pokemonDetails.filter(Boolean);
-          
-          // Get ratings for all Pokémon
-          const pokedexIds = validDetails.map((p: any) => p.id);
-          
-          if (pokedexIds.length > 0) {
-            const ratingsData = await serverApiRequest(`/pokemons/ratings/batch`, {
-              params: { ids: pokedexIds.join(',') },
-              cache: 'no-store'
-            });
-            
-            // Combine Pokémon details with ratings
-            const enhancedPokemons = validDetails.map((pokemon: any) => ({
-              ...pokemon,
-              rating: ratingsData[pokemon.id]?.rating || 0,
-              numberOfVotes: ratingsData[pokemon.id]?.numberOfVotes || 0
-            }));
-            
-            return NextResponse.json({
-              pokemons: enhancedPokemons
-            });
-          }
-          
-          return NextResponse.json({
-            pokemons: validDetails
-          });
-        } catch (error) {
-          console.error('Error fetching Pokemon by IDs:', error);
-          return NextResponse.json(
-            { error: 'Failed to fetch Pokemon by IDs' },
-            { status: 500 }
-          );
-        }
-      }
-      
-      // Continue with the existing pagination logic if no IDs were specified
-      const page = parseInt(searchParams.get('page') || '0');
-      const limit = parseInt(searchParams.get('limit') || '20');
-      const offset = page * limit;
-      
-      try {
-        // Get basic Pokémon list from PokeAPI
-        const pokemonList = await serverPokeApiRequest(`/pokemon?limit=${limit}&offset=${offset}`);
-        
-        if (!pokemonList) {
-          return NextResponse.json({ error: 'Failed to fetch Pokémon list' }, { status: 500 });
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const action = searchParams.get('action') || 'list';
+    
+    // Convert searchParams to a regular object for the API
+    const params: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      params[key] = value;
+    });
+    
+    switch (action) {
+      case 'list': {
+        const ids = searchParams.get('ids');
+        if (ids) {
+          const result = await serverApi.pokemon.getByIds(ids.split(',').map(Number));
+          return NextResponse.json({ pokemons: result });
         }
         
-        // Get details for each Pokémon
-        const detailsPromises = pokemonList.results.map(async (pokemon: any) => {
-          try {
-            const response = await fetch(pokemon.url, {
-              next: API_CONFIG.cacheConfig.long
-            });
-            
-            if (!response.ok) return null;
-            return response.json();
-          } catch (error) {
-            console.error(`Error fetching ${pokemon.name}:`, error);
-            return null;
-          }
-        });
-        
-        const pokemonDetails = await Promise.all(detailsPromises);
-        const validDetails = pokemonDetails.filter(Boolean);
-        
-        // Get ratings for all Pokémon
-        const pokedexIds = validDetails.map((p: any) => p.id);
-        
-        if (pokedexIds.length > 0) {
-          const ratingsData = await serverApiRequest(`/pokemons/ratings/batch`, {
-            params: { ids: pokedexIds.join(',') },
-            cache: 'no-store' // Always get fresh data
-          });
-          
-          // Combine Pokémon details with ratings
-          const enhancedPokemons = validDetails.map((pokemon: any) => ({
-            ...pokemon,
-            rating: ratingsData[pokemon.id]?.rating || 0,
-            numberOfVotes: ratingsData[pokemon.id]?.numberOfVotes || 0
-          }));
-          
-          return NextResponse.json({
-            pokemons: enhancedPokemons,
-            hasMore: !!pokemonList.next,
-            total: pokemonList.count
-          });
-        }
-        
-        return NextResponse.json({
-          pokemons: validDetails,
-          hasMore: !!pokemonList.next,
-          total: pokemonList.count
-        });
-      } catch (error) {
-        console.error('Error fetching Pokémon list:', error);
-        return NextResponse.json(
-          { error: 'Failed to fetch Pokémon list' },
-          { status: 500 }
-        );
-      }
-    }
-    
-    case 'alternate-forms': {
-      const limit = parseInt(searchParams.get('limit') || '1000');
-      const offset = parseInt(searchParams.get('offset') || '898');
-      
-      try {
-        const data = await serverPokeApiRequest(`/pokemon?limit=${limit}&offset=${offset}`);
-        
-        if (!data) {
-          return NextResponse.json({ error: 'Failed to fetch alternate forms' }, { status: 500 });
-        }
-        
-        // Get details for each form
-        const formDetailsPromises = data.results.map(async (pokemon: any) => {
-          try {
-            const detailResponse = await fetch(pokemon.url, {
-              next: API_CONFIG.cacheConfig.long
-            });
-            
-            if (!detailResponse.ok) return null;
-            return detailResponse.json();
-          } catch (error) {
-            console.error(`Error fetching ${pokemon.name}:`, error);
-            return null;
-          }
-        });
-        
-        const formDetails = await Promise.all(formDetailsPromises);
-        const validForms = formDetails.filter(Boolean);
-        
-        return NextResponse.json({ pokemons: validForms }, { status: 200 });
-      } catch (error) {
-        console.error('Error fetching alternate forms:', error);
-        return NextResponse.json({ error: 'Failed to fetch alternate forms' }, { status: 500 });
-      }
-    }
-    
-    case 'top-rated': {
-      try {
-        const data = await serverApiRequest('/pokemons/top-rated', {
-          cache: 'no-store' // Always get fresh data
-        });
-        
-        return NextResponse.json(data);
-      } catch (error) {
-        console.error('Error fetching top-rated Pokémon:', error);
-        return NextResponse.json({ error: 'Failed to fetch top-rated Pokémon' }, { status: 500 });
-      }
-    }
-    
-    case 'trending': {
-      try {
-        const data = await serverApiRequest('/pokemons/trending', {
-          cache: 'no-store' // Always get fresh data
-        });
-        
-        return NextResponse.json(data);
-      } catch (error) {
-        console.error('Error fetching trending Pokémon:', error);
-        return NextResponse.json({ error: 'Failed to fetch trending Pokémon' }, { status: 500 });
-      }
-    }
-    
-    case 'search': {
-      const query = searchParams.get('q')?.toLowerCase();
-      
-      if (!query) {
-        return NextResponse.json({ error: 'Query parameter is required' }, { status: 400 });
+        const page = parseInt(searchParams.get('page') || '0');
+        const limit = parseInt(searchParams.get('limit') || '20');
+        const result = await serverApi.pokemon.getList({ page, limit });
+        return NextResponse.json(result);
       }
       
-      try {
-        // Get list of all Pokémon
-        const data = await serverPokeApiRequest('/pokemon?limit=1500');
-        
-        if (!data) {
-          return NextResponse.json({ error: 'Failed to fetch Pokémon for search' }, { status: 500 });
-        }
-        
-        // Filter Pokémon by name
-        const filteredResults = data.results.filter(
-          (pokemon: any) => pokemon.name.toLowerCase().includes(query)
-        ).slice(0, 20); // Limit to 20 results
-        
-        if (!filteredResults.length) {
-          return NextResponse.json({ pokemons: [] });
-        }
-        
-        // Get details for each filtered Pokémon
-        const pokemonDetailsPromises = filteredResults.map(async (pokemon: any) => {
-          try {
-            const detailResponse = await fetch(pokemon.url, {
-              next: { revalidate: 86400 }
-            });
-            
-            if (!detailResponse.ok) {
-              return null;
-            }
-            
-            return detailResponse.json();
-          } catch (error) {
-            return null;
-          }
-        });
-        
-        const pokemonDetails = await Promise.all(pokemonDetailsPromises);
-        const validDetails = pokemonDetails.filter(Boolean);
-        
-        return NextResponse.json({ pokemons: validDetails });
-      } catch (error) {
-        console.error('Error searching Pokémon:', error);
-        return NextResponse.json({ error: 'Failed to search Pokémon' }, { status: 500 });
-      }
-    }
-    
-    case 'count': {
-      try {
-        const data = await serverPokeApiRequest('/pokemon/?limit=1');
-        
-        if (!data) {
-          return NextResponse.json({ count: 1500 }, { status: 200 });
-        }
-        
-        return NextResponse.json({ count: data.count }, { status: 200 });
-      } catch (error) {
-        console.error('Error getting Pokémon count:', error);
-        return NextResponse.json({ count: 1500 }, { status: 200 });
-      }
-    }
-    
-    case 'metadata': {
-      const limit = parseInt(searchParams.get('limit') || '1500');
-      
-      try {
-        // Use PokeAPI to get minimal metadata
-        const response = await serverPokeApiRequest(`/pokemon?limit=${limit}`);
-        
-        if (!response?.results) {
-          return NextResponse.json({ error: 'Failed to fetch Pokemon metadata' }, { status: 500 });
-        }
-
-        // Transform results into lightweight metadata
-        const metadata = await Promise.all(
-          response.results.map(async (pokemon: any) => {
-            const id = parseInt(pokemon.url.split('/').filter(Boolean).pop() || '0');
-            
-            // For types, we need to make an additional light request
-            // We limit this to the first 100 Pokemon for initial display
-            let types = [];
-            if (id <= 100) { // Limit requests for types
-              try {
-                const details = await serverPokeApiRequest(`/pokemon/${id}`);
-                types = details.types || [];
-              } catch (err) {
-                // Ignore errors, we'll use an empty array
-              }
-            }
-            
-            return {
-              id,
-              name: pokemon.name,
-              sprites: {
-                front_default: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
-              },
-              types,
-              // Add default fields to avoid errors
-              rating: 0,
-              numberOfVotes: 0
-            };
-          })
-        );
-        
-        return NextResponse.json(metadata);
-      } catch (error) {
-        console.error('Error fetching Pokemon metadata:', error);
-        return NextResponse.json({ error: 'Failed to fetch Pokemon metadata' }, { status: 500 });
-      }
-    }
-    
-    case 'batch': {
-      const ids = searchParams.get('ids')?.split(',');
-      
-      if (!ids || ids.length === 0) {
-        return NextResponse.json({ error: 'No Pokemon IDs provided' }, { status: 400 });
+      case 'alternate-forms': {
+        const limit = parseInt(searchParams.get('limit') || '1000');
+        const offset = parseInt(searchParams.get('offset') || '898');
+        const result = await serverApi.pokemon.getAlternateForms({ limit, offset });
+        return NextResponse.json({ pokemons: result });
       }
       
-      try {
-        // Get batch ratings from backend
-        const ratingsData = await serverApiRequest(`/pokemons/ratings/batch`, {
-          params: { ids: ids.join(',') },
-          cache: 'no-store' // Always get fresh data
-        });
-        
-        return NextResponse.json(ratingsData);
-      } catch (error) {
-        console.error('Error fetching batch ratings:', error);
-        return NextResponse.json({ error: 'Unable to retrieve batch ratings' }, { status: 500 });
+      case 'top-rated': {
+        const result = await serverApi.pokemon.getTopRated();
+        return NextResponse.json(result);
       }
+      
+      case 'trending': {
+        const result = await serverApi.pokemon.getTrending();
+        return NextResponse.json(result);
+      }
+      
+      case 'search': {
+        const query = searchParams.get('q');
+        if (!query) {
+          return NextResponse.json({ error: 'Query parameter is required' }, { status: 400 });
+        }
+        const result = await serverApi.pokemon.search(query);
+        return NextResponse.json({ pokemons: result });
+      }
+      
+      case 'count': {
+        const result = await serverApi.pokemon.getCount();
+        return NextResponse.json({ count: result });
+      }
+      
+      case 'metadata': {
+        const limit = parseInt(searchParams.get('limit') || '1500');
+        const result = await serverApi.pokemon.getAllMetadata(limit);
+        return NextResponse.json(result);
+      }
+      
+      case 'batch': {
+        const ids = searchParams.get('ids');
+        if (!ids) {
+          return NextResponse.json({ error: 'No Pokemon IDs provided' }, { status: 400 });
+        }
+        const result = await serverApi.pokemon.getByIds(ids.split(',').map(Number));
+        return NextResponse.json(result);
+      }
+      
+      default:
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
-    
-    default:
-      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+  } catch (error) {
+    console.error('[Pokemon Route] Error:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Internal server error' },
+      { status: 500 }
+    );
   }
-
-  
 }

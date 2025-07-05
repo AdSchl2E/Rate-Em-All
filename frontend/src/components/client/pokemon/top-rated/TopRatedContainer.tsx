@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Pokemon } from '@/types/pokemon';
 import PokemonCard from '@/components/client/shared/PokemonCard';
-import clientApi from '@/lib/api/client';
+import { api } from '@/lib/api';
 import { 
   ArrowsUpDownIcon, 
   ArrowUpIcon, 
@@ -67,7 +67,7 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
   useEffect(() => {
     const refreshTopRated = async () => {
       try {
-        const freshTopRated = await clientApi.pokemon.getTopRated(50);
+        const freshTopRated = await api.pokemon.getTopRated(50);
         setAllPokemons(freshTopRated);
       } catch (error) {
         console.error('Failed to refresh top rated Pokémon:', error);
@@ -106,8 +106,21 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
 
       // Filter by generation
       if (selectedGeneration !== null) {
-        const gen = pokemon.species_info?.generation?.url.split('/')[6]; 
-        if (!gen || !gen.includes(`${selectedGeneration + 1}`)) {
+        // More robust generation filtering using Pokemon ID ranges
+        const generationRanges = [
+          { start: 1, end: 151 },    // Gen 1
+          { start: 152, end: 251 },  // Gen 2
+          { start: 252, end: 386 },  // Gen 3
+          { start: 387, end: 493 },  // Gen 4
+          { start: 494, end: 649 },  // Gen 5
+          { start: 650, end: 721 },  // Gen 6
+          { start: 722, end: 809 },  // Gen 7
+          { start: 810, end: 905 },  // Gen 8
+          { start: 906, end: 1025 }  // Gen 9
+        ];
+        
+        const targetRange = generationRanges[selectedGeneration];
+        if (!targetRange || pokemon.id < targetRange.start || pokemon.id > targetRange.end) {
           return false;
         } 
       }
@@ -132,11 +145,13 @@ export default function TopRatedContainer({ initialPokemons }: TopRatedContainer
   const podiumPokemons = topTenPokemons.slice(0, 3);
   const listPokemons = topTenPokemons.slice(3, 10);
 
-  // Handler for changing sorting
+  // Handler for changing sorting with intelligent defaults
   const handleSortChange = (criteria: SortCriteria) => {
     if (sortBy === criteria) {
+      // Toggle direction if same field
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
+      // New field: set default to descending for numeric fields (rating, votes)
       setSortBy(criteria);
       setSortDirection('desc');
     }

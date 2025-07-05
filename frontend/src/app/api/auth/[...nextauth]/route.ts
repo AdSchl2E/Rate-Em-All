@@ -1,6 +1,8 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { API_CONFIG } from "@/lib/api/shared/config";
+
+// Configuration centralisée (plus besoin d'importer API_CONFIG)
+const API_BASE_URL = process.env.API_URL || 'http://localhost:3001';
 
 // Extract config into an exportable constant
 export const authOptions: AuthOptions = {
@@ -16,7 +18,7 @@ export const authOptions: AuthOptions = {
         try {
           console.log("Trying to login with:", credentials);
 
-          const res = await fetch(`${API_CONFIG.baseUrl}/auth/login`, {
+          const res = await fetch(`${API_BASE_URL}/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(credentials),

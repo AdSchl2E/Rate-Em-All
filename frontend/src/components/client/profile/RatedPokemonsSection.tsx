@@ -38,8 +38,8 @@ export default function RatedPokemonsSection({
   userRatings, 
   pokemonCache,
 }: RatedPokemonsSectionProps) {
-  const [sortBy, setSortBy] = useState<'userRating' | 'communityRating' | 'votes'>('userRating');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [sortBy, setSortBy] = useState<'userRating' | 'communityRating' | 'votes'>('communityRating');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [showAll, setShowAll] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   

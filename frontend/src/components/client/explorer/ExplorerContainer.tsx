@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Pokemon } from '@/types/pokemon';
-import clientApi from '@/lib/api/client';
+import { api, usePokemon } from '@/lib/api';
 import SearchBar from './SearchBar';
 import PokemonGrid from './PokemonGrid';
 import LoadingIndicator from './LoadingIndicator';
@@ -43,9 +43,9 @@ const PAGE_SIZE = 20;
  */
 interface ExplorerContainerProps {
   /** Initial list of Pokemon types */
-  initialTypes: string[];
+  initialTypes?: string[];
   /** Total count of Pokemon in the database */
-  totalCount: number;
+  totalCount?: number;
 }
 
 /**
@@ -57,32 +57,34 @@ interface ExplorerContainerProps {
  * @param props - Component props
  * @returns React component
  */
-export default function ExplorerContainer() {
-  // States for Pokemon and filtering
+export default function ExplorerContainer({ initialTypes = [], totalCount = 1500 }: ExplorerContainerProps = {}) {
+  // Utiliser le hook Pokemon pour simplifier la gestion
+  const { loading, setLoading, error, getPokemonList, searchPokemon } = usePokemon();
+  
+  // States pour Pokemon et filtrage
   const [allPokemons, setAllPokemons] = useState<Pokemon[]>([]);
   const [displayedPokemons, setDisplayedPokemons] = useState<Pokemon[]>([]);
   const [filteredPokemons, setFilteredPokemons] = useState<Pokemon[]>([]);
   
-  // States for pagination and loading
+  // States pour pagination et chargement
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   
-  // State for search
+  // State pour recherche
   const [searchTerm, setSearchTerm] = useState('');
   
-  // State for display mode
+  // State pour mode d'affichage
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   
-  // States for sorting and favorite filters
+  // States pour tri et filtres favoris
   const [sortField, setSortField] = useState<SortField>('id');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   
-  // Get global context to access favorites
-  const { favorites, isFavorite, getRating } = useGlobal();
+  // Obtenir le contexte global pour accéder aux favoris
+  const { favorites, isFavorite, getUserRating } = useGlobal();
   
   // Load more Pokemon when scrolling
   const loadMorePokemons = useCallback(async () => {
@@ -104,7 +106,7 @@ export default function ExplorerContainer() {
       const pokemonIds = nextBatch.map(p => p.id);
       
       // Load full details only for this batch
-      const detailedPokemons = await clientApi.pokemon.getByIds(pokemonIds);
+      const detailedPokemons = await api.pokemon.getByIds(pokemonIds);
       
       // Add to displayed Pokemon
       setDisplayedPokemons(prev => [...prev, ...detailedPokemons]);
@@ -142,13 +144,13 @@ export default function ExplorerContainer() {
       setInitialLoading(true);
       try {
         // 1. Load metadata for all Pokemon
-        const metadata = await clientApi.pokemon.getAllMetadata();
+        const metadata = await api.pokemon.getAllMetadata();
         
         // 2. Get IDs of all Pokemon
         const allIds = metadata.map(p => p.id);
         
         // 3. Get batch ratings for all Pokemon
-        const batchRatings = await clientApi.pokemon.getBatchRatings(allIds);
+        const batchRatings = await api.pokemon.getBatchRatings(allIds);
         
         // 4. Merge metadata with ratings
         const enhancedMetadata = metadata.map(pokemon => ({
@@ -156,9 +158,7 @@ export default function ExplorerContainer() {
           rating: batchRatings[pokemon.id]?.rating || 0,
           numberOfVotes: batchRatings[pokemon.id]?.numberOfVotes || 0
         }));
-        
-        console.log('Rating data loaded for', Object.keys(batchRatings).length, 'Pokemon');
-        
+                
         // 5. Update states with enriched data
         setAllPokemons(enhancedMetadata);
         setFilteredPokemons(enhancedMetadata);
@@ -183,7 +183,7 @@ export default function ExplorerContainer() {
       const initialSet = pokemonList.slice(0, PAGE_SIZE);
       
       // Load full data only for this subset
-      const detailedPokemons = await clientApi.pokemon.getByIds(
+      const detailedPokemons = await api.pokemon.getByIds(
         initialSet.map(p => p.id)
       );
       
@@ -222,7 +222,7 @@ export default function ExplorerContainer() {
           comparison = votesA - votesB;
           break;
         case 'userRating':
-          comparison = getRating(a.id) - getRating(b.id);
+          comparison = getUserRating(a.id) - getUserRating(b.id);
           break;
       }
       

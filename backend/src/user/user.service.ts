@@ -192,7 +192,13 @@ export class UserService {
       existingRating.rating = rating;
       await this.userPokemonRatingRepository.save(existingRating);
 
-      return { message: 'Rating updated', pokemon, userRating: existingRating };
+      return { 
+        message: 'Rating updated', 
+        pokemon, 
+        userRating: existingRating,
+        updatedRating: pokemon.rating,
+        numberOfVotes: pokemon.numberOfVotes
+      };
     } else {
       const totalBefore = pokemon.rating * pokemon.numberOfVotes;
 
@@ -213,7 +219,13 @@ export class UserService {
         await this.usersRepository.save(user);
       }
 
-      return { message: 'Rating created', pokemon, userRating: newRatingRecord };
+      return { 
+        message: 'Rating created', 
+        pokemon, 
+        userRating: newRatingRecord,
+        updatedRating: pokemon.rating,
+        numberOfVotes: pokemon.numberOfVotes
+      };
     }
   }
 

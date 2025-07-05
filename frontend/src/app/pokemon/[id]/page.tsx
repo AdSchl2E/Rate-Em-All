@@ -1,13 +1,13 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { serverPokemon } from '@/lib/api/server';
+import { serverApi } from '@/lib/api';
 import { PokemonDetailPage } from '@/components/server/pokemon/PokemonDetailPage';
 
 // Dynamic metadata generation
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   try {
     const id = parseInt(params.id);
-    const pokemon = await serverPokemon.getDetails(id);
+    const pokemon = await serverApi.pokemon.getDetails(id);
     
     return {
       title: `${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)} | Rate 'em All`,

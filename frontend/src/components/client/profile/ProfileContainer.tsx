@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useGlobal } from '@/providers/GlobalProvider';
-import clientApi from '@/lib/api/client';
+import { api } from '@/lib/api';
 import { Pokemon } from '@/types/pokemon';
 import { LoadingSpinner } from '@/components/client/ui/LoadingSpinner';
 import AuthenticationGuard from '@/components/client/shared/AuthenticationGuard';
@@ -41,7 +41,7 @@ export default function ProfileContainer() {
       try {
         // Load favorites
         if (favorites.length > 0) {
-          const favPokemon = await clientApi.pokemon.getByIds(favorites);
+          const favPokemon = await api.pokemon.getByIds(favorites);
           setFavoritePokemons(favPokemon);
         } else {
           setFavoritePokemons([]);
@@ -50,7 +50,7 @@ export default function ProfileContainer() {
         // Load rated Pokémon
         if (Object.keys(userRatings).length > 0) {
           const ratedIds = Object.keys(userRatings).map(Number);
-          const ratedPokemon = await clientApi.pokemon.getByIds(ratedIds);
+          const ratedPokemon = await api.pokemon.getByIds(ratedIds);
           setRatedPokemons(ratedPokemon);
         } else {
           setRatedPokemons([]);

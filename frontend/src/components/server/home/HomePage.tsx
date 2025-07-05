@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { serverPokemon } from '@/lib/api/server';
+import { serverApi } from '@/lib/api';
 import { LoadingSpinner } from '@/components/client/ui/LoadingSpinner';
 import HeroSection from '@/components/server/home/HeroSection';
 import PokemonCarousel from '@/components/client/home/PokemonCarousel';
@@ -16,10 +16,10 @@ import { AuthCTA } from '@/components/client/auth/AuthCTA';
  */
 export async function HomePage() {
   // Fetch Pokemon data server-side
-  const { pokemons: allPokemons } = await serverPokemon.getAll(0, 100);
+  const { pokemons: allPokemons } = await serverApi.pokemon.getList({ page: 0, limit: 100 });
   
   // Get the top rated Pokemon for the second carousel
-  const topRatedPokemons = await serverPokemon.getTopRated(20);
+  const topRatedPokemons = await serverApi.pokemon.getTopRated(20);
   
   return (
     <div className="space-y-16 py-8">

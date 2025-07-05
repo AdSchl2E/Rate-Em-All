@@ -68,7 +68,8 @@ export default function SortControls({
               if (sortBy === option.id) {
                 onSortChange(option.id, toggleSortDirection(sortDir));
               } else {
-                onSortChange(option.id, 'desc');
+                // Smart default: asc for numeric fields, asc for others (all asc by default)
+                onSortChange(option.id, 'asc');
               }
             }}
             className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-sm ${

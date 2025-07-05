@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import clientApi from '@/lib/api/client';
+import { api } from '@/lib/api';
 import { LoadingSpinner } from '@/components/client/ui/LoadingSpinner';
 import { ExclamationCircleIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 
@@ -41,7 +41,7 @@ export default function UsernameInput({
       const checkUsername = async () => {
         setChecking(true);
         try {
-          const result = await clientApi.user.checkUsername(value);
+          const result = await api.user.checkUsername(value);
           setAvailable(result.available);
           onAvailabilityChange(result.available);
         } catch (error) {

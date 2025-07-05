@@ -36,7 +36,7 @@ export default function UserMenuButton({
   
   // Use client session if available, otherwise use initial session
   const currentSession = session || initialSession;
-  const displayUsername = currentSession?.user?.name || initialUsername;
+  const displayUsername = currentSession?.user?.pseudo || initialUsername;
   const displayImage = currentSession?.user?.image || initialUserImage;
   
   // Handle clicks outside the menu to close it
@@ -128,7 +128,6 @@ export default function UserMenuButton({
           >
             <div className="px-4 py-3 border-b border-slate-700 bg-gradient-to-r from-blue-500/10 to-violet-500/10">
               <p className="text-sm font-medium">{displayUsername}</p>
-              <p className="text-xs text-slate-400 truncate">{currentSession?.user?.email}</p>
             </div>
             
             <div className="py-1">
