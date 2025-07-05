@@ -20,7 +20,10 @@ type TabId = 'security' | 'delete-account';
  * @param {Session|null} props.session - User session data
  * @returns {JSX.Element} Settings tabs with tab-specific content
  */
-export default function SettingsTabs({ session }: SettingsTabsProps) {
+export default function SettingsTabs({ 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  session 
+}: SettingsTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>('security');
   
   /**

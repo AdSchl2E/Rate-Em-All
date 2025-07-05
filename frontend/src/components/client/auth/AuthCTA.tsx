@@ -18,7 +18,7 @@ export function AuthCTA() {
   // Only show the CTA if the user is NOT logged in
   return (
     <section className="bg-gradient-to-r from-blue-600 to-violet-600 rounded-xl p-8 text-center">
-      <h2 className="text-2xl font-bold mb-4">Ready to join Rate 'em All?</h2>
+      <h2 className="text-2xl font-bold mb-4">Ready to join Rate &apos;em All?</h2>
       <p className="mb-6 max-w-2xl mx-auto">
         Create a free account to start rating your favorite Pokémon,
         track your favorites and be part of the trainer community.

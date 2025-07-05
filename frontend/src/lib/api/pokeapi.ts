@@ -3,6 +3,8 @@
  * Utilisé principalement côté serveur pour récupérer les données Pokémon de base
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 const POKEAPI_BASE_URL = 'https://pokeapi.co/api/v2';
 
 /**

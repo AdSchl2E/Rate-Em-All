@@ -2,6 +2,9 @@
  * Color mappings for each Pokemon type
  * Used for UI elements like type badges and backgrounds
  */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export const typeColors: { [key: string]: string } = {
   normal: '#A8A77A',
   fire: '#EE8130',

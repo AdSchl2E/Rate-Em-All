@@ -3,6 +3,9 @@
  * Gère tous les appels API vers le backend NestJS via les routes Next.js internes
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { getSession } from 'next-auth/react';
 import { serverPokeApiRequest } from './pokeapi';
 import type {
@@ -10,7 +13,6 @@ import type {
   RegisterUserData,
   AuthResponse,
   PokemonRatingData,
-  UserRatingEntry,
   UserRatingsResponse,
   PokemonListResponse
 } from './types';

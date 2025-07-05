@@ -2,6 +2,7 @@
  * Server component for the login page
  * Contains the layout and imports the client-side LoginForm component
  */
+import { Suspense } from "react";
 import { LoginForm } from "@/components/client/auth/LoginForm";
 
 export function LoginPage() {
@@ -12,7 +13,9 @@ export function LoginPage() {
       <h1 className="text-3xl font-bold mb-6 text-center">Login</h1>
       
       {/* Inject client component for interactive part */}
-      <LoginForm />
+      <Suspense fallback={<div className="animate-pulse bg-gray-700 h-64 rounded"></div>}>
+        <LoginForm />
+      </Suspense>
     </div>
   );
 }

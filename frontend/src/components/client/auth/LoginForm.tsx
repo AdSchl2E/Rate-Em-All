@@ -61,7 +61,10 @@ export function LoginForm() {
       
       router.push('/');
       router.refresh(); // Refresh to update authentication state
-    } catch (error) {
+    } catch (
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      error
+    ) {
       setError('An error occurred. Please try again.');
       setIsLoading(false);
     }
@@ -128,7 +131,7 @@ export function LoginForm() {
       </button>
 
       <div className="text-center mt-4">
-        <p>Don't have an account yet?{' '}
+        <p>Don&apos;t have an account yet?{' '}
           <Link 
             href="/signup" 
             className="text-blue-500 hover:text-blue-400 transition-colors duration-200 font-medium"

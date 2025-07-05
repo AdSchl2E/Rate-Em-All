@@ -2,6 +2,8 @@
  * Types pour l'API Rate-Em-All
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export interface ApiOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: any;

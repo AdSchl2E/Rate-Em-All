@@ -72,7 +72,10 @@ export function SecuritySettings() {
       } else {
         toast.error(result.error || 'Error changing password');
       }
-    } catch (error: any) {
+    } catch (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any
+    ) {
       console.error('Error changing password:', error);
       toast.error(error?.message || 'Error changing password');
     } finally {

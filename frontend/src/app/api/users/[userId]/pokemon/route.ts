@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth/config';
 import { serverApiRequest } from '@/lib/api/api';
 
 /**
@@ -9,10 +9,10 @@ import { serverApiRequest } from '@/lib/api/api';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const { userId } = params;
+    const { userId } = await params;
     const searchParams = request.nextUrl.searchParams;
     const action = searchParams.get('action') || 'ratings';
     
@@ -66,10 +66,10 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const { userId } = params;
+    const { userId } = await params;
     const searchParams = request.nextUrl.searchParams;
     const pokedexId = searchParams.get('pokedexId');
     const action = searchParams.get('action') || '';

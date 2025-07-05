@@ -120,7 +120,7 @@ export default function RatedPokemonsSection({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <p className="text-gray-400 mb-4">You haven't rated any Pokémon yet.</p>
+          <p className="text-gray-400 mb-4">You haven&apos;t rated any Pokémon yet.</p>
           <Link href="/explorer" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg inline-block transition">
             Rate Pokémon
           </Link>

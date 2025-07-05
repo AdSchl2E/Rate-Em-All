@@ -5,6 +5,7 @@ import { usePokemonByType } from '@/hooks/usePokemonByType';
 import PokemonCard from '@/components/client/shared/PokemonCard';
 
 interface RelatedPokemonSectionProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currentPokemon: any;
   currentPokemonId: number;
 }
@@ -27,6 +28,7 @@ export default function RelatedPokemonSection({
 
   // Filter out the current Pokemon and limit to 8 results
   const filteredPokemon = relatedPokemon
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .filter((pokemon: any) => pokemon.id !== currentPokemonId)
     .slice(0, 8);
 

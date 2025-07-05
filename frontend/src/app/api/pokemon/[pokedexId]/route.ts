@@ -1,15 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth/config';
 import { serverApiRequest } from '@/lib/api';
 
 /**
  * Route simplifiée - Récupère un Pokemon par son ID avec données utilisateur si authentifié
  */
 export async function GET(
-  { params }: { params: { pokedexId: string } }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  request: Request,
+  { params }: { params: Promise<{ pokedexId: string }> }
 ) {
-  const { pokedexId } = params;
+  const { pokedexId } = await params;
   const session = await getServerSession(authOptions);
   
   try {
@@ -30,6 +32,7 @@ export async function GET(
         // Trouver la note pour ce Pokemon
         if (userRatings?.ratings?.length) {
           const userRating = userRatings.ratings.find(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (r: any) => r.pokedexId === parseInt(pokedexId) || r.pokemonId === parseInt(pokedexId)
           );
           if (userRating) pokemonData.userRating = userRating.rating;

@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth/config';
 import { serverApiRequest } from '@/lib/api/api';
 
 // Get current user profile
-export async function GET(request: NextRequest) {
+export async function GET(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  request: NextRequest
+) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -127,7 +130,10 @@ export async function POST(request: NextRequest) {
 }
 
 // Delete user account
-export async function DELETE(request: NextRequest) {
+export async function DELETE(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  request: NextRequest
+) {
   try {
     const session = await getServerSession(authOptions);
     

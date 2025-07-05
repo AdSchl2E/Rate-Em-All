@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { signOut, useSession } from 'next-auth/react';
-import { useGlobal } from '@/providers/GlobalProvider';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Session } from 'next-auth';

@@ -87,7 +87,7 @@ export default function ProfileHeader({
                 delay={0.4}
               />
               <StatBlock 
-                value={averageRating.toFixed(1)} 
+                value={averageRating.toFixed(2)} 
                 label="Average rating" 
                 icon={<StarIcon className="h-4 w-4 text-amber-400 ml-1" />} 
                 delay={0.5}

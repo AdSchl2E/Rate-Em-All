@@ -75,7 +75,7 @@ export function CommunityRating({
         data-rating={rating}
         data-votes={votes}
       >
-        {rating.toFixed(1)}
+        {rating.toFixed(2)}
       </span>
       {showVotes && (
         <span className={`text-gray-400 ml-1 ${size === 'xs' ? 'text-xs' : 'text-sm'}`} data-vote-count>

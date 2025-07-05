@@ -80,21 +80,23 @@ export default function PokemonCard({
   onRatingUpdate
 }: PokemonCardProps) {
   const { status } = useSession();
-  const { 
-    isFavorite, 
-    toggleFavorite, 
-    getUserRating, 
-    setUserRating, 
+  const {
+    isFavorite,
+    toggleFavorite,
+    getUserRating,
+    setUserRating,
     cachePokemon,
-    pokemonCache,
-    getPokemonFromCache,
-    updatePokemonRating
+    getPokemonFromCache
   } = useGlobal();
 
   const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
   const [isLoadingRating, setIsLoadingRating] = useState(false);
-  
+
   // Use functions from the new GlobalProvider
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const pokemonCache = cachePokemon;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const updatePokemonRating = setUserRating;
   const isPokemonInFavorites = isFavorite(pokemon.id);
   const userRating = getUserRating(pokemon.id);
 
@@ -175,7 +177,7 @@ export default function PokemonCard({
 
     try {
       setIsLoadingRating(true);
-      
+
       // Optimistic update - update UI immediately
       setLocalUserRating(rating);
 
@@ -188,7 +190,7 @@ export default function PokemonCard({
       if (updatedPokemon) {
         setLocalCommunityRating(updatedPokemon.rating || localCommunityRating);
         setLocalVoteCount(updatedPokemon.numberOfVotes || localVoteCount);
-        
+
         // Propagate the update to the parent if necessary
         if (onRatingUpdate) {
           onRatingUpdate(updatedPokemon.rating || localCommunityRating, updatedPokemon.numberOfVotes || localVoteCount);
@@ -303,7 +305,7 @@ export default function PokemonCard({
   // DETAIL MODE - New mode for the main detail page of a Pokemon
   if (viewMode === 'detail') {
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -311,13 +313,13 @@ export default function PokemonCard({
       >
         <div className="md:flex">
           {/* Pokemon image section */}
-          <div 
+          <div
             className="md:w-1/2 p-8 flex items-center justify-center relative overflow-hidden"
             style={{ background: `linear-gradient(135deg, ${primaryColor}15, ${secondaryColor}40)` }}
           >
             <div className="absolute inset-0 opacity-20 bg-gradient-to-br"
-                style={{ background: `radial-gradient(circle at center, ${primaryColor}, ${secondaryColor} 80%)` }}></div>
-            
+              style={{ background: `radial-gradient(circle at center, ${primaryColor}, ${secondaryColor} 80%)` }}></div>
+
             <motion.div
               className="relative w-64 h-64 flex items-center justify-center z-10"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -330,9 +332,9 @@ export default function PokemonCard({
               }}
             >
               <Image
-                src={pokemon.sprites?.other?.['official-artwork']?.front_default || 
-                      pokemon.sprites?.front_default || 
-                      '/images/pokeball.png'
+                src={pokemon.sprites?.other?.['official-artwork']?.front_default ||
+                  pokemon.sprites?.front_default ||
+                  '/images/pokeball.png'
                 }
                 alt={pokemon.name}
                 fill
@@ -346,7 +348,7 @@ export default function PokemonCard({
               />
             </motion.div>
           </div>
-          
+
           {/* Information section */}
           <div className="md:w-1/2 p-6">
             {/* Header with name, ID, types */}
@@ -357,20 +359,20 @@ export default function PokemonCard({
                 </h1>
                 <span className="text-xl text-gray-400 font-mono">#{pokemon.id}</span>
               </div>
-              
+
               <div className="flex gap-2">
                 {pokemon.types?.map((typeObj, index) => (
                   <PokemonTypeTag key={index} type={typeObj.type.name} className="px-3 py-1 text-sm" />
                 ))}
               </div>
             </div>
-            
+
             {/* Rating section */}
             <div className="mb-6 space-y-4">
               {/* Community rating */}
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }} 
-                animate={{ opacity: 1, y: 0 }} 
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
                 <h3 className="text-lg font-medium mb-2">Community rating</h3>
@@ -378,7 +380,7 @@ export default function PokemonCard({
                   <div className="flex items-center bg-gray-700/80 px-3 py-2 rounded-md">
                     <StarIcon className={`h-6 w-6 mr-2 ${getRatingColor(localCommunityRating)}`} />
                     <span className={`font-bold text-xl ${getRatingColor(localCommunityRating)}`}>
-                      {localCommunityRating > 0 ? localCommunityRating.toFixed(1) : '0.0'}
+                      {localCommunityRating > 0 ? localCommunityRating.toFixed(2) : '0.00'}
                       <span className="ml-2 font-normal opacity-70 text-base">
                         ({localVoteCount} vote{localVoteCount !== 1 ? 's' : ''})
                       </span>
@@ -386,11 +388,11 @@ export default function PokemonCard({
                   </div>
                 </div>
               </motion.div>
-              
+
               {/* User rating */}
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }} 
-                animate={{ opacity: 1, y: 0 }} 
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
                 className="pt-4 border-t border-gray-700"
               >
@@ -403,7 +405,7 @@ export default function PokemonCard({
                     disabled={isLoadingRating}
                     useColors={true}
                   />
-                  
+
                   {status !== 'authenticated' && (
                     <p className="text-sm text-gray-400 mt-2">
                       <Link href="/login" className="text-blue-400 hover:underline">Sign in</Link> to rate this Pokémon
@@ -412,39 +414,38 @@ export default function PokemonCard({
                 </div>
               </motion.div>
             </div>
-            
+
             {/* User actions (favorites, share) */}
             <div className="flex flex-wrap gap-3">
               {/* Favorites button */}
-              <motion.button 
-                onClick={handleToggleFavorite} 
+              <motion.button
+                onClick={handleToggleFavorite}
                 disabled={isLoadingFavorite || status !== 'authenticated'}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-                  isPokemonInFavorites 
-                    ? 'bg-red-600 hover:bg-red-700 text-white' 
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${isPokemonInFavorites
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
                     : 'bg-gray-700 hover:bg-gray-600 text-white'
-                }`}
+                  }`}
               >
-                <HeartIcon className="h-5 w-5" /> 
+                <HeartIcon className="h-5 w-5" />
                 {isPokemonInFavorites ? 'Remove from favorites' : 'Add to favorites'}
               </motion.button>
-              
+
               {/* Other action buttons can be added here */}
             </div>
           </div>
         </div>
-        
+
         {/* Statistics */}
         <div className="border-t border-gray-700 p-6">
           <PokemonStatsSection stats={pokemon.stats || []} />
         </div>
-        
+
         {/* Additional information */}
         <PokemonInfoSection pokemon={pokemon} />
-        
+
         {/* Species information */}
         <PokemonSpeciesSection pokemon={pokemon} />
       </motion.div>
@@ -489,7 +490,13 @@ export default function PokemonCard({
           <div className="flex-grow">
             <Link href={`/pokemon/${pokemon.id}`} className="block">
               <h3 className={`font-medium capitalize hover:text-blue-400 transition truncate ${listClasses.name}`}>
-                {pokemon.name.replace(/-/g, ' ')}
+                {
+                  size === 'sm' && pokemon.name.length > 10
+                    ? `${pokemon.name.slice(0, 8).replace(/-/g, ' ')}...`
+                    : size === 'md' && pokemon.name.length > 11
+                      ? `${pokemon.name.slice(0, 9).replace(/-/g, ' ')}...`
+                      : pokemon.name.replace(/-/g, ' ')
+                }
               </h3>
             </Link>
 
@@ -526,6 +533,7 @@ export default function PokemonCard({
                 <ClientStarRating
                   value={localUserRating}
                   onChange={handleRatingChange}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   size={listClasses.starSize as any}
                   disabled={isLoadingRating || status !== 'authenticated'}
                   useColors={true}
@@ -545,7 +553,7 @@ export default function PokemonCard({
                     className={`${listClasses.commRating.icon} ${getRatingColor(localCommunityRating)}`}
                   />
                   <span className={`font-bold ${listClasses.commRating.text} ${getRatingColor(localCommunityRating)}`}>
-                    {localCommunityRating > 0 ? localCommunityRating.toFixed(1) : '0.0'}
+                    {localCommunityRating > 0 ? localCommunityRating.toFixed(2) : '0.00'}
                     <span className="ml-1 font-normal opacity-70 text-sm">
                       ({localVoteCount})
                     </span>
@@ -619,9 +627,9 @@ export default function PokemonCard({
               {
                 size === 'sm' && pokemon.name.length > 10
                   ? `${pokemon.name.slice(0, 8).replace(/-/g, ' ')}...`
-                : size === 'md' && pokemon.name.length > 11
-                  ? `${pokemon.name.slice(0, 9).replace(/-/g, ' ')}...`
-                : pokemon.name.replace(/-/g, ' ')
+                  : size === 'md' && pokemon.name.length > 11
+                    ? `${pokemon.name.slice(0, 9).replace(/-/g, ' ')}...`
+                    : pokemon.name.replace(/-/g, ' ')
               }
             </Link>
           </h3>
@@ -637,7 +645,7 @@ export default function PokemonCard({
                 className={`${gridClasses.commRating.icon} ${getRatingColor(localCommunityRating)}`}
               />
               <span className={`font-bold ${gridClasses.commRating.text} ${getRatingColor(localCommunityRating)}`}>
-                {localCommunityRating > 0 ? localCommunityRating.toFixed(1) : '0.0'}
+                {localCommunityRating > 0 ? localCommunityRating.toFixed(2) : '0.00'}
                 <span className="ml-1 font-normal opacity-70 text-xs">
                   ({localVoteCount})
                 </span>
@@ -663,6 +671,7 @@ export default function PokemonCard({
               <ClientStarRating
                 value={localUserRating}
                 onChange={handleRatingChange}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 size={gridClasses.starSize as any}
                 disabled={isLoadingRating || status !== 'authenticated'}
                 useColors={true}

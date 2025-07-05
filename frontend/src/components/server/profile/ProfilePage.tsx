@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
-import { authOptions as auth } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions as auth } from '@/lib/auth/config';
 import ProfileContainer from '@/components/client/profile/ProfileContainer';
 
 /**

@@ -17,6 +17,7 @@ import { useGlobal } from '@/providers/GlobalProvider';
  */
 export function DeleteAccountSettings() {
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const globalContext = useGlobal();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [password, setPassword] = useState('');
@@ -45,7 +46,10 @@ export function DeleteAccountSettings() {
       
       // Redirect to home page
       router.push('/');
-    } catch (error: any) {
+    } catch (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any
+    ) {
       console.error('Error deleting account:', error);
       toast.error(error?.message || 'Error deleting your account');
     } finally {

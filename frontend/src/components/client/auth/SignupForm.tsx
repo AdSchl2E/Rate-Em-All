@@ -13,7 +13,9 @@ import { useAuth } from '@/lib/api';
  */
 export default function SignupForm() {
   const router = useRouter();
-  const { register, loading, error } = useAuth();
+  const { register, loading } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { error } = useAuth();
   const [formData, setFormData] = useState({
     pseudo: '',
     password: '',
@@ -105,7 +107,10 @@ export default function SignupForm() {
           toast.error(result.error || 'An error occurred during registration');
         }
       }
-    } catch (error: any) {
+    } catch (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any
+    ) {
       console.error('Registration error:', error);
       toast.error(error.message || 'An error occurred during registration');
     }

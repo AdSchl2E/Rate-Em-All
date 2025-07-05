@@ -27,7 +27,7 @@ export default function EmptyState({ onReset }: EmptyStateProps) {
       
       <h3 className="text-xl font-bold mb-2">No Pokémon found</h3>
       <p className="text-gray-400 mb-6 max-w-md mx-auto">
-        We couldn't find any Pokémon matching your search criteria.
+        We couldn&apos;t find any Pokémon matching your search criteria.
         Try modifying your filters or search query.
       </p>
       

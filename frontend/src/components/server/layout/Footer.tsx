@@ -17,7 +17,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center mb-6">
             <div className="mb-4 md:mb-0 text-center md:text-left">
               <h3 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent inline-block">
-                Rate 'em All
+                Rate &apos;em All
               </h3>
             </div>
 
@@ -39,7 +39,7 @@ export default function Footer() {
           {/* Bottom section */}
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-gray-500 mb-4 md:mb-0">
-              © {currentYear} Rate 'em All. All rights reserved.
+              © {currentYear} Rate &apos;em All. All rights reserved.
             </p>
 
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">

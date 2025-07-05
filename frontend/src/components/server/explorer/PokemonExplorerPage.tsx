@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { serverApi } from '@/lib/api';
 import ExplorerContainer from '@/components/client/explorer/ExplorerContainer';
 import PageHeader from '@/components/server/shared/PageHeader';

@@ -143,7 +143,7 @@ function PodiumPlace({ pokemon, place, height, isCenter = false }: PodiumPlacePr
           <div className="flex items-center space-x-1">
             <ServerStarRating value={pokemon.rating || 0} size="sm" />
             <span className="text-sm text-gray-400">
-              ({(pokemon.rating || 0).toFixed(1)})
+              ({(pokemon.rating || 0).toFixed(2)})
             </span>
           </div>
         </Link>

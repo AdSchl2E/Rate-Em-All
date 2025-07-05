@@ -53,8 +53,8 @@ export default function SortControls({
     }
     
     return sortDir === 'asc' ? 
-      <ArrowUpIcon className="h-4 w-4 text-blue-400" /> : 
-      <ArrowDownIcon className="h-4 w-4 text-blue-400" />;
+      <ArrowDownIcon className="h-4 w-4 text-blue-400" /> : 
+      <ArrowUpIcon className="h-4 w-4 text-blue-400" />;
   };
 
   return (

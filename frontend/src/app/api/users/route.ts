@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth/config';
 import { serverApiRequest } from '@/lib/api';
 
 /**
  * GET - Get current user information
  * Simplified proxy to backend API
  */
-export async function GET(request: NextRequest) {
+export async function GET(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  request: NextRequest
+) {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const session = await getServerSession(authOptions) as any;
 
     if (!session?.user || !session?.accessToken) {
@@ -49,6 +53,7 @@ export async function POST(request: NextRequest) {
     
     if (action === 'change-password') {
       // Handle password change
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const session = await getServerSession(authOptions) as any;
 
       if (!session?.user || !session?.accessToken) {
@@ -100,6 +105,7 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const session = await getServerSession(authOptions) as any;
 
     if (!session?.user || !session?.accessToken) {

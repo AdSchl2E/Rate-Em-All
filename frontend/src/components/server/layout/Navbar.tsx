@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { getServerSession } from 'next-auth';
-import { authOptions as auth } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions as auth } from '@/lib/auth/config';
 import NavigationLinks from '@/components/client/navigation/NavigationLinks';
 import UserMenuButton from '@/components/client/navigation/UserMenuButton';
 
@@ -34,7 +34,7 @@ export default async function Navbar() {
               />
             </div>
             <span className="text-lg font-bold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
-              Rate 'em All
+              Rate &apos;em All
             </span>
           </Link>
           

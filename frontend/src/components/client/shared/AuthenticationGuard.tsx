@@ -27,7 +27,11 @@ interface AuthenticationGuardProps {
  * @param props - Component props
  * @returns React component
  */
-export default function AuthenticationGuard({ children, fallback }: AuthenticationGuardProps) {
+export default function AuthenticationGuard({ 
+  children, 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  fallback 
+}: AuthenticationGuardProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isSessionChecked, setIsSessionChecked] = useState(false);

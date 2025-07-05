@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth/config';
 import { serverApiRequest } from '@/lib/api/api';
 
 /**
@@ -9,10 +9,10 @@ import { serverApiRequest } from '@/lib/api/api';
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: { userId: string } }
+    { params }: { params: Promise<{ userId: string }> }
 ) {
     try {
-        const { userId } = params;
+        const { userId } = await params;
         const session = await getServerSession(authOptions);
 
         if (!session?.user) {
@@ -42,10 +42,10 @@ export async function GET(
  */
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { userId: string } }
+    { params }: { params: Promise<{ userId: string }> }
 ) {
     try {
-        const { userId } = params;
+        const { userId } = await params;
         const session = await getServerSession(authOptions);
 
         if (!session?.user) {
@@ -81,10 +81,10 @@ export async function PATCH(
  */
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { userId: string } }
+    { params }: { params: Promise<{ userId: string }> }
 ) {
     try {
-        const { userId } = params;
+        const { userId } = await params;
         const session = await getServerSession(authOptions);
 
         if (!session?.user) {

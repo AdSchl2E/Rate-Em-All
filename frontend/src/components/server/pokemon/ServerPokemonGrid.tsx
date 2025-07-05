@@ -85,7 +85,7 @@ export function ServerPokemonGrid({ pokemons }: ServerPokemonGridProps) {
             <div className="flex justify-center items-center gap-2 mb-3">
               <ServerStarRating value={pokemon.rating || 0} />
               <span className="text-sm">
-                ({(pokemon.rating || 0).toFixed(1)}/5, {pokemon.numberOfVotes || 0} vote{pokemon.numberOfVotes !== 1 ? 's' : ''})
+                ({(pokemon.rating || 0).toFixed(2)}/5, {pokemon.numberOfVotes || 0} vote{pokemon.numberOfVotes !== 1 ? 's' : ''})
               </span>
             </div>
           </div>

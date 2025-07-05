@@ -57,9 +57,16 @@ interface ExplorerContainerProps {
  * @param props - Component props
  * @returns React component
  */
-export default function ExplorerContainer({ initialTypes = [], totalCount = 1500 }: ExplorerContainerProps = {}) {
+export default function ExplorerContainer({ 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  initialTypes = [], 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  totalCount = 1500 
+}: ExplorerContainerProps = {}) {
   // Utiliser le hook Pokemon pour simplifier la gestion
-  const { loading, setLoading, error, getPokemonList, searchPokemon } = usePokemon();
+  const { loading, setLoading } = usePokemon();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { error, getPokemonList, searchPokemon } = usePokemon();
   
   // States pour Pokemon et filtrage
   const [allPokemons, setAllPokemons] = useState<Pokemon[]>([]);
