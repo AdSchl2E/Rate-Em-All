@@ -2,6 +2,8 @@
  * Main application file that bootstraps the NestJS application
  * Configures CORS settings and starts the HTTP server
  */
+// Import polyfills before anything else
+import './polyfills';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
