@@ -2,6 +2,8 @@
  * Main application file that bootstraps the NestJS application
  * Configures CORS settings and starts the HTTP server
  */
+// Import polyfills before anything else
+import './polyfills';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
@@ -19,11 +21,7 @@ async function bootstrap() {
   
   // CORS Configuration for production
   app.enableCors({
-    origin: [
-      'http://localhost:3000',  // Development
-      'http://localhost:3001',  // Alternative dev
-      process.env.FRONTEND_URL || 'http://localhost:3000', // Production Vercel URL
-    ],
+    origin: [process.env.FRONTEND_URL],
     credentials: true,
   });
 

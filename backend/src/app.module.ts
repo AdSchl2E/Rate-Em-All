@@ -19,31 +19,17 @@ import { JwtModule } from '@nestjs/jwt';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const databaseUrl = configService.get('DATABASE_URL');
-        
-        if (databaseUrl) {
-          // Utiliser DATABASE_URL si disponible (production)
-          return {
-            type: 'postgres',
-            url: databaseUrl,
-            entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-            synchronize: true, // Ne pas utiliser en production !
-          };
-        }
-        
-        // Fallback vers les variables individuelles (développement)
-        return {
-          type: 'postgres',
-          host: configService.get('DB_HOST'),
-          port: +configService.get('DB_PORT'),
-          username: configService.get('DB_USERNAME'),
-          password: configService.get('DB_PASSWORD'),
-          database: configService.get('DB_NAME'),
-          entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-          synchronize: true, // Ne pas utiliser en production !
-        };
-      },
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DB_HOST'),
+        port: +configService.get('DB_PORT'),
+        username: configService.get('DB_USERNAME'),
+        password: configService.get('DB_PASSWORD'),
+        database: configService.get('DB_NAME'),
+        entities: [join(__dirname, '**', '*.entity.{ts,js}')],
+        synchronize: false,
+      }),
+
     }),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
