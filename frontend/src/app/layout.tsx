@@ -1,6 +1,8 @@
 import { Metadata, Viewport } from 'next';
 import ClientProviders from "@/providers/ClientProviders";
 import RootLayout from '@/components/server/layout/RootLayout';
+import { Analytics } from "@vercel/analytics/next"
+
 import "@/styles/globals.css";
 
 // Server-side generated metadata
@@ -26,6 +28,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <ClientProviders>
           <RootLayout>
             {children}
+            <Analytics />
           </RootLayout>
         </ClientProviders>
       </body>
