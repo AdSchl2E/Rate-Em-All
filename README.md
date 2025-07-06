@@ -4,9 +4,9 @@
 
 **Rate 'Em All** is a full-stack web application that lets you explore, rate, and collect your favorite Pokémon! Discover the complete Pokémon database, share your ratings, and see which Pokémon are most popular in the community.
 
-## [Live Demo](https://rate-em-all.up.railway.app)
+## [Live Demo](https://rate-em-all.vercel.app/)
 
-Visit [https://rate-em-all.up.railway.app](https://rate-em-all.up.railway.app) to try it out!
+Visit [https://rate-em-all.vercel.app/](https://rate-em-all.vercel.app/) to try it out!
 
 ## Features
 
@@ -32,7 +32,8 @@ Visit [https://rate-em-all.up.railway.app](https://rate-em-all.up.railway.app) t
 - **JWT** - JSON Web Tokens for authentication
 
 ### Deployment
-- **Railway** - Platform for easy deployment and hosting
+- **Railway** - Platform for Postgres DB and NestJS backend
+- **Vercel** - Platform for Next.js frontend
 
 ## Project Structure
 
