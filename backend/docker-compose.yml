@@ -40,7 +40,6 @@ services:
       JWT_EXPIRES_IN: 24h
       
       # Variables générales
-      NODE_ENV: production
       PORT: 3001
     depends_on:
       postgres:

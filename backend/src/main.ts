@@ -28,15 +28,6 @@ async function bootstrap() {
   // Global prefix for API routes
   app.setGlobalPrefix('api');
 
-  const configService = app.get(ConfigService);
-  console.log('Environment:', process.env.NODE_ENV);
-  console.log('Port:', process.env.PORT);
-  
-  // Don't log JWT secret in production
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('JWT_SECRET:', configService.get<string>('JWT_SECRET'));
-  }
-
   const port = process.env.PORT || 3001;
   await app.listen(port);
   console.log(`🚀 Backend running on port ${port}`);
