@@ -28,6 +28,8 @@ import { JwtModule } from '@nestjs/jwt';
         database: configService.get('PGDATABASE'),
         entities: [join(__dirname, '**', '*.entity.{ts,js}')],
         synchronize: false,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        extra: process.env.NODE_ENV === 'production' ? { sslmode: 'require' } : undefined,
       }),
 
     }),
