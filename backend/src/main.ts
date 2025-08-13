@@ -12,35 +12,20 @@ import { AppModule } from './app.module';
  * Sets up CORS for frontend communication
  * Configures and starts the HTTP server
  */
-async function createApp() {
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
+  // CORS Configuration for production
   app.enableCors({
     origin: [process.env.FRONTEND_URL],
     credentials: true,
   });
-  app.setGlobalPrefix('api');
-  await app.init();
-  return app;
-}
 
-// Standard server mode (local/dev or when not running on Vercel)
-async function bootstrap() {
-  const app = await createApp();
+  // Global prefix for API routes
+  app.setGlobalPrefix('api');
+
   const port = process.env.PORT || 3001;
   await app.listen(port);
   console.log(`🚀 Backend running on port ${port}`);
 }
-
-// On Vercel, export a handler instead of listening on a port
-let cachedServer: any;
-export default async function handler(req: any, res: any) {
-  if (!cachedServer) {
-    const app = await createApp();
-    cachedServer = app.getHttpAdapter().getInstance();
-  }
-  return cachedServer(req, res);
-}
-
-if (!process.env.VERCEL) {
-  void bootstrap();
-}
+void bootstrap();
